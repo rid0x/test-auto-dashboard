@@ -21,10 +21,9 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
 
   test('should display checkout form', async ({ page }) => {
     await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(3000);
 
     const checkoutForm = page.locator('#checkout, .checkout-container, .opc-wrapper');
-    await expect(checkoutForm.first()).toBeVisible({ timeout: 10000 });
+    await expect(checkoutForm.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Checkout form', { body: screenshot, contentType: 'image/png' });
@@ -32,10 +31,9 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
 
   test('should display order summary in checkout', async ({ page }) => {
     await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(3000);
 
     const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
-    await expect(summary.first()).toBeVisible({ timeout: 10000 });
+    await expect(summary.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
@@ -43,7 +41,7 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
 
   test('should navigate to cart from checkout', async ({ page }) => {
     await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');
     const hasCartLink = await cartLink.first().isVisible().catch(() => false);

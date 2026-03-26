@@ -22,7 +22,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
 
   test('should display login/guest choice', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     // Checkout first shows login or guest option
     const guestBtn = page.locator('button:has-text("Kontynuuj"), button:has-text("gość")');
@@ -38,7 +38,6 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
 
   test('should display order summary in checkout', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(3000);
 
     // Order summary should be visible even on the login step
     const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
@@ -50,7 +49,6 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
 
   test('should show product in checkout summary', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(3000);
 
     // Product name should appear somewhere in checkout
     const productName = page.locator('.product-item-name');
@@ -59,7 +57,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
 
   test('should navigate to cart from checkout', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     // There should be a link back to cart
     const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');

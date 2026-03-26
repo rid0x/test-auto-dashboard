@@ -16,7 +16,7 @@ test.describe('Getprice - Product Page @product-page @e2e', () => {
   test('should display product image', async ({ page }) => {
     // Getprice uses lazy-loaded images — scroll to product area first
     await page.locator('.product-info-main, h1').first().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
+    await page.locator('.product-info-main img, img[alt*="Patchcord"], img.object-contain').first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
 
     // Check that at least one product image exists (may be lazy loaded)
     const images = page.locator('.product-info-main img, img[alt*="Patchcord"], img.object-contain');

@@ -8,7 +8,7 @@ test.describe('Getprice - Search @search @e2e', () => {
   test('should find results for valid query', async ({ page, config }) => {
     // Go directly to search results (reliable, avoids Amasty JS intercepts)
     await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('load');
 
     await test.step('Verify results page', async () => {
       expect(page.url()).toContain('catalogsearch/result');
@@ -24,7 +24,6 @@ test.describe('Getprice - Search @search @e2e', () => {
   test('should show no results for invalid query', async ({ page, config }) => {
     // Go directly to search results URL for reliability
     await page.goto(`https://getprice.pl/pl/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
 
     const products = page.locator('.product-item');
     const count = await products.count();
@@ -33,9 +32,9 @@ test.describe('Getprice - Search @search @e2e', () => {
 
   test('should show search suggestions (autocomplete)', async ({ page, config }) => {
     await page.locator('#search').fill(config.search.validQuery.substring(0, 5));
-    await page.waitForTimeout(2000);
-
+    // Wait for autocomplete AJAX response
     const suggestions = page.locator('.amsearch-highlight, [class*="amsearch"]:visible');
+    await suggestions.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     const count = await suggestions.count();
     expect(count).toBeGreaterThan(0);
 
@@ -47,14 +46,12 @@ test.describe('Getprice - Search @search @e2e', () => {
     await page.locator('#search').fill(config.search.validQuery);
     await page.locator('#search_mini_form').evaluate(form => (form as HTMLFormElement).submit());
     await page.waitForLoadState('load');
-    await page.waitForTimeout(2000);
 
     expect(page.url()).toContain('catalogsearch/result');
   });
 
   test('should display product info in results', async ({ page, config }) => {
     await page.goto(`https://getprice.pl/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
 
     const firstProduct = page.locator('.product-item').first();
     await expect(firstProduct).toBeVisible();
@@ -66,7 +63,7 @@ test.describe('Getprice - Search @search @e2e', () => {
   test('should handle empty search', async ({ page }) => {
     await page.locator('#search').fill('');
     await page.locator('#search').press('Enter');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('body')).toBeVisible();
   });
 

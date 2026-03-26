@@ -104,7 +104,7 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
     await test.step('Weak password', async () => {
       await page.locator('#password').fill('abc');
       await page.locator('#password').blur();
-      await page.waitForTimeout(300);
+      await expect(meter).not.toHaveText('', { timeout: 3000 });
       const text = await meter.textContent();
       expect(text).toBeTruthy();
     });
@@ -112,7 +112,7 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
     await test.step('Strong password', async () => {
       await page.locator('#password').fill('StrongP@ss123!XYZ');
       await page.locator('#password').blur();
-      await page.waitForTimeout(300);
+      await expect(meter).not.toHaveText('', { timeout: 3000 });
       const text = await meter.textContent();
       expect(text).toBeTruthy();
     });
@@ -126,7 +126,8 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
   test('should validate required fields on empty submit', async ({ page }) => {
     const submitBtn = page.locator('button:has-text("Załóż darmowe konto")');
     await submitBtn.first().click();
-    await page.waitForTimeout(500);
+    // Wait for client-side validation errors to appear
+    await page.locator('.mage-error:visible').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 
     // Willsoor shows .mage-error validation messages
     const errors = page.locator('.mage-error:visible');
@@ -166,7 +167,8 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
     await page.locator('#password-confirmation').fill('ValidPass123!');
 
     await page.locator('#email_address').blur();
-    await page.waitForTimeout(500);
+    // Allow Magento JS validation to process
+    await page.locator('.mage-error, :invalid').first().waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
 
     const screenshot = await page.screenshot();
     await test.info().attach('Invalid email format', { body: screenshot, contentType: 'image/png' });
@@ -176,7 +178,8 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
     await page.locator('#password').fill('Password123!');
     await page.locator('#password-confirmation').fill('DifferentPass456!');
     await page.locator('#password-confirmation').blur();
-    await page.waitForTimeout(500);
+    // Allow Magento JS validation to process
+    await page.locator('#password-confirmation-error, .mage-error').first().waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
 
     // Magento shows validation error for mismatch
     const error = page.locator('#password-confirmation-error, .mage-error');

@@ -43,7 +43,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     );
 
     await page.locator('footer, .footer').first().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    await newsletter.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
 
     const count = await newsletter.count();
     expect(count).toBeGreaterThan(0);
@@ -70,7 +70,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
 
       if (await submitBtn.isVisible().catch(() => false)) {
         await submitBtn.click();
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('domcontentloaded');
         // Should show validation error or stay on page
         await expect(page.locator('body')).toBeVisible();
       }

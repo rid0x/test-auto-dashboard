@@ -13,7 +13,6 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
     await test.step('Go to product and add to cart', async () => {
       await productPage.gotoDefaultProduct();
       await page.locator('#product-addtocart-button').click();
-      await page.waitForTimeout(3000);
     });
 
     await test.step('Verify success message', async () => {
@@ -33,7 +32,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
   test('should display cart item details', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await page.locator('.message.success, .message:has-text("Dodałeś")').first().waitFor({ state: 'visible', timeout: 10000 });
 
     await cartPage.goto();
 
@@ -56,7 +55,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
   test('should update quantity in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await page.locator('.message.success, .message:has-text("Dodałeś")').first().waitFor({ state: 'visible', timeout: 10000 });
 
     await cartPage.goto();
 
@@ -67,7 +66,6 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
       const updateBtn = page.locator('.action.update, button:has-text("Aktualizuj")').first();
       await updateBtn.click();
       await page.waitForLoadState('load');
-      await page.waitForTimeout(2000);
     });
 
     await test.step('Verify cart still has items', async () => {
@@ -81,7 +79,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
   test('should remove item from cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await page.locator('.message.success, .message:has-text("Dodałeś")').first().waitFor({ state: 'visible', timeout: 10000 });
 
     await cartPage.goto();
 
@@ -89,7 +87,6 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
       const deleteBtn = page.locator('.action-delete, .action.action-delete').first();
       await deleteBtn.click();
       await page.waitForLoadState('load');
-      await page.waitForTimeout(2000);
     });
 
     await test.step('Verify cart is empty', async () => {
@@ -100,7 +97,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
   test('should display cart subtotal', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await page.locator('.message.success, .message:has-text("Dodałeś")').first().waitFor({ state: 'visible', timeout: 10000 });
 
     await cartPage.goto();
 
@@ -111,7 +108,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
   test('should have proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await page.locator('.message.success, .message:has-text("Dodałeś")').first().waitFor({ state: 'visible', timeout: 10000 });
 
     await cartPage.goto();
 

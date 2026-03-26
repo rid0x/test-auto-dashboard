@@ -15,7 +15,7 @@ test.describe('4szpaki - Product Page @product-page @e2e', () => {
 
   test('should display product image', async ({ page }) => {
     await page.locator('.product-info-main, h1').first().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
+    await page.locator('.product-info-main img, .product.media img, .gallery-placeholder img').first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
 
     const images = page.locator('.product-info-main img, .product.media img, .gallery-placeholder img');
     const count = await images.count();

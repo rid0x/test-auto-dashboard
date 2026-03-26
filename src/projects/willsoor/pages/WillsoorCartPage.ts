@@ -40,13 +40,11 @@ export class WillsoorCartPage extends CartPage {
   async removeFirstItem(): Promise<void> {
     const btn = await this.findWithHealing(this.removeItemButton);
     await btn.click();
-    await this.page.waitForTimeout(1000);
 
     // Willsoor shows confirm modal: "Czy na pewno chcesz usunąć ten produkt?"
     const confirmBtn = this.page.locator('button.action-primary.action-accept, button.action-accept');
     await confirmBtn.first().waitFor({ state: 'visible', timeout: 5000 });
     await confirmBtn.first().click();
     await this.page.waitForLoadState('load');
-    await this.page.waitForTimeout(2000);
   }
 }

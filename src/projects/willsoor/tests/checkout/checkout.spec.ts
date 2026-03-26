@@ -20,7 +20,6 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
 
     // Wait for checkout to load (Magento checkout is JS-heavy)
     await page.waitForLoadState('load');
-    await page.waitForTimeout(3000);
 
     const emailField = page.locator('#customer-email, input[name="username"]');
     await expect(emailField.first()).toBeVisible({ timeout: 15000 });
@@ -29,7 +28,7 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
   test('should validate required shipping fields', async ({ checkoutPage, page }) => {
     await checkoutPage.goto();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     // Try to proceed without filling form
     const nextBtn = page.locator(
@@ -39,7 +38,7 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
       await nextBtn.first().click();
 
       // Should show validation errors
-      await page.waitForTimeout(1000);
+      await page.locator('.field-error:visible, ._error:visible, .mage-error:visible').first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       const errors = page.locator('.field-error:visible, ._error:visible, .mage-error:visible');
       const count = await errors.count();
       expect(count).toBeGreaterThan(0);
@@ -51,7 +50,7 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
 
     await checkoutPage.goto();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     await checkoutPage.fillShippingAddress({
       email: 'guest-test@willsoor.pl',
@@ -74,7 +73,7 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
   test('should display shipping methods', async ({ checkoutPage, page }) => {
     await checkoutPage.goto();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     await checkoutPage.fillShippingAddress({
       email: 'guest-test@willsoor.pl',

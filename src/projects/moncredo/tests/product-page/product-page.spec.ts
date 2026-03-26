@@ -16,7 +16,7 @@ test.describe('Moncredo - Product Page @product-page @e2e', () => {
   test('should display product image', async ({ page }) => {
     // Scroll to product area first for lazy-loaded images
     await page.locator('.product-info-main, h1').first().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
+    await page.locator('.product-info-main img, .product.media img, img.object-contain').first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
 
     // Check that at least one product image exists (may be lazy loaded)
     const images = page.locator('.product-info-main img, .product.media img, img.object-contain');

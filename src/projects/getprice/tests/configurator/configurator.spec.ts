@@ -5,7 +5,7 @@ const CONFIGURATOR_URL = '/pl/fujitsu-rx300-s8-konfigurator-fujitsu-primergy-rx3
 test.describe('Getprice - Server Configurator @configurator @e2e', () => {
   test.beforeEach(async ({ page, config }) => {
     await page.goto(`${config.baseUrl}${CONFIGURATOR_URL}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('load');
     // Cookie
     try { await page.locator('.consent-cookie-directive button').first().click({ timeout: 2000 }); } catch {}
   });
@@ -61,7 +61,6 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
 
     await test.step('Click add to cart', async () => {
       await page.locator('#product-addtocart-button').click();
-      await page.waitForTimeout(3000);
     });
 
     await test.step('Verify success', async () => {

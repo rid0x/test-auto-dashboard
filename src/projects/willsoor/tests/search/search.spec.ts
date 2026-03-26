@@ -7,7 +7,6 @@ test.describe('Willsoor - Search @search @e2e', () => {
 
   test('should find results for valid query', async ({ page, config }) => {
     await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
 
     const products = page.locator('.product-item');
     const count = await products.count();
@@ -19,7 +18,6 @@ test.describe('Willsoor - Search @search @e2e', () => {
 
   test('should show no results for invalid query', async ({ page, config }) => {
     await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
 
     const products = page.locator('.product-item');
     const count = await products.count();
@@ -29,10 +27,10 @@ test.describe('Willsoor - Search @search @e2e', () => {
   test('should show search suggestions', async ({ page, config }) => {
     const searchInput = page.locator('.amsearch-input, input[name="q"]').first();
     await searchInput.fill(config.search.validQuery.substring(0, 4));
-    await page.waitForTimeout(3000);
 
-    // Amasty shows product suggestions
+    // Amasty shows product suggestions — wait for AJAX response
     const suggestions = page.locator('.amsearch-products, .amsearch-item, [class*="amsearch"]:visible');
+    await suggestions.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     const count = await suggestions.count();
     expect(count).toBeGreaterThan(0);
 
@@ -45,7 +43,6 @@ test.describe('Willsoor - Search @search @e2e', () => {
     await searchInput.fill(config.search.validQuery);
     await page.keyboard.press('Enter');
     await page.waitForLoadState('load');
-    await page.waitForTimeout(2000);
 
     expect(page.url()).toContain('catalogsearch/result');
   });
@@ -57,7 +54,6 @@ test.describe('Willsoor - Search @search @e2e', () => {
     const searchBtn = page.locator('.amsearch-button, button[title="Szukaj"]').first();
     await searchBtn.click();
     await page.waitForLoadState('load');
-    await page.waitForTimeout(2000);
 
     const products = page.locator('.product-item');
     const count = await products.count();
@@ -66,7 +62,6 @@ test.describe('Willsoor - Search @search @e2e', () => {
 
   test('should display product info in results', async ({ page, config }) => {
     await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
-    await page.waitForTimeout(2000);
 
     const firstProduct = page.locator('.product-item').first();
     await expect(firstProduct).toBeVisible();
@@ -82,7 +77,7 @@ test.describe('Willsoor - Search @search @e2e', () => {
     const searchInput = page.locator('.amsearch-input, input[name="q"]').first();
     await searchInput.fill('');
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('body')).toBeVisible();
   });
 });
