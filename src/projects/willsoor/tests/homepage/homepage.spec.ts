@@ -29,7 +29,7 @@ test.describe('Willsoor - Homepage @homepage @e2e', () => {
   });
 
   test('should display navigation menu', async ({ page }) => {
-    const nav = page.locator('.nav-sections, nav.navigation');
+    const nav = page.locator('.nav-sections, nav.navigation').first();
     await expect(nav).toBeVisible();
 
     const screenshot = await page.screenshot();
