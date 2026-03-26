@@ -11,8 +11,8 @@ export abstract class BasePage {
 
   async navigate(path: string = ''): Promise<void> {
     await this.page.goto(`${this.config.baseUrl}${path}`, { waitUntil: 'domcontentloaded' });
-    // Wait for JS to render dynamic elements (selects, swatches, etc.)
-    await this.page.waitForTimeout(2500);
+    // Wait for body to be stable (no hard timeout — Playwright auto-waits)
+    await this.page.locator('body').waitFor({ state: 'visible' });
     if (this.config.features.hasCookieConsent) {
       await dismissCookiesIfPresent(this.page, this.config.features.cookieConsentSelector);
     }

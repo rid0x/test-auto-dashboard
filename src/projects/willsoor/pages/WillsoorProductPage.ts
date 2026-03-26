@@ -12,20 +12,21 @@ export class WillsoorProductPage extends ProductPage {
   }
 
   /**
-   * Select first available size and add to cart via form submit.
-   * Willsoor's Magento/KnockoutJS doesn't respond to Playwright's selectOption properly.
-   * Direct form.submit() with JS-set value works reliably.
+   * Select first available size using JS (Playwright selectOption doesn't trigger Magento/KO).
+   * Waits for select to be present in DOM before attempting.
    */
   async selectFirstAvailableOption(): Promise<void> {
+    // Wait for select to appear in DOM (no hard timeout)
     const sizeSelect = this.page.locator('select.super-attribute-select');
-    const count = await sizeSelect.count();
-    if (count === 0) return;
+    try {
+      await sizeSelect.first().waitFor({ state: 'attached', timeout: 10000 });
+    } catch {
+      return; // No size select — simple product
+    }
 
-    // Set value via JS and submit — Playwright selectOption doesn't trigger Magento JS
     await this.page.evaluate(() => {
       const select = document.querySelector('select.super-attribute-select') as HTMLSelectElement;
       if (!select) return;
-
       for (const opt of Array.from(select.options)) {
         const text = opt.text || '';
         if (text.trim().length > 2 && !text.includes('Rozmiar') && !text.includes('Powiadom') && !text.includes('dostępności')) {
@@ -33,28 +34,23 @@ export class WillsoorProductPage extends ProductPage {
           return;
         }
       }
-      // Fallback: select first non-empty option
       if (select.options.length > 1) {
         select.value = select.options[1].value;
       }
     });
-    await this.page.waitForTimeout(500);
   }
 
   async addToCart(): Promise<void> {
-    // Submit form directly — more reliable than button click on Willsoor
-    await this.page.evaluate(() => {
-      const form = document.querySelector('#product_addtocart_form') as HTMLFormElement;
-      form?.submit();
-    });
+    // Submit form directly — Playwright selectOption doesn't trigger Magento/KO
+    const form = this.page.locator('#product_addtocart_form');
+    await form.evaluate(f => (f as HTMLFormElement).submit());
     await this.page.waitForLoadState('load');
-    await this.page.waitForTimeout(1000);
   }
 
   async setQuantity(qty: number): Promise<void> {
-    // Willsoor may hide qty input
     const qtyInput = this.page.locator('#qty, input[name="qty"]');
-    if (await qtyInput.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+    const isVisible = await qtyInput.first().isVisible().catch(() => false);
+    if (isVisible) {
       await qtyInput.first().fill(qty.toString());
     }
   }
@@ -66,15 +62,15 @@ export class WillsoorProductPage extends ProductPage {
   }
 
   async expectAddToCartSuccess(): Promise<void> {
-    // Try success message first
+    // Use web-first assertion with retry — no hard waits
     const msg = this.page.locator('.message-success');
-    const hasMsgNow = await msg.first().isVisible({ timeout: 3000 }).catch(() => false);
-    if (hasMsgNow) return;
-
-    // Fallback: check cart has items
-    await this.page.goto(`${this.config.baseUrl}/checkout/cart/`, { waitUntil: 'load' });
-    await this.page.waitForTimeout(1000);
-    const cartItems = await this.page.locator('.cart.item, #shopping-cart-table tbody tr').count();
-    expect(cartItems).toBeGreaterThan(0);
+    try {
+      await expect(msg.first()).toBeVisible({ timeout: 5000 });
+      return;
+    } catch {
+      // Fallback: check cart has items
+      await this.page.goto(`${this.config.baseUrl}/checkout/cart/`);
+      await expect(this.page.locator('.cart.item, #shopping-cart-table tbody tr').first()).toBeVisible({ timeout: 10000 });
+    }
   }
 }
