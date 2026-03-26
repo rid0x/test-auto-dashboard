@@ -29,14 +29,14 @@ export const szpakiConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/TBD',
-    name: 'TBD',
+    url: '/naturalne-mydla/p/konopne-savon-noir',
+    name: 'Konopne Savon Noir',
   },
 
   category: {
-    url: '/TBD',
-    name: 'TBD',
-    expectedMinProducts: 5,
+    url: '/twarz',
+    name: 'Twarz',
+    expectedMinProducts: 3,
   },
 
   features: {
@@ -44,7 +44,7 @@ export const szpakiConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: false,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: undefined,
+    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all, a:has-text("ZGODA NA WSZYSTKIE")',
   },
 
   api: {
