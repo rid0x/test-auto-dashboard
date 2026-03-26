@@ -36,12 +36,12 @@ test.describe('Willsoor - Login @login @e2e', () => {
   });
 
   test('should have forgot password link', async ({ page }) => {
-    const forgotLink = page.locator('a[href*="forgotpassword"], a:has-text("Zapomniałeś hasła"), a:has-text("Forgot")');
+    const forgotLink = page.locator('a[href*="forgotpassword"]:visible, a:has-text("Nie pamiętasz hasła"):visible');
     await expect(forgotLink.first()).toBeVisible();
   });
 
   test('should have create account link', async ({ page }) => {
-    const createLink = page.locator('a[href*="account/create"], a:has-text("Załóż konto"), a:has-text("Create an Account")');
+    const createLink = page.locator('a[href*="account/create"]:visible, a:has-text("Załóż darmowe konto"):visible');
     await expect(createLink.first()).toBeVisible();
   });
 });

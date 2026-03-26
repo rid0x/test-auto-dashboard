@@ -37,15 +37,14 @@ export class GetpriceCartPage extends CartPage {
 
   protected get proceedToCheckoutButton(): HealableLocator {
     return healable('Proceed to checkout',
-      'a.btn-primary[href*="checkout"]:not([href*="cart"])',
-      '.checkout-methods-items a[href*="checkout"]',
-      'a:has-text("Do kasy")'
+      '#checkout-link-button',
+      'a[title="Do kasy"]',
+      'a.btn-primary.checkout'
     );
   }
 
   async proceedToCheckout(): Promise<void> {
-    // Scroll to make the button visible (may be offscreen)
-    const btn = this.page.locator('a.btn-primary[href*="checkout"]:not([href*="cart"]), a:has-text("Do kasy")').first();
+    const btn = this.page.locator('#checkout-link-button, a[title="Do kasy"]').first();
     await btn.scrollIntoViewIfNeeded();
     await btn.click();
     await this.page.waitForLoadState('load');

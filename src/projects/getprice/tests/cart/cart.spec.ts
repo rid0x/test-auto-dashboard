@@ -44,7 +44,7 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     });
 
     await test.step('Verify price in cart', async () => {
-      const price = page.locator('.cart-price, .price');
+      const price = page.locator('.price-excluding-tax .price, .cart-price .price');
       await expect(price.first()).toBeVisible();
     });
 
@@ -116,7 +116,7 @@ test.describe('Getprice - Cart @cart @e2e', () => {
 
     await cartPage.goto();
 
-    const checkoutLink = page.locator('a[href*="checkout"]:not([href*="cart"]):has-text("Do kasy"), a.btn-primary[href*="checkout"]');
+    const checkoutLink = page.locator('#checkout-link-button, a[title="Do kasy"]');
     await checkoutLink.first().scrollIntoViewIfNeeded();
     await expect(checkoutLink.first()).toBeVisible();
 

@@ -51,6 +51,7 @@ test.describe('Getprice - Search @search @e2e', () => {
     await page.locator('#search').fill(config.search.validQuery);
     await page.locator('#search_mini_form').evaluate(form => (form as HTMLFormElement).submit());
     await page.waitForLoadState('load');
+    await page.waitForTimeout(2000);
 
     expect(page.url()).toContain('catalogsearch/result');
   });

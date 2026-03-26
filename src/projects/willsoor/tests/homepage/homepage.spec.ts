@@ -29,7 +29,7 @@ test.describe('Willsoor - Homepage @homepage @e2e', () => {
   });
 
   test('should display navigation menu', async ({ page }) => {
-    const nav = page.locator('nav.navigation');
+    const nav = page.locator('.nav-sections, nav.navigation');
     await expect(nav).toBeVisible();
 
     const screenshot = await page.screenshot();
@@ -81,7 +81,7 @@ test.describe('Willsoor - Homepage @homepage @e2e', () => {
       '.nav-toggle, .action.nav-toggle, button[aria-label="Menu"], .hamburger-menu'
     );
     // On mobile, either hamburger or nav should be present
-    const isDesktop = await page.locator('nav.navigation').isVisible().catch(() => false);
+    const isDesktop = await page.locator('.nav-sections, nav.navigation').first().isVisible().catch(() => false);
     const isMobile = await mobileNav.first().isVisible().catch(() => false);
     expect(isDesktop || isMobile).toBeTruthy();
 
