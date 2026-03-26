@@ -86,6 +86,8 @@ function getBaseUrl(project: string): string {
   const urls: Record<string, string> = {
     getprice: process.env.GETPRICE_BASE_URL || 'https://getprice.pl',
     willsoor: process.env.WILLSOOR_BASE_URL || 'https://willsoor.pl',
+    pieceofcase: process.env.PIECEOFCASE_BASE_URL || 'https://pieceofcase.pl',
+    '4szpaki': process.env.SZPAKI_BASE_URL || 'https://4szpaki.pl',
   };
   return urls[project] || 'https://localhost';
 }

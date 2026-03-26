@@ -44,7 +44,7 @@ export const willsoorConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: true,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: '.ec-gtm-cookie-directive button',
+    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all, a:has-text("ZGODA NA WSZYSTKIE")',
   },
 
   api: {

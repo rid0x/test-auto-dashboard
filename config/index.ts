@@ -1,10 +1,14 @@
 import { ProjectConfig, ProjectName } from '../src/core/types/project.types';
 import { getpriceConfig } from './getprice.config';
 import { willsoorConfig } from './willsoor.config';
+import { pieceofcaseConfig } from './pieceofcase.config';
+import { szpakiConfig } from './4szpaki.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
   willsoor: willsoorConfig,
+  pieceofcase: pieceofcaseConfig,
+  '4szpaki': szpakiConfig,
 };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {
@@ -26,4 +30,4 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig };
+export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig };

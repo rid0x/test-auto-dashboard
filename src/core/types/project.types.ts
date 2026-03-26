@@ -39,7 +39,7 @@ export interface ProjectConfig {
   };
 }
 
-export type ProjectName = 'getprice' | 'willsoor';
+export type ProjectName = 'getprice' | 'willsoor' | 'pieceofcase' | '4szpaki';
 
 export interface LocatorStrategy {
   primary: string;
