@@ -88,7 +88,7 @@ function getBaseUrl(project: string): string {
     willsoor: process.env.WILLSOOR_BASE_URL || 'https://willsoor.pl',
     pieceofcase: process.env.PIECEOFCASE_BASE_URL || 'https://pieceofcase.pl',
     '4szpaki': process.env.SZPAKI_BASE_URL || 'https://4szpaki.pl',
-    mocnredo: process.env.MOCNREDO_BASE_URL || 'https://mocnredo.pl',
+    moncredo: process.env.MOCNREDO_BASE_URL || 'https://moncredo.pl',
   };
   return urls[project] || 'https://localhost';
 }

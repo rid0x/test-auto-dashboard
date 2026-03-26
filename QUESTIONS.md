@@ -2,6 +2,11 @@
 
 ## Getprice.pl
 1. **Konfigurator serwerów** — potrzebuję przejść przez konfigurator krok po kroku. Jaka jest ścieżka? (np. wybór generacji → rack/tower → RAM → dysk → koszyk)? Czy mógłbyś podać link do konfiguratora i opisać kroki?
+https://getprice.pl/pl/fujitsu-rx300-s8-konfigurator-fujitsu-primergy-rx300-s8-8x-25.html
+klikasz przejdz do konfiguracji i masz tam 
+
+
+
 2. **Czy konto l.tumiel@auroracreation.com istnieje na getprice?** (logowanie działa, więc chyba tak)
 3. **Newsletter** — gdzie jest formularz newslettera? (stopka? osobna strona?)
 
