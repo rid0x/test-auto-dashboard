@@ -87,9 +87,9 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
   });
 
   test('should display remember me checkbox', async ({ page }) => {
-    // remember_me has dynamic ID, find by name
-    const checkbox = page.locator('input[name="remember_me"]');
-    await expect(checkbox.first()).toBeAttached();
+    // remember_me has dynamic ID, find by name attribute
+    const checkbox = page.locator('input[name="persistent_remember_me"]');
+    await expect(checkbox.first()).toBeVisible();
 
     const screenshot = await page.screenshot();
     await test.info().attach('Remember me checkbox', { body: screenshot, contentType: 'image/png' });
@@ -128,8 +128,8 @@ test.describe('Willsoor - Registration @registration @e2e', () => {
     await submitBtn.first().click();
     await page.waitForTimeout(500);
 
-    // Check that validation errors appear on required fields
-    const errors = page.locator('.mage-error:visible, :invalid');
+    // Willsoor shows .mage-error validation messages
+    const errors = page.locator('.mage-error:visible');
     const count = await errors.count();
     expect(count).toBeGreaterThan(0);
 
