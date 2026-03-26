@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Automation Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1a1d27;
+      --bg-hover: #242836;
+      --border: #2d3148;
+      --text: #e4e6f0;
+      --text-muted: #8b8fa3;
+      --accent: #6c63ff;
+      --accent-hover: #7f78ff;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --blue: #3b82f6;
+      --orange: #f97316;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* --- Header --- */
+    .header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header h1 .icon { font-size: 24px; }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* --- Layout --- */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      margin-bottom: 8px;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      padding: 8px 20px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-item:hover { background: var(--bg-hover); }
+    .sidebar-item.active {
+      background: var(--bg-hover);
+      border-left-color: var(--accent);
+    }
+
+    .sidebar-item .name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .sidebar-item .badge {
+      background: var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .sidebar-item .project-icon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-item .item-left {
+      display: flex;
+      align-items: center;
+    }
+
+    /* --- Main Content --- */
+    .main {
+      padding: 24px 32px;
+      overflow-y: auto;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .main-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .main-header .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* --- Buttons --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--bg-hover); border-color: var(--accent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-success { background: var(--green); border-color: var(--green); color: white; }
+    .btn-danger { background: var(--red); border-color: var(--red); color: white; }
+
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* --- Cards --- */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .card-body { padding: 0; }
+
+    /* --- Stats --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* --- Area cards grid --- */
+    .areas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .area-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s;
+      cursor: pointer;
+    }
+
+    .area-card:hover { border-color: var(--accent); }
+
+    .area-card-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .area-card-header .area-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .area-card-header .area-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-hover);
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+
+    .area-card-body {
+      padding: 0 20px 16px;
+    }
+
+    .area-card-body .test-list {
+      list-style: none;
+    }
+
+    .area-card-body .test-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .area-card-body .test-item:last-child { border-bottom: none; }
+
+    .area-card-body .test-item .test-name {
+      color: var(--text);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+
+    .area-card-body .test-item .test-actions {
+      flex-shrink: 0;
+    }
+
+    .area-icon {
+      font-size: 18px;
+    }
+
+    /* --- Progress bar --- */
+    .progress-container {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: none;
+    }
+
+    .progress-container.active { display: block; }
+
+    .progress-bar-wrapper {
+      background: var(--bg);
+      border-radius: 6px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.3s ease;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+    }
+
+    .progress-bar-fill.has-failures {
+      background: linear-gradient(90deg, var(--accent), var(--red));
+    }
+
+    .progress-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-stats .stat { display: flex; align-items: center; gap: 4px; }
+    .progress-stats .dot-g { color: var(--green); }
+    .progress-stats .dot-r { color: var(--red); }
+    .progress-stats .dot-y { color: var(--yellow); }
+    .progress-stats .dot-h { color: var(--orange); }
+
+    /* --- Terminal output --- */
+    .terminal-wrapper {
+      margin-top: 24px;
+    }
+
+    .terminal {
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .terminal-header .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-header .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-header .dot-red { background: var(--red); }
+    .terminal-header .dot-yellow { background: var(--yellow); }
+    .terminal-header .dot-green { background: var(--green); }
+
+    .terminal-body {
+      padding: 16px;
+      font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #c9d1d9;
+    }
+
+    .terminal-body .line-pass { color: var(--green); }
+    .terminal-body .line-fail { color: var(--red); }
+    .terminal-body .line-skip { color: var(--yellow); }
+    .terminal-body .line-info { color: var(--blue); }
+    .terminal-body .line-heal { color: var(--orange); }
+
+    /* --- Status indicator --- */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-idle { background: var(--text-muted); }
+    .status-running { background: var(--yellow); animation: pulse 1s infinite; }
+    .status-passed { background: var(--green); }
+    .status-failed { background: var(--red); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* --- Run summary bar --- */
+    .run-summary {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg-hover);
+      border-radius: var(--radius-sm);
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .run-summary .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* --- Toggle --- */
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .toggle-switch {
+      width: 36px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .toggle-switch.active { background: var(--accent); }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch.active::after { transform: translateX(16px); }
+
+    /* --- Welcome screen --- */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 60vh;
+      text-align: center;
+    }
+
+    .welcome .big-icon { font-size: 64px; margin-bottom: 16px; }
+    .welcome h2 { font-size: 28px; margin-bottom: 8px; }
+    .welcome p { color: var(--text-muted); font-size: 16px; max-width: 400px; }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    /* --- Scrollbar --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>
+      <span class="icon">&#9881;</span>
+      Test Automation Dashboard
+    </h1>
+    <div class="header-actions">
+      <select id="browser-select" class="btn" style="background:var(--bg-card); cursor:pointer;">
+        <option value="chromium">Chrome</option>
+        <option value="firefox">Firefox</option>
+        <option value="webkit">Safari</option>
+        <option value="all">All browsers</option>
+      </select>
+      <select id="device-select" class="btn" style="background:var(--bg-card); cursor:pointer;">
+        <option value="desktop">Desktop</option>
+        <option value="mobile">Mobile</option>
+        <option value="all">All devices</option>
+      </select>
+      <label class="toggle-label" id="headed-toggle">
+        Headed
+        <div class="toggle-switch" id="headed-switch"></div>
+      </label>
+      <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar">
+      <!-- Dynamically populated -->
+    </nav>
+
+    <div style="display:flex; flex-direction:column; overflow:hidden;">
+      <main class="main" id="main-content" style="flex:1; overflow-y:auto;">
+        <div class="welcome">
+          <div class="big-icon">&#128640;</div>
+          <h2>Wybierz projekt</h2>
+          <p>Kliknij projekt po lewej stronie, aby zobaczyc testy i uruchomic je.</p>
+        </div>
+      </main>
+
+      <!-- PERSISTENT TERMINAL — never re-rendered -->
+      <div id="persistent-terminal" style="padding: 0 32px 24px 32px;">
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="status-dot status-idle" id="run-status-dot"></span>
+              <span id="run-status-text" style="font-size:12px; color:var(--text-muted)">Gotowy</span>
+              <button class="btn btn-sm btn-danger" id="btn-stop" style="display:none" onclick="stopRun()">&#9632; Stop</button>
+              <button class="btn btn-sm" onclick="clearTerminal()">Wyczysc</button>
+            </div>
+          </div>
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+            </div>
+            <div class="progress-stats">
+              <span class="stat" id="progress-text">0 / 0</span>
+              <span class="stat"><span class="dot-g">&#9679;</span> <span id="prog-passed">0</span> passed</span>
+              <span class="stat"><span class="dot-r">&#9679;</span> <span id="prog-failed">0</span> failed</span>
+              <span class="stat"><span class="dot-y">&#9679;</span> <span id="prog-skipped">0</span> skipped</span>
+              <span class="stat" id="prog-heal-stat" style="display:none"><span class="dot-h">&#9679;</span> <span id="prog-healed">0</span> healed</span>
+            </div>
+          </div>
+          <div class="terminal-body" id="terminal-output">Gotowy do uruchomienia testow...\n</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- State ---
+    let projects = [];
+    let activeProject = null;
+    let activeArea = null;
+    let headedMode = false;
+    let ws = null;
+    let currentRunId = null;
+
+    let healCount = 0;
+
+    const AREA_ICONS = {
+      'login': '&#128274;',
+      'registration': '&#128221;',
+      'homepage': '&#127968;',
+      'search': '&#128269;',
+      'cart': '&#128722;',
+      'checkout': '&#128179;',
+      'product-page': '&#128230;',
+      'category': '&#128194;',
+      'api': '&#127760;',
+    };
+
+    const PROJECT_COLORS = {
+      'getprice': '#6c63ff',
+      'willsoor': '#22c55e',
+    };
+
+    // --- WebSocket ---
+    function connectWS() {
+      const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+      ws = new WebSocket(`${protocol}://${location.host}`);
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+
+        if (msg.type === 'run:start') {
+          currentRunId = msg.runId;
+          healCount = 0;
+          appendTerminal(`\n> ${msg.command}\n\n`, 'line-info');
+          updateRunStatus('running');
+          showProgress(true);
+          updateProgress(0, 0, 0, 0, 0);
+        }
+
+        if (msg.type === 'run:progress') {
+          updateProgress(msg.total, msg.done, msg.passed, msg.failed, msg.skipped);
+        }
+
+        if (msg.type === 'run:output') {
+          const data = msg.data;
+          let cls = '';
+          if (data.includes('[AUTO-HEAL]')) { cls = 'line-heal'; healCount++; updateHealCount(healCount); }
+          else if (data.match(/^\s*(ok|✓)\s+\d+/m)) cls = 'line-pass';
+          else if (data.match(/^\s*(x|✗|×)\s+\d+/m)) cls = 'line-fail';
+          else if (data.match(/^\s*-\s+\d+/m)) cls = 'line-skip';
+          else if (data.includes('passed') && data.includes('failed')) cls = 'line-fail';
+          else if (data.includes('passed')) cls = 'line-pass';
+          appendTerminal(data, cls);
+        }
+
+        if (msg.type === 'run:complete') {
+          const status = msg.exitCode === 0 ? 'passed' : 'failed';
+          appendTerminal(
+            `\n${status === 'passed' ? '✅' : '❌'} Run finished with exit code ${msg.exitCode}\n`,
+            status === 'passed' ? 'line-pass' : 'line-fail'
+          );
+
+          // Show report link
+          if (msg.reportUrl) {
+            appendTerminalHTML(`<a href="${msg.reportUrl}" target="_blank" style="color:#6c63ff; text-decoration:underline; font-weight:600;">📊 Otworz raport HTML</a>\n`);
+          }
+
+          // Show screenshots if any (failure screenshots)
+          if (msg.screenshots && msg.screenshots.length > 0) {
+            appendTerminal(`\n📸 Screenshoty (${msg.screenshots.length}):\n`, 'line-info');
+            for (const src of msg.screenshots) {
+              appendTerminalHTML(`<div style="margin:8px 0;"><a href="${src}" target="_blank"><img src="${src}" style="max-width:600px; max-height:300px; border-radius:8px; border:1px solid #2d3148;" /></a></div>`);
+            }
+          }
+
+          updateRunStatus(status);
+          currentRunId = null;
+          if (msg.project) loadLastResults(msg.project);
+        }
+      };
+
+      ws.onclose = () => {
+        setTimeout(connectWS, 2000);
+      };
+    }
+
+    // --- API ---
+    async function loadProjects() {
+      const res = await fetch('/api/projects');
+      projects = await res.json();
+      renderSidebar();
+
+      if (activeProject) {
+        const updated = projects.find(p => p.name === activeProject.name);
+        if (updated) showProject(updated);
+      }
+    }
+
+    async function loadLastResults(projectName) {
+      try {
+        const res = await fetch(`/api/results/${projectName}`);
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch {}
+      return null;
+    }
+
+    // --- Render: Sidebar ---
+    function renderSidebar() {
+      const sb = document.getElementById('sidebar');
+      let html = '<div class="sidebar-section"><div class="sidebar-section-title">Projekty</div>';
+
+      for (const project of projects) {
+        const color = PROJECT_COLORS[project.name] || '#6c63ff';
+        const isActive = activeProject && activeProject.name === project.name;
+
+        html += `
+          <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="showProject(findProject('${project.name}'))">
+            <div class="item-left">
+              <div class="project-icon" style="background:${color}"></div>
+              <span class="name">${project.displayName}</span>
+            </div>
+            <span class="badge">${project.totalTests}</span>
+          </div>`;
+
+        if (isActive) {
+          for (const area of project.areas) {
+            const icon = AREA_ICONS[area.name] || '&#128196;';
+            const isAreaActive = activeArea && activeArea.name === area.name;
+            html += `
+              <div class="sidebar-item ${isAreaActive ? 'active' : ''}"
+                   style="padding-left: 40px; font-size: 13px;"
+                   onclick="event.stopPropagation(); showArea(findProject('${project.name}'), '${area.name}')">
+                <div class="item-left">
+                  <span style="margin-right:6px">${icon}</span>
+                  <span class="name">${area.displayName}</span>
+                </div>
+                <span class="badge">${area.testCount}</span>
+              </div>`;
+          }
+
+          // History link per project
+          html += `
+            <div class="sidebar-item"
+                 style="padding-left: 40px; font-size: 13px; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 10px;"
+                 onclick="event.stopPropagation(); showHistory('${project.name}')">
+              <div class="item-left">
+                <span style="margin-right:6px">&#128203;</span>
+                <span class="name" style="color:var(--text-muted)">Historia runow</span>
+              </div>
+            </div>`;
+        }
+      }
+
+      html += '</div>';
+      sb.innerHTML = html;
+    }
+
+    function findProject(name) {
+      return projects.find(p => p.name === name);
+    }
+
+    // --- Render: Project Overview ---
+    function showProject(project) {
+      activeProject = project;
+      activeArea = null;
+      renderSidebar();
+
+      const main = document.getElementById('main-content');
+
+      let html = `
+        <div class="main-header">
+          <div>
+            <h2>${project.displayName}</h2>
+            <div class="subtitle">${project.totalTests} testow w ${project.areas.length} obszarach</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')">
+              &#9654; Uruchom wszystkie
+            </button>
+            <button class="btn" onclick="runTests('${project.name}', 'e2e')">
+              &#127912; Tylko E2E
+            </button>
+            <button class="btn" onclick="runTests('${project.name}', 'api')">
+              &#127760; Tylko API
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">${project.totalTests}</div>
+            <div class="stat-label">Wszystkie testy</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${project.areas.length}</div>
+            <div class="stat-label">Obszary testowe</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${project.areas.filter(a => a.name !== 'api').length}</div>
+            <div class="stat-label">Obszary E2E</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="last-run-status">-</div>
+            <div class="stat-label">Ostatni run</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 16px; font-size: 18px;">Obszary testowe</h3>
+        <div class="areas-grid">`;
+
+      for (const area of project.areas) {
+        const icon = AREA_ICONS[area.name] || '&#128196;';
+        html += `
+          <div class="area-card" onclick="showArea(findProject('${project.name}'), '${area.name}')">
+            <div class="area-card-header">
+              <div class="area-title">
+                <span class="area-icon">${icon}</span>
+                ${area.displayName}
+              </div>
+              <span class="area-count">${area.testCount} testow</span>
+            </div>
+            <div class="area-card-body">
+              <ul class="test-list">`;
+
+        for (const t of area.tests.slice(0, 4)) {
+          html += `
+                <li class="test-item">
+                  <span class="test-name">${escapeHtml(t.name)}</span>
+                </li>`;
+        }
+
+        if (area.tests.length > 4) {
+          html += `
+                <li class="test-item">
+                  <span class="test-name" style="color:var(--text-muted)">... i ${area.tests.length - 4} wiecej</span>
+                </li>`;
+        }
+
+        html += `
+              </ul>
+            </div>
+          </div>`;
+      }
+
+      html += `</div>`;
+      main.innerHTML = html;
+    }
+
+    // --- Render: Area Detail ---
+    function showArea(project, areaName) {
+      activeProject = project;
+      const area = project.areas.find(a => a.name === areaName);
+      if (!area) return;
+      activeArea = area;
+      renderSidebar();
+
+      const main = document.getElementById('main-content');
+      const icon = AREA_ICONS[area.name] || '&#128196;';
+
+      let html = `
+        <div class="main-header">
+          <div>
+            <h2>${icon} ${area.displayName}</h2>
+            <div class="subtitle">${project.displayName} &bull; ${area.testCount} testow &bull; ${area.specFile}</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="runTests('${project.name}', '${area.name}')">
+              &#9654; Uruchom obszar
+            </button>
+            <button class="btn" onclick="showProject(findProject('${project.name}'))">
+              &#8592; Wstecz
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Testy (${area.testCount})</h3>
+            <span style="font-size:12px; color:var(--text-muted)">${area.specFile}</span>
+          </div>
+          <div class="card-body">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                  <th style="padding:12px 20px; font-size:12px; color:var(--text-muted); font-weight:600;">#</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Nazwa testu</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Linia</th>
+                  <th style="padding:12px 20px; font-size:12px; color:var(--text-muted); font-weight:600; text-align:right;">Akcja</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+      area.tests.forEach((t, i) => {
+        const hasWarning = t.warning;
+        const rowStyle = hasWarning
+          ? 'border-bottom:1px solid var(--border); background: rgba(234,179,8,0.05);'
+          : 'border-bottom:1px solid var(--border);';
+        const warningIcon = hasWarning
+          ? `<span title="${escapeHtml(t.warning)}" style="cursor:help; margin-left:6px; color:var(--yellow); font-size:14px;">&#9888;</span>`
+          : '';
+
+        html += `
+                <tr style="${rowStyle}">
+                  <td style="padding:12px 20px; color:var(--text-muted); font-size:13px;">${i + 1}</td>
+                  <td style="padding:12px 8px; font-size:13px;">${escapeHtml(t.name)}${warningIcon}</td>
+                  <td style="padding:12px 8px; font-size:13px; color:var(--text-muted);">:${t.line}</td>
+                  <td style="padding:12px 20px; text-align:right;">
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); runTests('${project.name}', '${area.name}', '${escapeAttr(t.name)}')">
+                      &#9654; Uruchom
+                    </button>
+                  </td>
+                </tr>`;
+      });
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+
+      main.innerHTML = html;
+    }
+
+    // --- Terminal (persistent — lives outside main-content) ---
+    function appendTerminal(text, cls) {
+      const term = document.getElementById('terminal-output');
+      if (!term) return;
+
+      if (cls) {
+        const span = document.createElement('span');
+        span.className = cls;
+        span.textContent = text;
+        term.appendChild(span);
+      } else {
+        term.appendChild(document.createTextNode(text));
+      }
+
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function appendTerminalHTML(html) {
+      const term = document.getElementById('terminal-output');
+      if (!term) return;
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      term.appendChild(div);
+
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearTerminal() {
+      const term = document.getElementById('terminal-output');
+      if (term) term.innerHTML = '';
+    }
+
+    function updateRunStatus(status) {
+      const dot = document.getElementById('run-status-dot');
+      const text = document.getElementById('run-status-text');
+      const stopBtn = document.getElementById('btn-stop');
+      if (!dot) return;
+
+      dot.className = 'status-dot';
+      switch (status) {
+        case 'running':
+          dot.classList.add('status-running');
+          text.textContent = 'Uruchomiony...';
+          if (stopBtn) stopBtn.style.display = 'inline-flex';
+          break;
+        case 'passed':
+          dot.classList.add('status-passed');
+          text.textContent = 'Przeszedl';
+          if (stopBtn) stopBtn.style.display = 'none';
+          break;
+        case 'failed':
+          dot.classList.add('status-failed');
+          text.textContent = 'Nie powiodl sie';
+          if (stopBtn) stopBtn.style.display = 'none';
+          break;
+        default:
+          dot.classList.add('status-idle');
+          text.textContent = 'Gotowy';
+          if (stopBtn) stopBtn.style.display = 'none';
+      }
+    }
+
+    // --- Run / Stop ---
+    function runTests(project, area, testName) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('WebSocket nie polaczony. Odswierz strone.');
+        return;
+      }
+
+      const browser = document.getElementById('browser-select').value;
+      const device = document.getElementById('device-select').value;
+
+      clearTerminal();
+      ws.send(JSON.stringify({
+        type: 'run',
+        project,
+        area: area === 'all' ? null : area,
+        testName: testName || null,
+        headed: headedMode,
+        browser,
+        device,
+      }));
+    }
+
+    function stopRun() {
+      if (ws && currentRunId) {
+        ws.send(JSON.stringify({ type: 'stop', runId: currentRunId }));
+      }
+    }
+
+    // --- Headed toggle ---
+    document.getElementById('headed-switch').addEventListener('click', function() {
+      headedMode = !headedMode;
+      this.classList.toggle('active', headedMode);
+    });
+
+    // --- Utils ---
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function escapeAttr(text) {
+      return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    // --- Progress bar ---
+    function showProgress(visible) {
+      const el = document.getElementById('progress-container');
+      if (el) el.classList.toggle('active', visible);
+    }
+
+    function updateProgress(total, done, passed, failed, skipped) {
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+        bar.style.width = pct + '%';
+        bar.className = 'progress-bar-fill' + (failed > 0 ? ' has-failures' : '');
+      }
+      const txt = document.getElementById('progress-text');
+      if (txt) txt.textContent = `${done} / ${total} (${pct}%)`;
+      const pp = document.getElementById('prog-passed');
+      if (pp) pp.textContent = passed;
+      const pf = document.getElementById('prog-failed');
+      if (pf) pf.textContent = failed;
+      const ps = document.getElementById('prog-skipped');
+      if (ps) ps.textContent = skipped;
+    }
+
+    function updateHealCount(count) {
+      const el = document.getElementById('prog-heal-stat');
+      if (el && count > 0) el.style.display = 'flex';
+      const num = document.getElementById('prog-healed');
+      if (num) num.textContent = count;
+    }
+
+    // --- History ---
+    async function showHistory(projectName) {
+      activeProject = projects.find(p => p.name === projectName) || activeProject;
+      activeArea = null;
+      renderSidebar();
+
+      const res = await fetch(`/api/history/${projectName}`);
+      const history = await res.json();
+
+      const main = document.getElementById('main-content');
+      let html = `
+        <div class="main-header">
+          <div>
+            <h2>Historia runow</h2>
+            <div class="subtitle">${activeProject?.displayName || projectName} &bull; ${history.length} runow</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn" onclick="showProject(findProject('${projectName}'))">&#8592; Wstecz</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Ostatnie runy</h3>
+          </div>
+          <div class="card-body">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:600;">Data</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Obszar</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Env</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Wynik</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Czas</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Healing</th>
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:600; text-align:right;">Raport</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+      if (history.length === 0) {
+        html += `<tr><td colspan="7" style="padding:24px 16px; color:var(--text-muted); text-align:center;">Brak historii runow. Uruchom testy zeby zobaczyc wyniki.</td></tr>`;
+      }
+
+      for (const run of history) {
+        const date = new Date(run.date);
+        const dateStr = date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+        const areaLabel = run.testName ? run.testName.substring(0, 40) : (run.area || 'all');
+        const envLabel = `${run.browser || 'chrome'} / ${run.device || 'desktop'}`;
+        const duration = run.duration ? (run.duration / 1000).toFixed(1) + 's' : '-';
+        const statusColor = run.failed > 0 ? 'var(--red)' : (run.skipped > 0 && run.passed === 0 ? 'var(--yellow)' : 'var(--green)');
+        const statusIcon = run.failed > 0 ? '&#10060;' : (run.passed > 0 ? '&#9989;' : '&#9888;');
+        const healCount = run.healingEvents?.length || 0;
+
+        html += `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:10px 16px; font-size:13px; color:var(--text-muted);">${dateStr}</td>
+                  <td style="padding:10px 8px; font-size:13px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(areaLabel)}">${escapeHtml(areaLabel)}</td>
+                  <td style="padding:10px 8px; font-size:12px; color:var(--text-muted);">${envLabel}</td>
+                  <td style="padding:10px 8px; font-size:13px;">
+                    <span style="color:${statusColor}">${statusIcon}</span>
+                    <span style="color:var(--green)">${run.passed || 0}P</span>
+                    <span style="color:var(--red)">${run.failed || 0}F</span>
+                    <span style="color:var(--yellow)">${run.skipped || 0}S</span>
+                  </td>
+                  <td style="padding:10px 8px; font-size:13px; color:var(--text-muted);">${duration}</td>
+                  <td style="padding:10px 8px; font-size:13px; color:${healCount > 0 ? 'var(--orange)' : 'var(--text-muted)'};">${healCount > 0 ? healCount + ' healed' : '-'}</td>
+                  <td style="padding:10px 16px; text-align:right;">
+                    ${run.reportUrl ? `<a href="${run.reportUrl}" target="_blank" class="btn btn-sm">Raport</a>` : '-'}
+                  </td>
+                </tr>`;
+      }
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+
+      main.innerHTML = html;
+    }
+
+    // --- Init ---
+    connectWS();
+    loadProjects();
+  </script>
+</body>
+</html>

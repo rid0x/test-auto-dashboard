@@ -1,0 +1,29 @@
+import { ProjectConfig, ProjectName } from '../src/core/types/project.types';
+import { getpriceConfig } from './getprice.config';
+import { willsoorConfig } from './willsoor.config';
+
+const projectConfigs: Record<ProjectName, ProjectConfig> = {
+  getprice: getpriceConfig,
+  willsoor: willsoorConfig,
+};
+
+export function getProjectConfig(name: ProjectName): ProjectConfig {
+  const config = projectConfigs[name];
+  if (!config) {
+    throw new Error(`Unknown project: ${name}. Available: ${Object.keys(projectConfigs).join(', ')}`);
+  }
+  return config;
+}
+
+export function getActiveProject(): ProjectName {
+  const project = process.env.PROJECT as ProjectName;
+  if (!project || !projectConfigs[project]) {
+    throw new Error(
+      `PROJECT env var must be set to one of: ${Object.keys(projectConfigs).join(', ')}. ` +
+      `Got: "${project}"`
+    );
+  }
+  return project;
+}
+
+export { getpriceConfig, willsoorConfig };
