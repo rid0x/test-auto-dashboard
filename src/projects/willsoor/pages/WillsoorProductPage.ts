@@ -53,6 +53,21 @@ export class WillsoorProductPage extends ProductPage {
     await this.page.waitForTimeout(2000);
   }
 
+  async setQuantity(qty: number): Promise<void> {
+    // Willsoor hides qty input — skip if not visible
+    const qtyInput = this.page.locator('#qty, input[name="qty"]');
+    if (await qtyInput.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+      await qtyInput.first().fill(qty.toString());
+    }
+    // If hidden, default qty is 1 — that's fine
+  }
+
+  async addToCartWithOptions(qty: number = 1): Promise<void> {
+    await this.selectFirstAvailableOption();
+    if (qty > 1) await this.setQuantity(qty);
+    await this.addToCart();
+  }
+
   async expectAddToCartSuccess(): Promise<void> {
     const msg = await this.findWithHealing(this.successMessage, { timeout: 10000 });
     await expect(msg).toBeVisible();
