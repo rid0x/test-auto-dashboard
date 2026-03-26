@@ -1,5 +1,12 @@
 import { test, expect } from '../../fixture';
 
+// Helper: add product to cart and wait for success using smart waits
+async function addProductToCart(page: any) {
+  await page.locator('#product-addtocart-button').click();
+  // Wait for success message (smart wait — no hard timeout)
+  await expect(page.locator('.message.success').first()).toBeVisible({ timeout: 10000 });
+}
+
 test.describe('Getprice - Cart @cart @e2e', () => {
   test('should display empty cart', async ({ cartPage, page }) => {
     await cartPage.goto();
@@ -10,21 +17,11 @@ test.describe('Getprice - Cart @cart @e2e', () => {
   });
 
   test('should add product to cart from product page', async ({ productPage, cartPage, page }) => {
-    await test.step('Go to product and add to cart', async () => {
-      await productPage.gotoDefaultProduct();
-      await page.locator('#product-addtocart-button').click();
-      await page.waitForTimeout(3000);
-    });
+    await productPage.gotoDefaultProduct();
+    await addProductToCart(page);
 
-    await test.step('Verify success message', async () => {
-      const msg = page.locator('.message.success, .message:has-text("Dodałeś")');
-      await expect(msg.first()).toBeVisible({ timeout: 10000 });
-    });
-
-    await test.step('Verify cart has item', async () => {
-      await cartPage.goto();
-      await cartPage.expectCartNotEmpty();
-    });
+    await cartPage.goto();
+    await cartPage.expectCartNotEmpty();
 
     const screenshot = await page.screenshot();
     await test.info().attach('Cart with product', { body: screenshot, contentType: 'image/png' });
@@ -32,17 +29,15 @@ test.describe('Getprice - Cart @cart @e2e', () => {
 
   test('should display cart item details', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
     await cartPage.goto();
-    await page.waitForTimeout(2000);
 
-    await test.step('Verify product name in cart', async () => {
+    await test.step('Verify product name', async () => {
       await expect(page.locator('.product-item-name').first()).toBeVisible({ timeout: 10000 });
     });
 
-    await test.step('Verify price in cart', async () => {
+    await test.step('Verify price', async () => {
       await expect(page.locator('.cart-price .price').first()).toBeVisible({ timeout: 10000 });
     });
 
@@ -50,8 +45,8 @@ test.describe('Getprice - Cart @cart @e2e', () => {
       await expect(page.locator('input.qty, input[name*="qty"]').first()).toBeVisible({ timeout: 10000 });
     });
 
-    await test.step('Verify edit/remove/update buttons', async () => {
-      await expect(page.locator('.action-delete, :has-text("Usuń")').first()).toBeVisible();
+    await test.step('Verify remove button', async () => {
+      await expect(page.locator('.action-delete').first()).toBeVisible();
     });
 
     const screenshot = await page.screenshot();
@@ -60,24 +55,20 @@ test.describe('Getprice - Cart @cart @e2e', () => {
 
   test('should update quantity in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
     await cartPage.goto();
 
-    await test.step('Change quantity to 3', async () => {
+    await test.step('Change quantity', async () => {
       const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
       await qtyInput.fill('3');
 
       const updateBtn = page.locator('.action.update, button:has-text("Aktualizuj")').first();
       await updateBtn.click();
       await page.waitForLoadState('load');
-      await page.waitForTimeout(2000);
     });
 
-    await test.step('Verify cart still has items', async () => {
-      await cartPage.expectCartNotEmpty();
-    });
+    await cartPage.expectCartNotEmpty();
 
     const screenshot = await page.screenshot();
     await test.info().attach('Updated quantity', { body: screenshot, contentType: 'image/png' });
@@ -85,38 +76,29 @@ test.describe('Getprice - Cart @cart @e2e', () => {
 
   test('should remove item from cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
     await cartPage.goto();
 
     await test.step('Remove item', async () => {
-      const deleteBtn = page.locator('.action-delete, .action.action-delete').first();
-      await deleteBtn.click();
+      await page.locator('.action-delete').first().click();
       await page.waitForLoadState('load');
-      await page.waitForTimeout(2000);
     });
 
-    await test.step('Verify cart is empty', async () => {
-      await cartPage.expectCartEmpty();
-    });
+    await cartPage.expectCartEmpty();
   });
 
   test('should display cart subtotal', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
     await cartPage.goto();
-
-    const summary = page.locator('.cart-summary');
-    await expect(summary.first()).toBeVisible();
+    await expect(page.locator('.cart-summary').first()).toBeVisible();
   });
 
   test('should have proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
     await cartPage.goto();
 
@@ -130,11 +112,9 @@ test.describe('Getprice - Cart @cart @e2e', () => {
 
   test('should show mini cart after adding product', async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await page.locator('#product-addtocart-button').click();
-    await page.waitForTimeout(3000);
+    await addProductToCart(page);
 
-    const cartCount = page.locator('#menu-cart-icon');
-    const text = await cartCount.textContent();
-    expect(Number(text?.trim())).toBeGreaterThan(0);
+    // Wait for cart counter to update
+    await expect(page.locator('#menu-cart-icon')).toContainText(/[1-9]/, { timeout: 10000 });
   });
 });
