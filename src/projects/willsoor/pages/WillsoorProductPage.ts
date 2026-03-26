@@ -3,9 +3,6 @@ import { ProductPage } from '../../../core/pages/ProductPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
 export class WillsoorProductPage extends ProductPage {
-  // Willsoor uses SELECT dropdown for size, not swatch tiles
-  // Qty input is hidden by default
-
   protected get addToCartButton(): HealableLocator {
     return healable('Willsoor add to cart',
       '#product-addtocart-button',
@@ -14,22 +11,39 @@ export class WillsoorProductPage extends ProductPage {
     );
   }
 
+  protected get successMessage(): HealableLocator {
+    return healable('Add to cart success',
+      '.message-success',
+      '[data-ui-id="message-success"]',
+      '.messages .message-success'
+    );
+  }
+
+  /**
+   * Select first AVAILABLE size option.
+   * Willsoor marks unavailable sizes with "Powiadom o dostępności".
+   * After selecting an unavailable size, the add-to-cart button disappears.
+   */
   async selectFirstAvailableOption(): Promise<void> {
-    // Willsoor uses <select> for size, not swatch tiles
     const sizeSelect = this.page.locator('select.super-attribute-select');
     const count = await sizeSelect.count();
-    if (count > 0) {
-      // Select first non-empty option
-      const options = sizeSelect.first().locator('option:not([value=""])');
-      const optCount = await options.count();
-      if (optCount > 0) {
-        const value = await options.first().getAttribute('value');
-        if (value) {
-          await sizeSelect.first().selectOption(value);
-          await this.page.waitForTimeout(500);
-        }
+    if (count === 0) return;
+
+    const options = await sizeSelect.first().locator('option').allTextContents();
+
+    // Find first available option (not empty, not "Powiadom")
+    for (let i = 0; i < options.length; i++) {
+      const text = options[i].trim();
+      if (text.length > 0 && !text.includes('Rozmiar') && !text.includes('Powiadom')) {
+        await sizeSelect.first().selectOption({ index: i });
+        await this.page.waitForTimeout(1000);
+        return;
       }
     }
+
+    // If no available option found, try selecting the first non-empty one anyway
+    await sizeSelect.first().selectOption({ index: 1 });
+    await this.page.waitForTimeout(1000);
   }
 
   async addToCart(): Promise<void> {
@@ -40,7 +54,7 @@ export class WillsoorProductPage extends ProductPage {
   }
 
   async expectAddToCartSuccess(): Promise<void> {
-    const msg = this.page.locator('.message-success, .message.success, [data-ui-id="message-success"]');
-    await expect(msg.first()).toBeVisible({ timeout: 15000 });
+    const msg = await this.findWithHealing(this.successMessage, { timeout: 10000 });
+    await expect(msg).toBeVisible();
   }
 }
