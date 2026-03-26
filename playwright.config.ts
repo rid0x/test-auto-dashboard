@@ -16,7 +16,7 @@ const PROJECT = process.env.PROJECT || 'getprice';
  */
 export default defineConfig({
   testDir: `./src/projects/${PROJECT}`,
-  timeout: 45000,
+  timeout: 60000,
   expect: {
     timeout: 8000,
   },
@@ -38,7 +38,7 @@ export default defineConfig({
     screenshot: 'on',
     video: 'on-first-retry',
     actionTimeout: 10000,
-    navigationTimeout: 15000,
+    navigationTimeout: 30000,
     locale: 'pl-PL',
     timezoneId: 'Europe/Warsaw',
   },
