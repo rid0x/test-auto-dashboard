@@ -24,7 +24,7 @@ export const szpakiConfig: ProjectConfig = {
 
   search: {
     validQuery: 'pasta',
-    invalidQuery: 'xyznonexistent99999',
+    invalidQuery: 'qwertyasdfghzxcvbn99999',
     expectedResultMinCount: 1,
   },
 
