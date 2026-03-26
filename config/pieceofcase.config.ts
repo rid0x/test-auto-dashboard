@@ -29,13 +29,13 @@ export const pieceofcaseConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/sample-product.html',
-    name: 'TBD',
+    url: '/pl/bella-etui-szklane89a',
+    name: 'Bella etui szklane',
   },
 
   category: {
-    url: '/TBD',
-    name: 'TBD',
+    url: '/pl/rodzaj-etui',
+    name: 'Rodzaj etui',
     expectedMinProducts: 5,
   },
 
@@ -44,7 +44,7 @@ export const pieceofcaseConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: false,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: undefined,
+    cookieConsentSelector: '.__pb-cookie_button_accept, button:has-text("Akceptuję wszystkie")',
   },
 
   api: {

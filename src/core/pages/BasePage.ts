@@ -10,7 +10,9 @@ export abstract class BasePage {
   ) {}
 
   async navigate(path: string = ''): Promise<void> {
-    await this.page.goto(`${this.config.baseUrl}${path}`, { waitUntil: 'load' });
+    await this.page.goto(`${this.config.baseUrl}${path}`, { waitUntil: 'domcontentloaded' });
+    // Wait for JS to render dynamic elements (selects, swatches, etc.)
+    await this.page.waitForTimeout(1500);
     if (this.config.features.hasCookieConsent) {
       await dismissCookiesIfPresent(this.page, this.config.features.cookieConsentSelector);
     }
