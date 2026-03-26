@@ -35,38 +35,36 @@ export class GetpriceProductPage extends ProductPage {
     );
   }
 
-  protected get successMessage(): HealableLocator {
-    return healable('Add to cart success',
-      '.message.success',
-      '[ui-id="message-success"]',
-      '.messages .message.success'
-    );
-  }
-
-  protected get miniCartCount(): HealableLocator {
-    return healable('Mini cart counter',
-      '#menu-cart-icon',
-      'button[title="Koszyk"]'
-    );
-  }
-
+  /**
+   * Add to cart with waitForResponse — waits for actual server response.
+   */
   async addToCart(): Promise<void> {
     const btn = await this.findWithHealing(this.addToCartButton);
+
+    const responsePromise = this.page.waitForResponse(
+      resp => resp.url().includes('/checkout/cart/add') || resp.url().includes('/cart/add'),
+      { timeout: 15000 }
+    ).catch(() => null);
+
     await btn.click();
-    // Getprice uses AJAX for add to cart — wait for response
-    await this.page.waitForLoadState('networkidle').catch(() => {});
+
+    await Promise.race([
+      responsePromise,
+      this.page.waitForLoadState('networkidle').catch(() => {}),
+    ]);
   }
 
+  /**
+   * Verify add to cart using expect().toPass() — intelligent retry.
+   */
   async expectAddToCartSuccess(): Promise<void> {
-    // Wait for either success message or cart counter update
-    try {
-      // Getprice shows ".message.success" with "Dodałeś ... do koszyka"
-      const msg = this.page.locator('.message.success:visible, .message:has-text("Dodałeś")');
-      await expect(msg.first()).toBeVisible({ timeout: 10000 });
-    } catch {
-      // Fallback: check cart counter shows > 0
-      const cartText = await this.page.locator('#menu-cart-icon').textContent();
-      expect(Number(cartText?.trim())).toBeGreaterThan(0);
-    }
+    await expect(async () => {
+      const msgVisible = await this.page.locator('.message.success, .message:has-text("Dodałeś")').first().isVisible().catch(() => false);
+      const cartCount = await this.page.locator('#menu-cart-icon').textContent().then(t => Number(t?.trim()) > 0).catch(() => false);
+      expect(msgVisible || cartCount).toBeTruthy();
+    }).toPass({
+      intervals: [500, 1000, 2000],
+      timeout: 10000,
+    });
   }
 }

@@ -27,13 +27,16 @@ export class WillsoorCartPage extends CartPage {
     );
   }
 
-  // Willsoor doesn't have a separate update cart button — qty changes auto-update
   async updateQuantity(index: number, qty: number): Promise<void> {
     const inputs = this.page.locator('input.qty, input[name*="qty"]');
     await inputs.nth(index).fill(qty.toString());
-    // Willsoor auto-updates — just wait
     await inputs.nth(index).press('Tab');
-    await this.page.waitForLoadState('networkidle').catch(() => {});
+
+    // Wait for AJAX update response
+    await this.page.waitForResponse(
+      resp => resp.url().includes('/cart/') && resp.status() === 200,
+      { timeout: 15000 }
+    ).catch(() => {});
     await this.page.waitForLoadState('load');
   }
 
@@ -41,10 +44,14 @@ export class WillsoorCartPage extends CartPage {
     const btn = await this.findWithHealing(this.removeItemButton);
     await btn.click();
 
-    // Willsoor shows confirm modal: "Czy na pewno chcesz usunąć ten produkt?"
+    // Wait for confirm modal
     const confirmBtn = this.page.locator('button.action-primary.action-accept, button.action-accept');
     await confirmBtn.first().waitFor({ state: 'visible', timeout: 5000 });
     await confirmBtn.first().click();
+
+    // Wait for page to reload after delete
     await this.page.waitForLoadState('load');
+    // Verify cart updated
+    await this.page.locator('.cart-empty, #shopping-cart-table').first().waitFor({ state: 'visible', timeout: 10000 });
   }
 }

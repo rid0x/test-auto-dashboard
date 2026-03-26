@@ -12,11 +12,10 @@ export class WillsoorProductPage extends ProductPage {
   }
 
   /**
-   * Select first available size using JS (Playwright selectOption doesn't trigger Magento/KO).
+   * Select first available size using JS.
    * Waits for select to be present in DOM before attempting.
    */
   async selectFirstAvailableOption(): Promise<void> {
-    // Wait for select to appear in DOM (no hard timeout)
     const sizeSelect = this.page.locator('select.super-attribute-select');
     try {
       await sizeSelect.first().waitFor({ state: 'attached', timeout: 10000 });
@@ -40,11 +39,26 @@ export class WillsoorProductPage extends ProductPage {
     });
   }
 
+  /**
+   * Add to cart using form.submit() + waitForResponse.
+   * Waits for the actual server response instead of guessing timing.
+   */
   async addToCart(): Promise<void> {
-    // Submit form directly — Playwright selectOption doesn't trigger Magento/KO
     const form = this.page.locator('#product_addtocart_form');
+
+    // Wait for the cart add response from server
+    const responsePromise = this.page.waitForResponse(
+      resp => resp.url().includes('/checkout/cart/add') || resp.url().includes('/cart/add'),
+      { timeout: 15000 }
+    ).catch(() => null);
+
     await form.evaluate(f => (f as HTMLFormElement).submit());
-    await this.page.waitForLoadState('load');
+
+    // Wait for server response OR page load — whichever comes first
+    await Promise.race([
+      responsePromise,
+      this.page.waitForLoadState('load'),
+    ]);
   }
 
   async setQuantity(qty: number): Promise<void> {
@@ -61,16 +75,18 @@ export class WillsoorProductPage extends ProductPage {
     await this.addToCart();
   }
 
+  /**
+   * Verify add to cart succeeded using expect().toPass() for intelligent retry.
+   */
   async expectAddToCartSuccess(): Promise<void> {
-    // Use web-first assertion with retry — no hard waits
-    const msg = this.page.locator('.message-success');
-    try {
-      await expect(msg.first()).toBeVisible({ timeout: 5000 });
-      return;
-    } catch {
-      // Fallback: check cart has items
-      await this.page.goto(`${this.config.baseUrl}/checkout/cart/`);
-      await expect(this.page.locator('.cart.item, #shopping-cart-table tbody tr').first()).toBeVisible({ timeout: 10000 });
-    }
+    await expect(async () => {
+      const msgVisible = await this.page.locator('.message-success').first().isVisible().catch(() => false);
+      const cartHasItems = await this.page.locator('.counter-number').first().textContent()
+        .then(t => Number(t?.trim()) > 0).catch(() => false);
+      expect(msgVisible || cartHasItems).toBeTruthy();
+    }).toPass({
+      intervals: [500, 1000, 2000],
+      timeout: 10000,
+    });
   }
 }
