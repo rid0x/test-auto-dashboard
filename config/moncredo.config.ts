@@ -29,13 +29,13 @@ export const moncredoConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/terre-d-hermes-perfumy.html',
-    name: 'Terre d Hermes',
+    url: '/arkano-delle-stelle.html',
+    name: 'Arkano Delle Stelle',
   },
 
   category: {
-    url: '/perfumy.html',
-    name: 'Perfumy',
+    url: '/perfumy/dla-niej.html',
+    name: 'Dla niej',
     expectedMinProducts: 5,
   },
 

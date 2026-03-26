@@ -29,8 +29,8 @@ export const szpakiConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/naturalne-mydla/p/konopne-savon-noir',
-    name: 'Konopne Savon Noir',
+    url: '/mydla-w-kostce/p/mydlo-mis',
+    name: 'Mydło Miś',
   },
 
   category: {

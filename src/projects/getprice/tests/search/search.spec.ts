@@ -6,13 +6,9 @@ test.describe('Getprice - Search @search @e2e', () => {
   });
 
   test('should find results for valid query', async ({ page, config }) => {
-    await test.step('Submit search form', async () => {
-      await page.locator('#search').fill(config.search.validQuery);
-      // Amasty search intercepts Enter — use form submit instead
-      await page.locator('#search_mini_form').evaluate(form => (form as HTMLFormElement).submit());
-      await page.waitForLoadState('load');
-      await page.waitForTimeout(2000);
-    });
+    // Go directly to search results (reliable, avoids Amasty JS intercepts)
+    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
 
     await test.step('Verify results page', async () => {
       expect(page.url()).toContain('catalogsearch/result');

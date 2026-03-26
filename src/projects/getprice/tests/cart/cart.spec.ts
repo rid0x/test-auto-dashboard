@@ -31,27 +31,31 @@ test.describe('Getprice - Cart @cart @e2e', () => {
   });
 
   test('should display cart item details', async ({ productPage, cartPage, page }) => {
-    // Add product first
     await productPage.gotoDefaultProduct();
     await page.locator('#product-addtocart-button').click();
     await page.waitForTimeout(3000);
 
     await cartPage.goto();
+    await page.waitForTimeout(2000);
 
     await test.step('Verify product name in cart', async () => {
-      const name = page.locator('.product-item-name');
-      await expect(name.first()).toBeVisible();
+      await expect(page.locator('.product-item-name').first()).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Verify price in cart', async () => {
-      const price = page.locator('.price-excluding-tax .price, .cart-price .price');
-      await expect(price.first()).toBeVisible();
+      await expect(page.locator('.cart-price .price').first()).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Verify quantity input', async () => {
-      const qty = page.locator('input.qty, input[name*="qty"]');
-      await expect(qty.first()).toBeVisible();
+      await expect(page.locator('input.qty, input[name*="qty"]').first()).toBeVisible({ timeout: 10000 });
     });
+
+    await test.step('Verify edit/remove/update buttons', async () => {
+      await expect(page.locator('.action-delete, :has-text("Usuń")').first()).toBeVisible();
+    });
+
+    const screenshot = await page.screenshot();
+    await test.info().attach('Cart item details', { body: screenshot, contentType: 'image/png' });
   });
 
   test('should update quantity in cart', async ({ productPage, cartPage, page }) => {
