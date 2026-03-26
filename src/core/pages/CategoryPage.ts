@@ -151,7 +151,8 @@ export abstract class CategoryPage extends BasePage {
     // Open first filter accordion
     const firstTitle = this.page.locator('.filter-options-title:visible').first();
     await firstTitle.click();
-    await this.page.waitForTimeout(500);
+    // Wait for filter accordion content to expand
+    await this.page.locator('.filter-options-content:visible').first().waitFor({ state: 'visible', timeout: 5000 });
 
     // Click first option (link or checkbox) within the opened filter
     const firstOption = this.page.locator('.filter-options-content:visible a, .filter-options-content:visible .item a').first();

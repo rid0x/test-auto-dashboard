@@ -26,7 +26,8 @@ export class SzpakiProductPage extends ProductPage {
   async addToCart(): Promise<void> {
     const btn = this.page.locator('button.action.tocart.primary').first();
     await btn.click();
-    await this.page.waitForTimeout(2000);
+    // Wait for AJAX add-to-cart response
+    await this.page.waitForLoadState('networkidle').catch(() => {});
   }
 
   async expectAddToCartSuccess(): Promise<void> {
@@ -36,7 +37,7 @@ export class SzpakiProductPage extends ProductPage {
 
     // Fallback: check cart
     await this.page.goto(`${this.config.baseUrl}/checkout/cart/`, { waitUntil: 'domcontentloaded' });
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForLoadState('load');
     const items = await this.page.locator('.cart.item, #shopping-cart-table tbody tr').count();
     expect(items).toBeGreaterThan(0);
   }

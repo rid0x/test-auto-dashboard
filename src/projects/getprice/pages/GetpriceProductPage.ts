@@ -54,7 +54,7 @@ export class GetpriceProductPage extends ProductPage {
     const btn = await this.findWithHealing(this.addToCartButton);
     await btn.click();
     // Getprice uses AJAX for add to cart — wait for response
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForLoadState('networkidle').catch(() => {});
   }
 
   async expectAddToCartSuccess(): Promise<void> {

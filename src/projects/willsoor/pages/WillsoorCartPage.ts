@@ -33,7 +33,7 @@ export class WillsoorCartPage extends CartPage {
     await inputs.nth(index).fill(qty.toString());
     // Willsoor auto-updates — just wait
     await inputs.nth(index).press('Tab');
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForLoadState('networkidle').catch(() => {});
     await this.page.waitForLoadState('load');
   }
 

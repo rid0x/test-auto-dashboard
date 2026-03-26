@@ -15,15 +15,15 @@ export class GetpriceCheckoutPage extends CheckoutPage {
 
   async goto(): Promise<void> {
     await this.navigate('/checkout/');
-    // Wait for checkout JS to load
-    await this.page.waitForTimeout(3000);
+    // Wait for checkout JS to render
+    await this.page.waitForLoadState('networkidle').catch(() => {});
   }
 
   async continueAsGuest(): Promise<void> {
     try {
       const btn = await this.findWithHealing(this.guestContinueButton, { timeout: 5000 });
       await btn.click();
-      await this.page.waitForTimeout(3000);
+      await this.page.waitForLoadState('networkidle').catch(() => {});
     } catch {
       // Maybe already past the login step
     }

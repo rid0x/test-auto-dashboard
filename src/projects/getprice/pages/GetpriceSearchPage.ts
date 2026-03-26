@@ -20,6 +20,6 @@ export class GetpriceSearchPage extends SearchPage {
     await this.page.keyboard.press('Enter');
     // Getprice may redirect — wait for navigation
     await this.page.waitForLoadState('load');
-    await this.page.waitForTimeout(2000);
+    await this.page.locator('.product-item').first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
   }
 }

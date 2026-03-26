@@ -139,8 +139,11 @@ export abstract class CheckoutPage extends BasePage {
     if (data.email) {
       const emailEl = await this.findWithHealing(this.emailInput);
       await emailEl.fill(data.email);
-      // Wait for Magento's email check
-      await this.page.waitForTimeout(2000);
+      // Wait for Magento's email validation AJAX check to complete
+      await this.page.waitForResponse(
+        resp => resp.url().includes('customer') && resp.status() === 200
+      ).catch(() => {});
+      await this.page.waitForLoadState('networkidle').catch(() => {});
     }
 
     const fnEl = await this.findWithHealing(this.firstNameInput);

@@ -12,7 +12,7 @@ export async function acceptCookies(page: Page, customSelector?: string): Promis
       const el = page.locator(customSelector);
       await el.first().waitFor({ timeout: 2000, state: 'visible' });
       await el.first().click();
-      await page.waitForTimeout(300);
+      await el.first().waitFor({ timeout: 2000, state: 'hidden' }).catch(() => {});
       return;
     } catch {
       return; // Cookie already dismissed or not present
@@ -35,7 +35,7 @@ export async function acceptCookies(page: Page, customSelector?: string): Promis
       const el = page.locator(selector);
       await el.first().waitFor({ timeout: 1500, state: 'visible' });
       await el.first().click();
-      await page.waitForTimeout(300);
+      await el.first().waitFor({ timeout: 2000, state: 'hidden' }).catch(() => {});
       return;
     } catch {
       // Try next
