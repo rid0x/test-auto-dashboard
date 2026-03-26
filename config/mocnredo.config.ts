@@ -2,7 +2,7 @@ import { ProjectConfig } from '../src/core/types/project.types';
 
 export const mocnredoConfig: ProjectConfig = {
   name: 'mocnredo',
-  baseUrl: process.env.MOCNREDO_BASE_URL || 'https://mocnredo.pl',
+  baseUrl: process.env.MOCNREDO_BASE_URL || 'https://moncredo.pl',
 
   credentials: {
     valid: {
