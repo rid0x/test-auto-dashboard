@@ -118,7 +118,7 @@ export abstract class CategoryPage extends BasePage {
 
   async expectProductsVisible(): Promise<void> {
     const items = await this.findWithHealing(this.productItems, { timeout: 15000 });
-    await expect(items).toBeVisible();
+    await this.assertVisible(items, 'Product items');
   }
 
   async getProductCount(): Promise<number> {
@@ -144,7 +144,7 @@ export abstract class CategoryPage extends BasePage {
 
   async expectFiltersVisible(): Promise<void> {
     const filter = await this.findWithHealing(this.filterBlock, { timeout: 10000 });
-    await expect(filter).toBeVisible();
+    await this.assertVisible(filter, 'Filter block');
   }
 
   async clickFirstFilterOption(): Promise<void> {
@@ -162,7 +162,7 @@ export abstract class CategoryPage extends BasePage {
 
   async expectActiveFiltersVisible(): Promise<void> {
     const active = await this.findWithHealing(this.activeFilters, { timeout: 10000 });
-    await expect(active).toBeVisible();
+    await this.assertVisible(active, 'Active filters');
   }
 
   async clearFilters(): Promise<void> {
@@ -196,6 +196,6 @@ export abstract class CategoryPage extends BasePage {
 
   async expectBreadcrumbsVisible(): Promise<void> {
     const bc = await this.findWithHealing(this.breadcrumbs, { timeout: 10000 });
-    await expect(bc).toBeVisible();
+    await this.assertVisible(bc, 'Breadcrumbs');
   }
 }

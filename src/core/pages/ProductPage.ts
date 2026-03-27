@@ -93,12 +93,12 @@ export abstract class ProductPage extends BasePage {
 
   async expectProductNameVisible(): Promise<void> {
     const el = await this.findWithHealing(this.productName);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Product name');
   }
 
   async expectProductPriceVisible(): Promise<void> {
     const el = await this.findWithHealing(this.productPrice);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Product price');
   }
 
   async getProductName(): Promise<string> {
@@ -124,7 +124,7 @@ export abstract class ProductPage extends BasePage {
 
   async expectAddToCartSuccess(): Promise<void> {
     const msg = await this.findWithHealing(this.successMessage, { timeout: 15000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'Add to cart success');
   }
 
   async selectFirstAvailableOption(): Promise<void> {

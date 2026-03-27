@@ -198,7 +198,7 @@ export abstract class CheckoutPage extends BasePage {
 
   async expectOrderSuccess(): Promise<void> {
     const msg = await this.findWithHealing(this.orderSuccessMessage, { timeout: 30000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'Order success');
   }
 
   async getOrderNumber(): Promise<string> {

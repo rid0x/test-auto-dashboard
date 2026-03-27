@@ -81,12 +81,12 @@ export abstract class CartPage extends BasePage {
 
   async expectCartNotEmpty(): Promise<void> {
     const table = await this.findWithHealing(this.cartTable, { timeout: 10000 });
-    await expect(table).toBeVisible();
+    await this.assertVisible(table, 'Cart table');
   }
 
   async expectCartEmpty(): Promise<void> {
     const msg = await this.findWithHealing(this.emptyCartMessage, { timeout: 10000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'Empty cart message');
   }
 
   async getCartItemCount(): Promise<number> {

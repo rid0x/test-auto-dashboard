@@ -56,22 +56,22 @@ export abstract class HomePage extends BasePage {
 
   async expectLogoVisible(): Promise<void> {
     const el = await this.findWithHealing(this.logo);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Logo');
   }
 
   async expectSearchVisible(): Promise<void> {
     const el = await this.findWithHealing(this.searchInput);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Search input');
   }
 
   async expectNavigationVisible(): Promise<void> {
     const el = await this.findWithHealing(this.navigationMenu);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Navigation menu');
   }
 
   async expectCartIconVisible(): Promise<void> {
     const el = await this.findWithHealing(this.cartIcon);
-    await expect(el).toBeVisible();
+    await this.assertVisible(el, 'Cart icon');
   }
 
   async getNavigationLinks(): Promise<string[]> {

@@ -77,12 +77,12 @@ export abstract class LoginPage extends BasePage {
 
   async expectLoginSuccess(): Promise<void> {
     const indicator = await this.findWithHealing(this.loggedInIndicator, { timeout: 10000 });
-    await expect(indicator).toBeVisible();
+    await this.assertVisible(indicator, 'Logged in indicator');
   }
 
   async expectLoginError(): Promise<void> {
     const error = await this.findWithHealing(this.errorMessage, { timeout: 10000 });
-    await expect(error).toBeVisible();
+    await this.assertVisible(error, 'Login error message');
   }
 
   async isOnLoginPage(): Promise<boolean> {

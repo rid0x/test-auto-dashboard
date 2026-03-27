@@ -113,11 +113,11 @@ export abstract class RegistrationPage extends BasePage {
 
   async expectRegistrationSuccess(): Promise<void> {
     const msg = await this.findWithHealing(this.successMessage, { timeout: 10000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'Registration success');
   }
 
   async expectRegistrationError(): Promise<void> {
     const msg = await this.findWithHealing(this.errorMessage, { timeout: 10000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'Registration error');
   }
 }

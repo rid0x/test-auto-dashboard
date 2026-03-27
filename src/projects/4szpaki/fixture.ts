@@ -19,4 +19,4 @@ export const test = createProjectFixture('4szpaki', {
   categoryPage: SzpakiCategoryPage,
 });
 
-export { expect } from '@playwright/test';
+export { expect } from '../../core/helpers/custom-expect';

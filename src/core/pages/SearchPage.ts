@@ -82,12 +82,12 @@ export abstract class SearchPage extends BasePage {
 
   async expectResultsVisible(): Promise<void> {
     const results = await this.findWithHealing(this.searchResults, { timeout: 10000 });
-    await expect(results).toBeVisible();
+    await this.assertVisible(results, 'Search results');
   }
 
   async expectNoResults(): Promise<void> {
     const msg = await this.findWithHealing(this.noResultsMessage, { timeout: 10000 });
-    await expect(msg).toBeVisible();
+    await this.assertVisible(msg, 'No results message');
   }
 
   async expectMinResults(min: number): Promise<void> {

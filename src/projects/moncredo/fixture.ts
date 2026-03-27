@@ -19,4 +19,4 @@ export const test = createProjectFixture('moncredo', {
   categoryPage: MoncredoCategoryPage,
 });
 
-export { expect } from '@playwright/test';
+export { expect } from '../../core/helpers/custom-expect';
