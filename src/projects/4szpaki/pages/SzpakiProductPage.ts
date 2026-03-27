@@ -27,8 +27,16 @@ export class SzpakiProductPage extends ProductPage {
   }
 
   async addToCart(): Promise<void> {
+    // Dismiss cookie/salesmanago if they reappeared
+    try {
+      const cookie = this.page.getByText('Zaakceptuj wszystkie');
+      if (await cookie.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await cookie.click();
+        await this.page.waitForTimeout(500);
+      }
+    } catch { /* already dismissed */ }
+
     const btn = this.page.locator('#product-addtocart-button');
-    // Wait for Magento JS to enable the button (disabled until JS loads)
     await expect(btn).toBeEnabled({ timeout: 15000 });
     await btn.click();
     await this.page.waitForTimeout(3000);

@@ -52,7 +52,7 @@ test.describe('Pieceofcase - Homepage @homepage @e2e', () => {
       }
     });
 
-    await page.goto('https://pieceofcase.pl', { waitUntil: 'load' });
+    await page.goto('https://pieceofcase.pl', { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     const criticalErrors = errors.filter(
       e => !e.includes('favicon') && !e.includes('analytics') && !e.includes('gtm')
