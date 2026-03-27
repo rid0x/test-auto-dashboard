@@ -2,7 +2,7 @@ import { ProjectConfig } from '../src/core/types/project.types';
 
 export const willsoorConfig: ProjectConfig = {
   name: 'willsoor',
-  baseUrl: process.env.WILLSOOR_BASE_URL || 'https://willsoor.pl',
+  baseUrl: process.env.WILLSOOR_BASE_URL || 'https://www.willsoor.pl',
 
   credentials: {
     valid: {
@@ -29,8 +29,13 @@ export const willsoorConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/koszula-willsoor-classic-43300r-43301r-43302r.html',
-    name: 'Biała klasyczna koszula w kratkę',
+    url: '/czarny-plecak-podrozny-james-hawk-69016.html',
+    name: 'Czarny plecak podróżny James Hawk',
+  },
+
+  bundleProduct: {
+    url: '/garnitur-damski-bordowy-willsoor-68262-68263.html',
+    name: 'Garnitur damski bordowy',
   },
 
   category: {
@@ -48,7 +53,7 @@ export const willsoorConfig: ProjectConfig = {
   },
 
   api: {
-    baseUrl: process.env.WILLSOOR_API_URL || 'https://willsoor.pl',
+    baseUrl: process.env.WILLSOOR_API_URL || 'https://www.willsoor.pl',
     restEndpoint: '/rest/V1',
     graphqlEndpoint: '/graphql',
   },

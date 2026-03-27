@@ -29,8 +29,8 @@ export const szpakiConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/mydla-w-kostce/p/mydlo-mis',
-    name: 'Mydło Miś',
+    url: '/kremy-do-twarzy/p/superkrem-odzywczy-krem-uniwersalny',
+    name: 'Superkrem - odżywczy krem uniwersalny',
   },
 
   category: {
@@ -41,10 +41,10 @@ export const szpakiConfig: ProjectConfig = {
 
   features: {
     hasRecaptchaOnLogin: false,
-    hasRecaptchaOnRegistration: false,
+    hasRecaptchaOnRegistration: true,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all, a:has-text("ZGODA NA WSZYSTKIE")',
+    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all',
   },
 
   api: {

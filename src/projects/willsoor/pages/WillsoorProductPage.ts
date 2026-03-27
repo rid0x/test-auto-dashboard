@@ -12,49 +12,55 @@ export class WillsoorProductPage extends ProductPage {
   }
 
   /**
-   * Select first available size using JS.
-   * Waits for select to be present in DOM before attempting.
+   * Select first available (in-stock) size via Playwright selectOption.
+   * This properly triggers Magento's JS change event, unlike evaluate().
    */
   async selectFirstAvailableOption(): Promise<void> {
-    const sizeSelect = this.page.locator('select.super-attribute-select');
+    const sizeSelect = this.page.locator('select.super-attribute-select').first();
     try {
-      await sizeSelect.first().waitFor({ state: 'attached', timeout: 10000 });
+      await sizeSelect.waitFor({ state: 'attached', timeout: 10000 });
     } catch {
       return; // No size select — simple product
     }
 
-    await this.page.evaluate(() => {
-      const select = document.querySelector('select.super-attribute-select') as HTMLSelectElement;
-      if (!select) return;
-      for (const opt of Array.from(select.options)) {
-        const text = opt.text || '';
-        if (text.trim().length > 2 && !text.includes('Rozmiar') && !text.includes('Powiadom') && !text.includes('dostępności')) {
-          select.value = opt.value;
-          return;
-        }
+    // Find first in-stock option (no "Powiadom o dostępności")
+    const availableValue = await sizeSelect.locator('option').evaluateAll(opts =>
+      opts
+        .filter(o => o.value && o.value !== '' && !o.textContent?.includes('Rozmiar') && !o.textContent?.includes('Powiadom'))
+        .map(o => o.value)[0] || null
+    );
+
+    if (availableValue) {
+      await sizeSelect.selectOption({ value: availableValue });
+      // Wait for Magento JS to process the option change (stock check, price update)
+      await this.page.waitForTimeout(1000);
+      // Verify the correct option is actually selected
+      const selected = await sizeSelect.inputValue();
+      if (selected !== availableValue) {
+        // Re-select if Magento JS reset the value
+        await sizeSelect.selectOption({ value: availableValue });
+        await this.page.waitForTimeout(500);
       }
-      if (select.options.length > 1) {
-        select.value = select.options[1].value;
-      }
-    });
+    } else {
+      // All sizes out of stock — select first non-empty as best effort
+      await sizeSelect.selectOption({ index: 1 });
+    }
   }
 
   /**
-   * Add to cart using form.submit() + waitForResponse.
-   * Waits for the actual server response instead of guessing timing.
+   * Add to cart by clicking the button (triggers Magento validation).
+   * Waits for the server response to confirm success.
    */
   async addToCart(): Promise<void> {
-    const form = this.page.locator('#product_addtocart_form');
+    const addBtn = this.page.locator('#product-addtocart-button');
 
-    // Wait for the cart add response from server
     const responsePromise = this.page.waitForResponse(
       resp => resp.url().includes('/checkout/cart/add') || resp.url().includes('/cart/add'),
       { timeout: 15000 }
     ).catch(() => null);
 
-    await form.evaluate(f => (f as HTMLFormElement).submit());
+    await addBtn.click();
 
-    // Wait for server response OR page load — whichever comes first
     await Promise.race([
       responsePromise,
       this.page.waitForLoadState('load'),

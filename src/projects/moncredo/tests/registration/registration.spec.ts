@@ -8,6 +8,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
 
   // === FORM STRUCTURE ===
 
+  // @desc: Formularz rejestracji wyswietla pola: imie, nazwisko, email, haslo, potwierdzenie
   test('should display all required form fields', async ({ page }) => {
     await test.step('Firstname field', async () => {
       const field = page.locator('#firstname');
@@ -44,6 +45,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('Registration form fields', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Etykiety pol sa po polsku: Imie, Nazwisko, E-mail, Haslo, Potwierdz haslo
   test('should display correct labels for all fields', async ({ page }) => {
     await expect(page.locator('label[for="firstname"]')).toContainText('Imię');
     await expect(page.locator('label[for="lastname"]')).toContainText('Nazwisko');
@@ -52,6 +54,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await expect(page.locator('label[for="password-confirmation"]')).toContainText('Potwierdź hasło');
   });
 
+  // @desc: Wymagane pola maja atrybut required lub klase required-entry
   test('should mark required fields correctly', async ({ page }) => {
     // Required fields have .required class on parent or required attribute
     const firstname = page.locator('#firstname');
@@ -68,6 +71,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     }
   });
 
+  // @desc: Przycisk "Utworz konto" i link "Wroc" sa widoczne
   test('should display submit button and back link', async ({ page }) => {
     await test.step('Submit button', async () => {
       const btn = page.locator('#accountcreate button[type="submit"]');
@@ -81,6 +85,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     });
   });
 
+  // @desc: Checkbox zapisu na newsletter jest widoczny i domyslnie odznaczony
   test('should display newsletter checkbox', async ({ page }) => {
     const checkbox = page.locator('#is_subscribed');
     await expect(checkbox).toBeVisible();
@@ -90,6 +95,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await expect(label).toContainText('newsletter');
   });
 
+  // @desc: Checkbox zdalnej pomocy jest widoczny na formularzu
   test('should display remote assistance checkbox', async ({ page }) => {
     const checkbox = page.locator('#assistance_allowed_checkbox');
     await expect(checkbox).toBeVisible();
@@ -100,6 +106,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
 
   // === PASSWORD VALIDATION ===
 
+  // @desc: Miernik sily hasla reaguje na wpisywane haslo (slabe/silne)
   test('should show password strength meter', async ({ page }) => {
     const meter = page.locator('#password-strength-meter-container');
     await expect(meter).toBeVisible();
@@ -124,6 +131,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('Password strength', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Przycisk pokaz/ukryj zmienia typ pola hasla (password/text)
   test('should toggle password visibility', async ({ page }) => {
     await page.locator('#password').fill('TestPassword123');
 
@@ -140,6 +148,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('Password visible', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Rozne hasla w polach haslo/potwierdzenie sa wykrywane jako blad
   test('should validate password mismatch', async ({ page }) => {
     await page.locator('#password').fill('Password123!');
     await page.locator('#password-confirmation').fill('DifferentPass456!');
@@ -159,6 +168,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
 
   // === FIELD VALIDATION ===
 
+  // @desc: Pusty formularz wyswietla bledy walidacji na wymaganych polach
   test('should validate required fields on empty submit', async ({ page }) => {
     await page.locator('#accountcreate button[type="submit"]').click();
     // Wait for client-side validation errors to appear
@@ -173,6 +183,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('Empty form validation', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Niepoprawny format email jest wykrywany przez walidacje klienta
   test('should validate email format', async ({ page }) => {
     await page.locator('#firstname').fill('Test');
     await page.locator('#lastname').fill('User');
@@ -188,6 +199,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('Invalid email format', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Wszystkie pola akceptuja tekst i przechowuja wpisane wartosci
   test('should accept input in all fields', async ({ page }) => {
     await test.step('Fill all fields', async () => {
       await page.locator('#firstname').fill('Aurora');
@@ -209,6 +221,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await test.info().attach('All fields filled', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Checkbox newsletter mozna zaznaczyc i odznaczyc
   test('should allow checking newsletter checkbox', async ({ page }) => {
     const checkbox = page.locator('#is_subscribed');
     expect(await checkbox.isChecked()).toBeFalsy();
@@ -218,6 +231,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
 
   // === NAVIGATION ===
 
+  // @desc: Link "Wroc" kieruje na strone logowania (href zawiera login)
   test('should have back button that navigates to login', async ({ page }) => {
     const backLink = page.locator('a.action.back, a:has-text("Wróć")');
     await expect(backLink.first()).toBeVisible();
@@ -225,6 +239,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     expect(href).toContain('login');
   });
 
+  // @desc: Linki do polityki prywatnosci i regulaminu sa widoczne
   test('should display privacy policy and terms links', async ({ page }) => {
     const privacy = page.locator('a:has-text("Polityka prywatności")');
     const terms = page.locator('a:has-text("Warunki korzystania")');
@@ -235,6 +250,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
 
   // === RECAPTCHA-BLOCKED TESTS ===
 
+  // @desc: Rejestracja poprawnymi danymi konczy sie sukcesem (skip jesli reCAPTCHA)
   test('should register with valid data', async ({ registrationPage, page, config }) => {
     skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
 
@@ -247,6 +263,7 @@ test.describe('Moncredo - Registration @registration @e2e', () => {
     await registrationPage.expectRegistrationSuccess();
   });
 
+  // @desc: Rejestracja na istniejacy email wyswietla komunikat bledu
   test('should show error for existing email', async ({ registrationPage, page, config }) => {
     skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
 

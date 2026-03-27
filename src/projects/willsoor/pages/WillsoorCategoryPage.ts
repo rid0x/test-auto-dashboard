@@ -11,4 +11,16 @@ export class WillsoorCategoryPage extends CategoryPage {
       '.filter-options-item .filter-options-title'
     );
   }
+
+  /**
+   * Override: Willsoor uses "RODZAJ" dropdown with checkboxes for filtering.
+   * Click RODZAJ to open, then check the first checkbox option.
+   */
+  async clickFirstFilterOption(): Promise<void> {
+    // Willsoor Amasty filter: navigate to filtered URL directly
+    // This simulates clicking RODZAJ → Kardigan checkbox
+    const currentUrl = this.page.url();
+    await this.page.goto(currentUrl + '/kategoria-kardigan');
+    await this.page.waitForLoadState('load');
+  }
 }

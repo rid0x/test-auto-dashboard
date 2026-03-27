@@ -8,6 +8,7 @@ test.describe('Getprice - Checkout @checkout @e2e', () => {
     await productPage.expectAddToCartSuccess();
   });
 
+  // @desc: Przejscie z koszyka do strony checkout
   test('should navigate to checkout from cart', async ({ cartPage, page }) => {
     await cartPage.goto();
 
@@ -20,6 +21,7 @@ test.describe('Getprice - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout page', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Checkout wyswietla wybor logowania lub zakupow jako gosc
   test('should display login/guest choice', async ({ page, config }) => {
     await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'domcontentloaded' });
 
@@ -39,10 +41,10 @@ test.describe('Getprice - Checkout @checkout @e2e', () => {
     await test.info().attach('Login/guest choice', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should display order summary in checkout', async ({ page }) => {
-    await page.goto('https://getprice.pl/checkout/', { waitUntil: 'load' });
+  // @desc: Podsumowanie zamowienia jest widoczne na checkout
+  test('should display order summary in checkout', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
 
-    // Order summary should be visible even on the login step
     const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
     await expect(summary.first()).toBeVisible({ timeout: 15000 });
 
@@ -50,22 +52,20 @@ test.describe('Getprice - Checkout @checkout @e2e', () => {
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should show product in checkout summary', async ({ page }) => {
-    await page.goto('https://getprice.pl/checkout/', { waitUntil: 'load' });
+  // @desc: Nazwa produktu pojawia sie w podsumowaniu checkout
+  test('should show product in checkout summary', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
 
-    // Product name should appear somewhere in checkout
-    const productName = page.locator(':has-text("Patchcord")');
+    // Product name from config should appear in checkout
+    const productName = page.locator(`:has-text("${config.product.name.split(' ')[0]}")`);
     await expect(productName.first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('should navigate to cart from checkout', async ({ page }) => {
-    await page.goto('https://getprice.pl/checkout/', { waitUntil: 'load' });
-    await page.waitForLoadState('networkidle').catch(() => {});
+  // @desc: Link do koszyka jest dostepny na stronie checkout
+  test('should have cart link in checkout', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
 
-    // There should be a link back to cart
-    const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');
-    const hasCartLink = await cartLink.first().isVisible().catch(() => false);
-    // Cart link may or may not be visible depending on the checkout step
-    expect(hasCartLink).toBeDefined();
+    const cartLink = page.locator('a[href*="cart"]');
+    await expect(cartLink.first()).toBeVisible({ timeout: 15000 });
   });
 });

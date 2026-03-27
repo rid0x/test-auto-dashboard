@@ -7,6 +7,7 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
     await productPage.expectAddToCartSuccess();
   });
 
+  // @desc: Przejscie z koszyka do strony checkout
   test('should navigate to checkout from cart', async ({ cartPage, page }) => {
     await cartPage.goto();
 
@@ -19,6 +20,7 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout page', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Formularz checkout jest widoczny po wyborze metody platnosci
   test('should display checkout form', async ({ page }) => {
     await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
 
@@ -29,6 +31,7 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout form', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Podsumowanie zamowienia jest widoczne na checkout
   test('should display order summary in checkout', async ({ page }) => {
     await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
 
@@ -39,6 +42,7 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Link powrotny do koszyka jest dostepny na stronie checkout
   test('should navigate to cart from checkout', async ({ page }) => {
     await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
     await page.waitForLoadState('networkidle').catch(() => {});

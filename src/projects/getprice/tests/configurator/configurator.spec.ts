@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixture';
+import { dismissCookiesIfPresent } from '../../../../core/helpers/cookie-consent';
 
 const CONFIGURATOR_URL = '/pl/fujitsu-rx300-s8-konfigurator-fujitsu-primergy-rx300-s8-8x-25.html';
 
@@ -6,10 +7,10 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
   test.beforeEach(async ({ page, config }) => {
     await page.goto(`${config.baseUrl}${CONFIGURATOR_URL}`, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
-    // Cookie
-    try { await page.locator('.consent-cookie-directive button').first().click({ timeout: 2000 }); } catch {}
+    await dismissCookiesIfPresent(page, config.features.cookieConsentSelector);
   });
 
+  // @desc: Strona konfiguratora wyswietla tytul produktu i cene
   test('should display configurator page', async ({ page }) => {
     await test.step('Verify product title', async () => {
       const title = page.locator('h1');
@@ -27,6 +28,7 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
     await test.info().attach('Configurator page', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Kroki konfiguracji (wybor, wycena) sa widoczne jako przyciski
   test('should display configuration steps', async ({ page }) => {
     await test.step('Step 1: Wybierz konfiguracje', async () => {
       const step1 = page.locator('button:has-text("Wybierz konfiguracje"), :has-text("1. Wybierz")');
@@ -39,6 +41,7 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
     });
   });
 
+  // @desc: Dropdown gwarancji wyswietla opcje do wyboru
   test('should display guarantee select', async ({ page }) => {
     const guarantee = page.locator('select');
     await expect(guarantee.first()).toBeVisible();
@@ -49,10 +52,12 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
     await test.info().attach('Guarantee options', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Przycisk "Dodaj do koszyka" jest widoczny na stronie
   test('should have add to cart button', async ({ page }) => {
     await expect(page.locator('#product-addtocart-button')).toBeVisible();
   });
 
+  // @desc: Dodanie konfiguratora do koszyka po wyborze opcji gwarancji
   test('should add configurator product to cart', async ({ page }) => {
     await test.step('Select guarantee option', async () => {
       const guarantee = page.locator('select').first();
@@ -72,17 +77,20 @@ test.describe('Getprice - Server Configurator @configurator @e2e', () => {
     await test.info().attach('Added to cart', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Przycisk zapisu konfiguracji jest widoczny
   test('should have save configuration button', async ({ page }) => {
     const saveBtn = page.locator('button:has-text("Zapisz konfigurację"), :has-text("Zapisz konfigura")');
     await expect(saveBtn.first()).toBeVisible();
   });
 
+  // @desc: Zdjecie produktu jest widoczne na stronie
   test('should display product image', async ({ page }) => {
     const img = page.locator('img[alt*="Konfigurator"], img[alt*="Fujitsu"], .product-info-main img, img.object-contain');
     const count = await img.count();
     expect(count).toBeGreaterThan(0);
   });
 
+  // @desc: Breadcrumbs (sciezka nawigacji) sa widoczne
   test('should display breadcrumbs', async ({ page }) => {
     const bc = page.locator('.breadcrumbs, nav[aria-label="breadcrumb"]');
     await expect(bc.first()).toBeVisible();

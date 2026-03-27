@@ -6,6 +6,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await loginPage.goto();
   });
 
+  // @desc: Strona logowania wyswietla pola email, haslo i przycisk logowania
   test('should display login page correctly', async ({ loginPage, page }) => {
     await test.step('Verify login page loaded', async () => {
       expect(await loginPage.isOnLoginPage()).toBeTruthy();
@@ -28,6 +29,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Logowanie poprawnymi danymi konczy sie sukcesem (przekierowanie na konto)
   test('should login with valid credentials', async ({ loginPage, page, config }) => {
     test.skip(!config.credentials.valid.email, 'BRAK DANYCH: Ustaw MOCNREDO_USER_EMAIL i MOCNREDO_USER_PASSWORD w .env');
     await skipIfRecaptcha(page, test.info());
@@ -47,6 +49,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Login success - account page', { body: success, contentType: 'image/png' });
   });
 
+  // @desc: Bledne dane logowania wyswietlaja komunikat o bledzie
   test('should show error with invalid credentials', async ({ loginPage, page }) => {
     await skipIfRecaptcha(page, test.info());
 
@@ -62,6 +65,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Invalid credentials error', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Pusty email nie pozwala na zalogowanie — walidacja blokuje
   test('should show error with empty email', async ({ loginPage, page }) => {
     await skipIfRecaptcha(page, test.info());
 
@@ -77,6 +81,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Empty email validation', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Puste haslo nie pozwala na zalogowanie — walidacja blokuje
   test('should show error with empty password', async ({ loginPage, page }) => {
     await skipIfRecaptcha(page, test.info());
 
@@ -92,6 +97,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Empty password validation', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Link "Nie pamietasz hasla" jest widoczny na stronie logowania
   test('should have forgot password link', async ({ page }) => {
     const forgotLink = page.locator('a[href*="forgotpassword"], a:has-text("Nie pamiętasz"), a:has-text("Forgot")');
     await expect(forgotLink.first()).toBeVisible();
@@ -100,6 +106,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
     await test.info().attach('Forgot password link visible', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Link "Zaloz konto" / "Zarejestruj sie" jest widoczny
   test('should have create account link', async ({ page }) => {
     const createLink = page.locator('a[href*="account/create"], a:has-text("Zarejestruj"), a:has-text("Create an Account")');
     await expect(createLink.first()).toBeVisible();

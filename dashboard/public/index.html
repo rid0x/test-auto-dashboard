@@ -4,39 +4,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test Automation Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f1117;
-      --bg-card: #1a1d27;
-      --bg-hover: #242836;
-      --border: #2d3148;
-      --text: #e4e6f0;
-      --text-muted: #8b8fa3;
-      --accent: #6c63ff;
-      --accent-hover: #7f78ff;
-      --green: #22c55e;
+      --bg: #12112a;
+      --bg-card: #1a1933;
+      --bg-hover: #1f1e3d;
+      --bg-elevated: #252447;
+      --border: #2a2850;
+      --border2: #3d3a6e;
+      --text: #f0eeff;
+      --text-muted: #b8b4d8;
+      --text-dim: #6b658f;
+      --accent: #f97316;
+      --accent-hover: #fb923c;
+      --accent-dim: rgba(249,115,22,0.1);
+      --green: #10b981;
+      --green-dim: rgba(16,185,129,0.1);
       --red: #ef4444;
-      --yellow: #eab308;
+      --red-dim: rgba(239,68,68,0.1);
+      --yellow: #f59e0b;
+      --yellow-dim: rgba(245,158,11,0.1);
       --blue: #3b82f6;
+      --violet: #a855f7;
+      --violet-dim: rgba(168,85,247,0.1);
       --orange: #f97316;
-      --radius: 12px;
-      --radius-sm: 8px;
+      --radius: 6px;
+      --radius-sm: 5px;
+      --font: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      font-size: 12px;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(ellipse at 0% 0%, rgba(168,85,247,0.035) 0%, transparent 40%),
+        radial-gradient(ellipse at 100% 100%, rgba(249,115,22,0.025) 0%, transparent 40%);
     }
 
     /* --- Header --- */
     .header {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 32px;
+      background: rgba(8,7,22,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 0 24px;
+      height: 52px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -45,15 +64,47 @@
       z-index: 100;
     }
 
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(249,115,22,0.7) 40%, rgba(139,92,246,0.5) 75%, transparent 100%);
+      animation: topbar-scan 4s linear infinite;
+      will-change: transform;
+    }
+
+    @keyframes topbar-scan {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(calc(100vw + 100%)); }
+    }
+
     .header h1 {
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
+      letter-spacing: 0.04em;
     }
 
-    .header h1 .icon { font-size: 24px; }
+    .header h1 .icon {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(249,115,22,0.8), 0 0 4px rgba(249,115,22,1);
+      animation: logo-pulse 2.4s ease-in-out infinite;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+    @keyframes logo-pulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(249,115,22,0.8), 0 0 4px rgba(249,115,22,1); }
+      50% { box-shadow: 0 0 16px rgba(249,115,22,0.6), 0 0 6px rgba(249,115,22,0.8); }
+    }
 
     .header-actions {
       display: flex;
@@ -64,59 +115,81 @@
     /* --- Layout --- */
     .layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
-      min-height: calc(100vh - 57px);
+      grid-template-columns: 228px 1fr;
+      min-height: calc(100vh - 52px);
     }
 
     /* --- Sidebar --- */
     .sidebar {
-      background: var(--bg-card);
-      border-right: 1px solid var(--border);
-      padding: 16px 0;
+      background: rgba(8,7,22,0.99);
+      border-right: 1px solid rgba(255,255,255,0.05);
+      padding: 14px 10px 20px;
       overflow-y: auto;
     }
 
     .sidebar-section {
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .sidebar-section-title {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--text-muted);
-      padding: 8px 20px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.2);
+      padding: 18px 12px 6px;
     }
 
     .sidebar-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
+      padding: 9px 12px 9px 20px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: color 0.14s, background 0.14s;
       border-left: 3px solid transparent;
+      border-radius: var(--radius);
+      color: rgba(255,255,255,0.32);
+      position: relative;
     }
 
-    .sidebar-item:hover { background: var(--bg-hover); }
+    .sidebar-item:hover {
+      color: rgba(255,255,255,0.82);
+      background: rgba(255,255,255,0.055);
+    }
+
     .sidebar-item.active {
-      background: var(--bg-hover);
-      border-left-color: var(--accent);
+      color: #fff;
+      background: rgba(249,115,22,0.11);
+      border-left-color: transparent;
+    }
+
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 25%;
+      height: 50%;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(249,115,22,0.7);
     }
 
     .sidebar-item .name {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 500;
     }
 
     .sidebar-item .badge {
-      background: var(--border);
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 10px;
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(249,115,22,0.18);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 4px;
+      padding: 1px 7px;
+      color: var(--accent);
     }
 
     .sidebar-item .project-icon {
@@ -125,6 +198,7 @@
       border-radius: 50%;
       margin-right: 10px;
       flex-shrink: 0;
+      box-shadow: 0 0 6px currentColor;
     }
 
     .sidebar-item .item-left {
@@ -134,7 +208,7 @@
 
     /* --- Main Content --- */
     .main {
-      padding: 24px 32px;
+      padding: 24px 28px;
       overflow-y: auto;
     }
 
@@ -146,13 +220,14 @@
     }
 
     .main-header h2 {
-      font-size: 24px;
+      font-size: 16px;
       font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .main-header .subtitle {
-      color: var(--text-muted);
-      font-size: 14px;
+      color: var(--text-dim);
+      font-size: 11px;
       margin-top: 4px;
     }
 
@@ -161,32 +236,81 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text);
-      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--font);
+      font-size: 11px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: border-color 0.15s, color 0.15s, box-shadow 0.3s, transform 0.3s;
       white-space: nowrap;
+      position: relative;
+      overflow: hidden;
     }
 
-    .btn:hover { background: var(--bg-hover); border-color: var(--accent); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--text-muted);
+      box-shadow: 0 3px 10px rgba(249,115,22,0.1);
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
+      background: rgba(249,115,22,0.12);
+      border-color: rgba(249,115,22,0.4);
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.06em;
     }
-    .btn-primary:hover { background: var(--accent-hover); }
 
-    .btn-success { background: var(--green); border-color: var(--green); color: white; }
-    .btn-danger { background: var(--red); border-color: var(--red); color: white; }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      width: 80px;
+      height: 100%;
+      background-image: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%);
+      top: 0;
+      left: -100px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
 
-    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-primary:hover {
+      background: rgba(249,115,22,0.22);
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px rgba(249,115,22,0.2);
+    }
+
+    .btn-primary:hover::before {
+      animation: btn-shine 1.5s ease-out infinite;
+    }
+
+    @keyframes btn-shine {
+      0% { left: -80px; }
+      60% { left: 100%; }
+      to { left: 100%; }
+    }
+
+    .btn-success {
+      background: var(--green-dim);
+      border-color: rgba(16,185,129,0.3);
+      color: var(--green);
+    }
+
+    .btn-danger {
+      background: var(--red-dim);
+      border-color: rgba(239,68,68,0.3);
+      color: var(--red);
+    }
+    .btn-danger:hover {
+      border-color: rgba(239,68,68,0.6);
+      box-shadow: 0 3px 10px rgba(239,68,68,0.15);
+    }
+
+    .btn-sm { padding: 5px 10px; font-size: 10px; }
 
     .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
 
@@ -196,19 +320,35 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
+      position: relative;
     }
 
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(249,115,22,0.3) 40%, rgba(139,92,246,0.2) 70%, transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover::before { opacity: 1; }
+
     .card-header {
-      padding: 16px 20px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: var(--bg-hover);
     }
 
     .card-header h3 {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
     }
 
     .card-body { padding: 0; }
@@ -216,8 +356,8 @@
     /* --- Stats --- */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
       margin-bottom: 24px;
     }
 
@@ -225,100 +365,168 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 16px;
     }
 
     .stat-card .stat-value {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
       margin-bottom: 4px;
+      color: var(--accent);
     }
 
     .stat-card .stat-label {
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     /* --- Area cards grid --- */
     .areas-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
       margin-bottom: 24px;
     }
 
     .area-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      transition: border-color 0.15s;
-      cursor: pointer;
-    }
-
-    .area-card:hover { border-color: var(--accent); }
-
-    .area-card-header {
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .area-card-header .area-title {
-      font-size: 16px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .area-card-header .area-count {
-      font-size: 12px;
-      color: var(--text-muted);
-      background: var(--bg-hover);
-      padding: 3px 10px;
-      border-radius: 10px;
-    }
-
-    .area-card-body {
-      padding: 0 20px 16px;
-    }
-
-    .area-card-body .test-list {
-      list-style: none;
-    }
-
-    .area-card-body .test-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    .area-card-body .test-item:last-child { border-bottom: none; }
-
-    .area-card-body .test-item .test-name {
-      color: var(--text);
-      flex: 1;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      margin-right: 8px;
+      cursor: pointer;
+      height: 160px;
+      position: relative;
+      border-radius: 6px;
+      box-shadow: 0 0 12px 1px rgba(0,0,0,0.7);
+      transition: box-shadow 0.3s, transform 0.2s;
     }
 
-    .area-card-body .test-item .test-actions {
-      flex-shrink: 0;
+    .area-card:hover {
+      box-shadow: 0 0 20px 2px rgba(249,115,22,0.25), 0 0 12px 1px rgba(0,0,0,0.7);
+      transform: translateY(-2px);
     }
 
-    .area-icon {
-      font-size: 18px;
+    .area-card .card-circles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .area-card:hover .card-circles {
+      opacity: 1;
+    }
+
+    .area-card .card-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(139,92,246,0.65);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      filter: blur(20px);
+      animation: card-float 1400ms infinite ease-in-out;
+      animation-play-state: paused;
+    }
+
+    .area-card:hover .card-circle {
+      animation-play-state: running;
+    }
+
+    .area-card .card-circle--bottom {
+      background: rgba(249,115,22,0.6);
+      left: -20px;
+      top: -10px;
+      width: 110px;
+      height: 110px;
+      transform: none;
+      animation-delay: -800ms;
+    }
+
+    .area-card .card-circle--right {
+      background: rgba(236,72,153,0.6);
+      right: -10px;
+      top: 30px;
+      left: auto;
+      width: 80px;
+      height: 80px;
+      transform: none;
+      animation-delay: -1400ms;
+    }
+
+    @keyframes card-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(16px); }
+    }
+
+    .area-card .card-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 6px;
+      padding: 14px 24px;
+      text-align: center;
+      box-shadow: 0 0 20px 8px rgba(0,0,0,0.5);
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .area-card:hover .card-label {
+      opacity: 1;
+    }
+
+    .area-card .card-label-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .area-card .card-label-count {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .area-card .card-static-name {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: center;
+      z-index: 1;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .area-card .card-static-count {
+      font-size: 11px;
+      color: rgba(249,115,22,0.5);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .area-card:hover .card-static-name {
+      opacity: 0;
     }
 
     /* --- Progress bar --- */
     .progress-container {
-      padding: 8px 16px;
+      padding: 10px 16px;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
       display: none;
@@ -328,17 +536,31 @@
 
     .progress-bar-wrapper {
       background: var(--bg);
-      border-radius: 6px;
-      height: 8px;
+      border-radius: 4px;
+      height: 6px;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .progress-bar-fill {
       height: 100%;
-      border-radius: 6px;
+      border-radius: 4px;
       transition: width 0.3s ease;
       background: linear-gradient(90deg, var(--accent), var(--green));
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      animation: bar-shimmer 2.5s infinite;
+    }
+
+    @keyframes bar-shimmer {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
     }
 
     .progress-bar-fill.has-failures {
@@ -348,8 +570,8 @@
     .progress-stats {
       display: flex;
       gap: 16px;
-      font-size: 12px;
-      color: var(--text-muted);
+      font-size: 10px;
+      color: var(--text-dim);
     }
 
     .progress-stats .stat { display: flex; align-items: center; gap: 4px; }
@@ -359,12 +581,8 @@
     .progress-stats .dot-h { color: var(--orange); }
 
     /* --- Terminal output --- */
-    .terminal-wrapper {
-      margin-top: 24px;
-    }
-
     .terminal {
-      background: #0a0c10;
+      background: rgba(6,8,16,0.8);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
@@ -377,35 +595,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 600;
     }
 
-    .terminal-header .dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .terminal-header .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
+    .terminal-header .dots { display: flex; gap: 6px; }
+    .terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; }
     .terminal-header .dot-red { background: var(--red); }
     .terminal-header .dot-yellow { background: var(--yellow); }
     .terminal-header .dot-green { background: var(--green); }
 
     .terminal-body {
       padding: 16px;
-      font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 13px;
-      line-height: 1.6;
+      font-family: var(--font);
+      font-size: 11px;
+      line-height: 1.7;
       max-height: 500px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
-      color: #c9d1d9;
+      color: var(--text-muted);
     }
 
     .terminal-body .line-pass { color: var(--green); }
@@ -416,39 +625,19 @@
 
     /* --- Status indicator --- */
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       display: inline-block;
       margin-right: 6px;
     }
-
-    .status-idle { background: var(--text-muted); }
+    .status-idle { background: var(--text-dim); }
     .status-running { background: var(--yellow); animation: pulse 1s infinite; }
-    .status-passed { background: var(--green); }
-    .status-failed { background: var(--red); }
+    .status-passed { background: var(--green); box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+    .status-failed { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.5); }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
-    }
-
-    /* --- Run summary bar --- */
-    .run-summary {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      padding: 12px 16px;
-      background: var(--bg-hover);
-      border-radius: var(--radius-sm);
-      margin-top: 12px;
-      font-size: 13px;
-    }
-
-    .run-summary .summary-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     /* --- Toggle --- */
@@ -456,36 +645,30 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 11px;
+      color: var(--text-dim);
       cursor: pointer;
     }
 
     .toggle-switch {
-      width: 36px;
-      height: 20px;
+      width: 32px; height: 18px;
       background: var(--border);
-      border-radius: 10px;
+      border-radius: 9px;
       position: relative;
       transition: background 0.2s;
       cursor: pointer;
     }
-
     .toggle-switch.active { background: var(--accent); }
-
     .toggle-switch::after {
       content: '';
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 14px; height: 14px;
       background: white;
       border-radius: 50%;
-      top: 2px;
-      left: 2px;
+      top: 2px; left: 2px;
       transition: transform 0.2s;
     }
-
-    .toggle-switch.active::after { transform: translateX(16px); }
+    .toggle-switch.active::after { transform: translateX(14px); }
 
     /* --- Welcome screen --- */
     .welcome {
@@ -496,10 +679,9 @@
       height: 60vh;
       text-align: center;
     }
-
-    .welcome .big-icon { font-size: 64px; margin-bottom: 16px; }
-    .welcome h2 { font-size: 28px; margin-bottom: 8px; }
-    .welcome p { color: var(--text-muted); font-size: 16px; max-width: 400px; }
+    .welcome .big-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.6; }
+    .welcome h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.04em; }
+    .welcome p { color: var(--text-dim); font-size: 12px; max-width: 360px; line-height: 1.6; }
 
     /* --- Responsive --- */
     @media (max-width: 768px) {
@@ -508,17 +690,119 @@
     }
 
     /* --- Scrollbar --- */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* --- Test details table --- */
+    .test-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .test-table thead th {
+      padding: 11px 16px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      border-bottom: 2px solid rgba(249,115,22,0.2);
+      text-align: left;
+      white-space: nowrap;
+      background: rgba(8,7,22,0.8);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .test-table tbody tr {
+      transition: background 0.12s;
+    }
+    .test-table tbody tr:nth-child(odd) {
+      background: rgba(255,255,255,0.015);
+    }
+    .test-table tbody tr:nth-child(even) {
+      background: rgba(0,0,0,0.1);
+    }
+    .test-table tbody tr:hover {
+      background: rgba(249,115,22,0.06);
+    }
+    .test-table tbody tr.row-warning { background: rgba(245,158,11,0.05); }
+    .test-table tbody tr.row-warning:hover { background: rgba(245,158,11,0.1); }
+    .test-table td {
+      padding: 14px 16px;
+      font-size: 12px;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .test-table tbody tr:last-child td { border-bottom: none; }
+    .test-table .col-idx { color: var(--text-dim); width: 36px; font-variant-numeric: tabular-nums; text-align: center; }
+    .test-table .col-name {
+      font-weight: 600;
+      min-width: 180px;
+      max-width: 260px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .test-table .col-details { min-width: 340px; }
+    .test-table .col-line { color: var(--text-dim); width: 50px; font-size: 11px; }
+    .test-table .col-action { text-align: right; width: 90px; }
+
+    .td-details { display: flex; flex-direction: column; gap: 6px; }
+    .detail-summary {
+      font-size: 12px;
+      color: #fff;
+      margin-bottom: 4px;
+      font-weight: 600;
+      line-height: 1.5;
+      padding: 5px 10px;
+      background: rgba(249,115,22,0.08);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 4px 4px 0;
+    }
+    .detail-line {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 11px;
+      line-height: 1.6;
+      padding: 3px 0;
+    }
+    .detail-tag {
+      display: inline-flex;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      min-width: 72px;
+      justify-content: center;
+    }
+    .tag-nav { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93bbfd; }
+    .tag-loc { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: #d4a5ff; }
+    .tag-act { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #fdba74; }
+    .tag-chk { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+    .detail-codes { display: flex; flex-wrap: wrap; gap: 5px; align-items: baseline; }
+    .detail-codes code, .td-details code {
+      font-family: var(--font);
+      font-size: 10px;
+      background: rgba(255,255,255,0.07);
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: var(--text);
+      word-break: break-all;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .detail-more { font-size: 10px; color: var(--accent); font-weight: 500; }
+    .detail-text { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+    .detail-empty { color: var(--text-dim); font-size: 11px; font-style: italic; }
+    .warning-icon { cursor: help; margin-left: 6px; color: var(--yellow); font-size: 13px; }
   </style>
 </head>
 <body>
 
   <div class="header">
     <h1>
-      <span class="icon">&#9881;</span>
+      <span class="icon"></span>
       Test Automation Dashboard
     </h1>
     <div class="header-actions">
@@ -537,7 +821,7 @@
         Headed
         <div class="toggle-switch" id="headed-switch"></div>
       </label>
-      <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">&#8635; Refresh</button>
+      <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">Odswiez</button>
     </div>
   </div>
 
@@ -567,7 +851,7 @@
             <div style="display:flex; align-items:center; gap:10px;">
               <span class="status-dot status-idle" id="run-status-dot"></span>
               <span id="run-status-text" style="font-size:12px; color:var(--text-muted)">Gotowy</span>
-              <button class="btn btn-sm btn-danger" id="btn-stop" style="display:none" onclick="stopRun()">&#9632; Stop</button>
+              <button class="btn btn-sm btn-danger" id="btn-stop" style="display:none" onclick="stopRun()">Stop</button>
               <button class="btn btn-sm" onclick="clearTerminal()">Wyczysc</button>
             </div>
           </div>
@@ -583,7 +867,7 @@
               <span class="stat" id="prog-heal-stat" style="display:none"><span class="dot-h">&#9679;</span> <span id="prog-healed">0</span> healed</span>
             </div>
           </div>
-          <div class="terminal-body" id="terminal-output">Gotowy do uruchomienia testow...\n</div>
+          <div class="terminal-body" id="terminal-output">Gotowy do uruchomienia testów...\n</div>
         </div>
       </div>
     </div>
@@ -600,21 +884,18 @@
 
     let healCount = 0;
 
-    const AREA_ICONS = {
-      'login': '&#128274;',
-      'registration': '&#128221;',
-      'homepage': '&#127968;',
-      'search': '&#128269;',
-      'cart': '&#128722;',
-      'checkout': '&#128179;',
-      'product-page': '&#128230;',
-      'category': '&#128194;',
-      'api': '&#127760;',
-    };
-
-    const PROJECT_COLORS = {
-      'getprice': '#6c63ff',
-      'willsoor': '#22c55e',
+    const AREA_NAMES_PL = {
+      'login': 'Logowanie',
+      'registration': 'Rejestracja',
+      'homepage': 'Strona główna',
+      'search': 'Wyszukiwarka',
+      'cart': 'Koszyk',
+      'checkout': 'Proces zakupowy',
+      'product-page': 'Karta produktu',
+      'category': 'Kategoria',
+      'footer': 'Stopka',
+      'configurator': 'Konfigurator',
+      'api': 'API',
     };
 
     // --- WebSocket ---
@@ -659,7 +940,7 @@
 
           // Show report link
           if (msg.reportUrl) {
-            appendTerminalHTML(`<a href="${msg.reportUrl}" target="_blank" style="color:#6c63ff; text-decoration:underline; font-weight:600;">📊 Otworz raport HTML</a>\n`);
+            appendTerminalHTML(`<a href="${msg.reportUrl}" target="_blank" style="color:var(--accent); text-decoration:underline; font-weight:600;">📊 Otworz raport HTML</a>\n`);
           }
 
           // Show screenshots if any (failure screenshots)
@@ -709,45 +990,13 @@
       let html = '<div class="sidebar-section"><div class="sidebar-section-title">Projekty</div>';
 
       for (const project of projects) {
-        const color = PROJECT_COLORS[project.name] || '#6c63ff';
         const isActive = activeProject && activeProject.name === project.name;
 
         html += `
           <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="showProject(findProject('${project.name}'))">
-            <div class="item-left">
-              <div class="project-icon" style="background:${color}"></div>
-              <span class="name">${project.displayName}</span>
-            </div>
+            <span class="name">${project.displayName}</span>
             <span class="badge">${project.totalTests}</span>
           </div>`;
-
-        if (isActive) {
-          for (const area of project.areas) {
-            const icon = AREA_ICONS[area.name] || '&#128196;';
-            const isAreaActive = activeArea && activeArea.name === area.name;
-            html += `
-              <div class="sidebar-item ${isAreaActive ? 'active' : ''}"
-                   style="padding-left: 40px; font-size: 13px;"
-                   onclick="event.stopPropagation(); showArea(findProject('${project.name}'), '${area.name}')">
-                <div class="item-left">
-                  <span style="margin-right:6px">${icon}</span>
-                  <span class="name">${area.displayName}</span>
-                </div>
-                <span class="badge">${area.testCount}</span>
-              </div>`;
-          }
-
-          // History link per project
-          html += `
-            <div class="sidebar-item"
-                 style="padding-left: 40px; font-size: 13px; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 10px;"
-                 onclick="event.stopPropagation(); showHistory('${project.name}')">
-              <div class="item-left">
-                <span style="margin-right:6px">&#128203;</span>
-                <span class="name" style="color:var(--text-muted)">Historia runow</span>
-              </div>
-            </div>`;
-        }
       }
 
       html += '</div>';
@@ -770,17 +1019,20 @@
         <div class="main-header">
           <div>
             <h2>${project.displayName}</h2>
-            <div class="subtitle">${project.totalTests} testow w ${project.areas.length} obszarach</div>
+            <div class="subtitle">${project.totalTests} testów w ${project.areas.length} obszarach</div>
           </div>
           <div class="btn-group">
             <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')">
-              &#9654; Uruchom wszystkie
+              Uruchom wszystkie
             </button>
             <button class="btn" onclick="runTests('${project.name}', 'e2e')">
-              &#127912; Tylko E2E
+              Tylko E2E
             </button>
             <button class="btn" onclick="runTests('${project.name}', 'api')">
-              &#127760; Tylko API
+              Tylko API
+            </button>
+            <button class="btn" onclick="showHistory('${project.name}')">
+              Historia
             </button>
           </div>
         </div>
@@ -808,35 +1060,18 @@
         <div class="areas-grid">`;
 
       for (const area of project.areas) {
-        const icon = AREA_ICONS[area.name] || '&#128196;';
+        const plName = AREA_NAMES_PL[area.name] || area.displayName;
         html += `
           <div class="area-card" onclick="showArea(findProject('${project.name}'), '${area.name}')">
-            <div class="area-card-header">
-              <div class="area-title">
-                <span class="area-icon">${icon}</span>
-                ${area.displayName}
-              </div>
-              <span class="area-count">${area.testCount} testow</span>
+            <div class="card-static-name">${plName}<div class="card-static-count">${area.testCount} testów</div></div>
+            <div class="card-circles">
+              <div class="card-circle"></div>
+              <div class="card-circle card-circle--bottom"></div>
+              <div class="card-circle card-circle--right"></div>
             </div>
-            <div class="area-card-body">
-              <ul class="test-list">`;
-
-        for (const t of area.tests.slice(0, 4)) {
-          html += `
-                <li class="test-item">
-                  <span class="test-name">${escapeHtml(t.name)}</span>
-                </li>`;
-        }
-
-        if (area.tests.length > 4) {
-          html += `
-                <li class="test-item">
-                  <span class="test-name" style="color:var(--text-muted)">... i ${area.tests.length - 4} wiecej</span>
-                </li>`;
-        }
-
-        html += `
-              </ul>
+            <div class="card-label">
+              <div class="card-label-name">${plName}</div>
+              <div class="card-label-count">${area.testCount} testów</div>
             </div>
           </div>`;
       }
@@ -854,20 +1089,20 @@
       renderSidebar();
 
       const main = document.getElementById('main-content');
-      const icon = AREA_ICONS[area.name] || '&#128196;';
+      const plName = AREA_NAMES_PL[area.name] || area.displayName;
 
       let html = `
         <div class="main-header">
           <div>
-            <h2>${icon} ${area.displayName}</h2>
-            <div class="subtitle">${project.displayName} &bull; ${area.testCount} testow &bull; ${area.specFile}</div>
+            <h2>${plName}</h2>
+            <div class="subtitle">${project.displayName} &bull; ${area.testCount} testów &bull; ${area.specFile}</div>
           </div>
           <div class="btn-group">
             <button class="btn btn-primary" onclick="runTests('${project.name}', '${area.name}')">
-              &#9654; Uruchom obszar
+              Uruchom obszar
             </button>
             <button class="btn" onclick="showProject(findProject('${project.name}'))">
-              &#8592; Wstecz
+              Wstecz
             </button>
           </div>
         </div>
@@ -878,34 +1113,72 @@
             <span style="font-size:12px; color:var(--text-muted)">${area.specFile}</span>
           </div>
           <div class="card-body">
-            <table style="width:100%; border-collapse:collapse;">
+            <table class="test-table">
               <thead>
-                <tr style="border-bottom:1px solid var(--border); text-align:left;">
-                  <th style="padding:12px 20px; font-size:12px; color:var(--text-muted); font-weight:600;">#</th>
-                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Nazwa testu</th>
-                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Linia</th>
-                  <th style="padding:12px 20px; font-size:12px; color:var(--text-muted); font-weight:600; text-align:right;">Akcja</th>
+                <tr>
+                  <th style="text-align:center;">#</th>
+                  <th>Nazwa testu</th>
+                  <th>Co sprawdza</th>
+                  <th>Linia</th>
+                  <th style="text-align:right;">Akcja</th>
                 </tr>
               </thead>
               <tbody>`;
 
       area.tests.forEach((t, i) => {
-        const hasWarning = t.warning;
-        const rowStyle = hasWarning
-          ? 'border-bottom:1px solid var(--border); background: rgba(234,179,8,0.05);'
-          : 'border-bottom:1px solid var(--border);';
-        const warningIcon = hasWarning
-          ? `<span title="${escapeHtml(t.warning)}" style="cursor:help; margin-left:6px; color:var(--yellow); font-size:14px;">&#9888;</span>`
+        const rowCls = t.warning ? 'row-warning' : '';
+        const warningIcon = t.warning
+          ? `<span class="warning-icon" title="${escapeHtml(t.warning)}">&#9888;</span>`
           : '';
 
+        // Build rich details HTML
+        let detailsHtml = '';
+        const d = t.details;
+        const hasDetails = d && (d.navigations.length || d.selectors.length || d.assertions.length || d.actions.length);
+
+        if (hasDetails) {
+          detailsHtml = '<div class="td-details">';
+
+          if (t.description) {
+            detailsHtml += `<div class="detail-summary">${escapeHtml(t.description)}</div>`;
+          }
+
+          if (d.navigations.length > 0) {
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-nav">nawigacja</span><span class="detail-codes">${d.navigations.map(n => '<code>' + escapeHtml(n) + '</code>').join('')}</span></div>`;
+          }
+
+          if (d.selectors.length > 0) {
+            const shown = d.selectors.slice(0, 6);
+            const more = d.selectors.length > 6 ? '<span class="detail-more">+' + (d.selectors.length - 6) + ' więcej</span>' : '';
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-loc">lokator</span><span class="detail-codes">${shown.map(s => '<code>' + escapeHtml(s) + '</code>').join('')}${more}</span></div>`;
+          }
+
+          if (d.actions.length > 0) {
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-act">akcja</span><span class="detail-text">${d.actions.map(a => escapeHtml(a)).join(', ')}</span></div>`;
+          }
+
+          if (d.assertions.length > 0) {
+            const shownA = d.assertions.slice(0, 5);
+            const moreA = d.assertions.length > 5 ? ', <span class="detail-more">+' + (d.assertions.length - 5) + ' więcej</span>' : '';
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-chk">sprawdza</span><span class="detail-text">${shownA.map(a => escapeHtml(a)).join(', ')}${moreA}</span></div>`;
+          }
+
+          detailsHtml += '</div>';
+        } else {
+          detailsHtml = t.description
+            ? `<div class="td-details"><div class="detail-summary">${escapeHtml(t.description)}</div></div>`
+            : '<span class="detail-empty">fixture / page-object</span>';
+        }
+
         html += `
-                <tr style="${rowStyle}">
-                  <td style="padding:12px 20px; color:var(--text-muted); font-size:13px;">${i + 1}</td>
-                  <td style="padding:12px 8px; font-size:13px;">${escapeHtml(t.name)}${warningIcon}</td>
-                  <td style="padding:12px 8px; font-size:13px; color:var(--text-muted);">:${t.line}</td>
-                  <td style="padding:12px 20px; text-align:right;">
+                <tr class="${rowCls}">
+                  <td class="col-idx">${i + 1}</td>
+                  <td class="col-name">${escapeHtml(t.name)}${warningIcon}</td>
+                  <td class="col-details">${detailsHtml}</td>
+                  <td class="col-line">:${t.line}</td>
+                  <td class="col-action">
                     <button class="btn btn-sm" onclick="event.stopPropagation(); runTests('${project.name}', '${area.name}', '${escapeAttr(t.name)}')">
-                      &#9654; Uruchom
+                      Uruchom
                     </button>
                   </td>
                 </tr>`;
@@ -1074,7 +1347,7 @@
             <div class="subtitle">${activeProject?.displayName || projectName} &bull; ${history.length} runow</div>
           </div>
           <div class="btn-group">
-            <button class="btn" onclick="showProject(findProject('${projectName}'))">&#8592; Wstecz</button>
+            <button class="btn" onclick="showProject(findProject('${projectName}'))">Wstecz</button>
           </div>
         </div>
 

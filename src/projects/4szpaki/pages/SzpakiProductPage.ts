@@ -3,42 +3,48 @@ import { ProductPage } from '../../../core/pages/ProductPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
 export class SzpakiProductPage extends ProductPage {
-  // 4szpaki has multiple "Dodaj" buttons per variant, no #product-addtocart-button
   protected get addToCartButton(): HealableLocator {
     return healable('4szpaki add to cart',
-      'button.action.tocart.primary',
-      'button:has-text("Dodaj")',
-      '#product-addtocart-button'
+      '#product-addtocart-button',
+      'button:has-text("Dodaj do koszyka")'
     );
   }
 
   async selectFirstAvailableOption(): Promise<void> {
-    // 4szpaki has variant buttons — no global swatch needed
+    // 4szpaki simple products — no swatch needed
   }
 
   async setQuantity(qty: number): Promise<void> {
-    const qtyInput = this.page.locator('#qty, input[name="qty"]');
-    if (await qtyInput.first().isVisible({ timeout: 1000 }).catch(() => false)) {
-      await qtyInput.first().fill(qty.toString());
+    // 4szpaki uses +/- buttons for qty, input may be readonly
+    if (qty <= 1) return; // Default qty is already 1
+    // Use + button to increase qty
+    for (let i = 1; i < qty; i++) {
+      const plusBtn = this.page.locator('button[data-bind*="increaseQty"], .qty-increase, button:near(input[name="qty"]):has-text("+")').first();
+      if (await plusBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await plusBtn.click();
+      }
     }
   }
 
   async addToCart(): Promise<void> {
-    const btn = this.page.locator('button.action.tocart.primary').first();
+    const btn = this.page.locator('#product-addtocart-button');
+    // Wait for Magento JS to enable the button (disabled until JS loads)
+    await expect(btn).toBeEnabled({ timeout: 15000 });
     await btn.click();
-    // Wait for AJAX add-to-cart response
-    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForTimeout(3000);
   }
 
   async expectAddToCartSuccess(): Promise<void> {
-    const msg = this.page.locator('.message-success');
-    const hasMsgNow = await msg.first().isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasMsgNow) return;
-
-    // Fallback: check cart
-    await this.page.goto(`${this.config.baseUrl}/checkout/cart/`, { waitUntil: 'domcontentloaded' });
-    await this.page.waitForLoadState('load');
-    const items = await this.page.locator('.cart.item, #shopping-cart-table tbody tr').count();
-    expect(items).toBeGreaterThan(0);
+    await expect(async () => {
+      const customMsg = await this.page.getByText('Produkt dodany do Twojego').first().isVisible().catch(() => false);
+      const addedMsg = await this.page.getByText('Dodane').first().isVisible().catch(() => false);
+      const stdMsg = await this.page.locator('.message-success').first().isVisible().catch(() => false);
+      const cartHasItems = await this.page.locator('.counter-number, .minicart-wrapper .counter').first().textContent()
+        .then(t => Number(t?.trim()) > 0).catch(() => false);
+      expect(customMsg || addedMsg || stdMsg || cartHasItems).toBeTruthy();
+    }).toPass({
+      intervals: [500, 1000, 2000],
+      timeout: 15000,
+    });
   }
 }

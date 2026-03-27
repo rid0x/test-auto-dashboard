@@ -7,6 +7,7 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
     await productPage.expectAddToCartSuccess();
   });
 
+  // @desc: Przejscie z koszyka do strony checkout
   test('should navigate to checkout from cart', async ({ cartPage, page }) => {
     await cartPage.goto();
 
@@ -19,8 +20,9 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout page', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should display checkout form', async ({ page }) => {
-    await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
+  // @desc: Formularz checkout jest widoczny po wyborze metody platnosci
+  test('should display checkout form', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
 
     const checkoutForm = page.locator('#checkout, .checkout-container, .opc-wrapper');
     await expect(checkoutForm.first()).toBeVisible({ timeout: 15000 });
@@ -29,8 +31,9 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout form', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should display order summary in checkout', async ({ page }) => {
-    await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
+  // @desc: Podsumowanie zamowienia jest widoczne na checkout
+  test('should display order summary in checkout', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
 
     const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
     await expect(summary.first()).toBeVisible({ timeout: 15000 });
@@ -39,8 +42,9 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should navigate to cart from checkout', async ({ page }) => {
-    await page.goto('https://4szpaki.pl/checkout/', { waitUntil: 'load' });
+  // @desc: Link powrotny do koszyka jest dostepny na stronie checkout
+  test('should navigate to cart from checkout', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
     await page.waitForLoadState('networkidle').catch(() => {});
 
     const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');

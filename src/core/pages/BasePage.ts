@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { findElement, HealableLocator } from '../helpers/auto-healing';
-import { dismissCookiesIfPresent } from '../helpers/cookie-consent';
+import { dismissCookiesIfPresent, setupSalesmanagoAutoDismiss } from '../helpers/cookie-consent';
 import { ProjectConfig } from '../types/project.types';
 
 export abstract class BasePage {
@@ -16,6 +16,8 @@ export abstract class BasePage {
     if (this.config.features.hasCookieConsent) {
       await dismissCookiesIfPresent(this.page, this.config.features.cookieConsentSelector);
     }
+    // Auto-dismiss salesmanago popup (appears after 15-30s on some stores)
+    setupSalesmanagoAutoDismiss(this.page);
   }
 
   async findWithHealing(locator: HealableLocator, options?: { timeout?: number }): Promise<Locator> {

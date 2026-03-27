@@ -5,6 +5,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     await homePage.goto();
   });
 
+  // @desc: Stopka strony jest widoczna po przewinieciu na dol
   test('should display footer', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -14,6 +15,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     await test.info().attach('Footer', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Stopka zawiera linki nawigacyjne (count > 0)
   test('should have footer links', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -23,6 +25,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     expect(count).toBeGreaterThan(0);
   });
 
+  // @desc: Stopka zawiera dane kontaktowe (email, telefon lub adres)
   test('should have contact information in footer', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -33,6 +36,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     expect(hasContact).toBeTruthy();
   });
 
+  // @desc: Formularz zapisu na newsletter z polem email jest widoczny w stopce
   test('should display newsletter form', async ({ page }) => {
     // Newsletter may be in footer or separate section
     const newsletter = page.locator(
@@ -52,6 +56,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     await test.info().attach('Newsletter form', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Walidacja pola email w formularzu newsletter (poprawny format)
   test('should validate newsletter email', async ({ page }) => {
     // Find newsletter input
     const emailInput = page.locator(
@@ -77,6 +82,7 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
     }
   });
 
+  // @desc: Linki do mediow spolecznosciowych sa widoczne w stopce
   test('should have social media links', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -86,7 +92,9 @@ test.describe('4szpaki - Footer & Newsletter @footer @e2e', () => {
       'a[href*="twitter"], a[href*="youtube"], a[href*="tiktok"]'
     );
     const count = await socialLinks.count();
-    // Some shops may not have social links — just track
-    expect(count).toBeGreaterThanOrEqual(0);
+    if (count === 0) {
+      test.skip(true, 'Brak linkow do mediow spolecznosciowych w stopce');
+    }
+    expect(count).toBeGreaterThan(0);
   });
 });

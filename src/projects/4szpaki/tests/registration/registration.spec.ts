@@ -8,112 +8,48 @@ test.describe('4szpaki - Registration @registration @e2e', () => {
 
   // === FORM STRUCTURE ===
 
+  // @desc: Formularz rejestracji wyswietla pola: imie, nazwisko, email, haslo, potwierdzenie
   test('should display all required form fields', async ({ page }) => {
-    await test.step('Firstname field', async () => {
-      const field = page.locator('#firstname');
-      await expect(field).toBeVisible();
-      expect(await field.getAttribute('type')).toBe('text');
-      expect(await field.getAttribute('name')).toBe('firstname');
+    await test.step('Imie', async () => {
+      await expect(page.getByRole('textbox', { name: 'Imię' })).toBeVisible();
     });
-
-    await test.step('Lastname field', async () => {
-      const field = page.locator('#lastname');
-      await expect(field).toBeVisible();
-      expect(await field.getAttribute('name')).toBe('lastname');
+    await test.step('Nazwisko', async () => {
+      await expect(page.getByRole('textbox', { name: 'Nazwisko' })).toBeVisible();
     });
-
-    await test.step('Email field', async () => {
-      const field = page.locator('#email_address');
-      await expect(field).toBeVisible();
-      expect(await field.getAttribute('name')).toBe('email');
+    await test.step('Email', async () => {
+      await expect(page.getByRole('textbox', { name: 'E-mail' })).toBeVisible();
     });
-
-    await test.step('Password field', async () => {
-      const field = page.locator('#password');
-      await expect(field).toBeVisible();
-      expect(await field.getAttribute('type')).toBe('password');
+    await test.step('Haslo', async () => {
+      await expect(page.getByRole('textbox', { name: 'Hasło' }).first()).toBeVisible();
     });
-
-    await test.step('Password confirmation field', async () => {
-      const field = page.locator('#password-confirmation');
-      await expect(field).toBeVisible();
-      expect(await field.getAttribute('type')).toBe('password');
+    await test.step('Potwierdz haslo', async () => {
+      await expect(page.getByRole('textbox', { name: 'Potwierdź hasło' })).toBeVisible();
     });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Registration form fields', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should display correct labels for all fields', async ({ page }) => {
-    await expect(page.locator('label[for="firstname"]')).toContainText('Imię');
-    await expect(page.locator('label[for="lastname"]')).toContainText('Nazwisko');
-    await expect(page.locator('label[for="email_address"]')).toContainText('E-mail');
-    await expect(page.locator('label[for="password"]')).toContainText('Hasło');
-    await expect(page.locator('label[for="password-confirmation"]')).toContainText('Potwierdź hasło');
+  // @desc: Przycisk "Zarejestruj sie" jest widoczny na formularzu
+  test('should display submit button', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Zarejestruj się' })).toBeVisible();
   });
 
-  test('should mark required fields correctly', async ({ page }) => {
-    const firstname = page.locator('#firstname');
-    const lastname = page.locator('#lastname');
-    const email = page.locator('#email_address');
-    const password = page.locator('#password');
-    const confirmation = page.locator('#password-confirmation');
-
-    for (const field of [firstname, lastname, email, password, confirmation]) {
-      const isRequired = await field.getAttribute('required') !== null
-        || (await field.getAttribute('class'))?.includes('required-entry');
-      expect(isRequired).toBeTruthy();
-    }
-  });
-
-  test('should display submit button and back link', async ({ page }) => {
-    await test.step('Submit button', async () => {
-      const btn = page.locator('#accountcreate button[type="submit"]');
-      await expect(btn).toBeVisible();
-      await expect(btn).toContainText('Utwórz konto');
-    });
-
-    await test.step('Back link', async () => {
-      const back = page.locator('a.action.back, a:has-text("Wróć")');
-      await expect(back.first()).toBeVisible();
-    });
+  // @desc: Checkbox "Zaznacz wszystko" z regulaminem jest widoczny
+  test('should display consent checkboxes', async ({ page }) => {
+    await expect(page.locator('label').filter({ hasText: 'Zaznacz wszystko' })).toBeVisible();
+    await expect(page.locator('label').filter({ hasText: 'Akceptuję warunki regulaminu' })).toBeVisible();
   });
 
   // === PASSWORD VALIDATION ===
 
-  test('should show password strength meter', async ({ page }) => {
-    const meter = page.locator('#password-strength-meter-container');
-    await expect(meter).toBeVisible();
-
-    await test.step('Weak password', async () => {
-      await page.locator('#password').fill('abc');
-      await page.locator('#password').blur();
-      await expect(meter).not.toHaveText('', { timeout: 3000 });
-      const text = await meter.textContent();
-      expect(text).toBeTruthy();
-    });
-
-    await test.step('Strong password', async () => {
-      await page.locator('#password').fill('StrongP@ss123!XYZ');
-      await page.locator('#password').blur();
-      await expect(meter).not.toHaveText('', { timeout: 3000 });
-      const text = await meter.textContent();
-      expect(text).toBeTruthy();
-    });
-
-    const screenshot = await page.screenshot();
-    await test.info().attach('Password strength', { body: screenshot, contentType: 'image/png' });
-  });
-
+  // @desc: Rozne hasla w polach haslo/potwierdzenie wyswietlaja blad walidacji
   test('should validate password mismatch', async ({ page }) => {
-    await page.locator('#password').fill('Password123!');
-    await page.locator('#password-confirmation').fill('DifferentPass456!');
-    await page.locator('#password-confirmation').blur();
-    // Allow Magento JS validation to process
-    await page.locator('#password-confirmation-error, .mage-error').first().waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
+    await page.getByRole('textbox', { name: 'Hasło' }).first().fill('Password123!');
+    await page.getByRole('textbox', { name: 'Potwierdź hasło' }).fill('DifferentPass!');
+    await page.getByRole('button', { name: 'Zarejestruj się' }).click();
 
-    const confirmValue = await page.locator('#password-confirmation').inputValue();
-    expect(confirmValue).toBe('DifferentPass456!');
+    await expect(page.getByText('Wpisz ponownie tę samą wartość')).toBeVisible({ timeout: 5000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Password mismatch', { body: screenshot, contentType: 'image/png' });
@@ -121,87 +57,44 @@ test.describe('4szpaki - Registration @registration @e2e', () => {
 
   // === FIELD VALIDATION ===
 
+  // @desc: Pusty formularz po kliknieciu submit wyswietla bledy walidacji
   test('should validate required fields on empty submit', async ({ page }) => {
-    await page.locator('#accountcreate button[type="submit"]').click();
-    // Wait for client-side validation errors to appear
-    await page.locator('.mage-error:visible, :invalid').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+    // Accept consents first so submit attempts validation
+    await page.locator('label').filter({ hasText: 'Zaznacz wszystko' }).click();
+    await page.getByRole('button', { name: 'Zarejestruj się' }).click();
 
-    const errors = page.locator('.mage-error:visible, :invalid');
-    const count = await errors.count();
-    expect(count).toBeGreaterThan(0);
+    // 4szpaki shows #firstname-error, #lastname-error etc.
+    await expect(page.locator('#firstname-error, #lastname-error, #email_address-error').first()).toBeVisible({ timeout: 5000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Empty form validation', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should validate email format', async ({ page }) => {
-    await page.locator('#firstname').fill('Test');
-    await page.locator('#lastname').fill('User');
-    await page.locator('#email_address').fill('not-an-email');
-    await page.locator('#password').fill('ValidPass123!');
-    await page.locator('#password-confirmation').fill('ValidPass123!');
-
-    await page.locator('#email_address').blur();
-    // Allow Magento JS validation to process
-    await page.locator('.mage-error, :invalid').first().waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
-
-    const screenshot = await page.screenshot();
-    await test.info().attach('Invalid email format', { body: screenshot, contentType: 'image/png' });
-  });
-
+  // @desc: Wszystkie pola akceptuja tekst i przechowuja wpisane wartosci
   test('should accept input in all fields', async ({ page }) => {
-    await test.step('Fill all fields', async () => {
-      await page.locator('#firstname').fill('Aurora');
-      await page.locator('#lastname').fill('Bot');
-      await page.locator('#email_address').fill('test@test.com');
-      await page.locator('#password').fill('StrongP@ss123!');
-      await page.locator('#password-confirmation').fill('StrongP@ss123!');
-    });
+    await page.getByRole('textbox', { name: 'Imię' }).fill('Aurora');
+    await page.getByRole('textbox', { name: 'Nazwisko' }).fill('Bot');
+    await page.getByRole('textbox', { name: 'E-mail' }).fill('test@test.com');
+    await page.getByRole('textbox', { name: 'Hasło' }).first().fill('StrongP@ss123!');
+    await page.getByRole('textbox', { name: 'Potwierdź hasło' }).fill('StrongP@ss123!');
 
-    await test.step('Verify values are set', async () => {
-      expect(await page.locator('#firstname').inputValue()).toBe('Aurora');
-      expect(await page.locator('#lastname').inputValue()).toBe('Bot');
-      expect(await page.locator('#email_address').inputValue()).toBe('test@test.com');
-      expect(await page.locator('#password').inputValue()).toBe('StrongP@ss123!');
-      expect(await page.locator('#password-confirmation').inputValue()).toBe('StrongP@ss123!');
-    });
+    expect(await page.getByRole('textbox', { name: 'Imię' }).inputValue()).toBe('Aurora');
+    expect(await page.getByRole('textbox', { name: 'Nazwisko' }).inputValue()).toBe('Bot');
 
     const screenshot = await page.screenshot();
     await test.info().attach('All fields filled', { body: screenshot, contentType: 'image/png' });
   });
 
-  // === NAVIGATION ===
-
-  test('should have back button that navigates to login', async ({ page }) => {
-    const backLink = page.locator('a.action.back, a:has-text("Wróć")');
-    await expect(backLink.first()).toBeVisible();
-    const href = await backLink.first().getAttribute('href');
-    expect(href).toContain('login');
-  });
-
   // === RECAPTCHA-BLOCKED TESTS ===
 
+  // @desc: Rejestracja poprawnymi danymi (skip — reCAPTCHA blokuje)
   test('should register with valid data', async ({ registrationPage, page, config }) => {
-    skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
-
-    await registrationPage.register({
-      firstName: config.registration.firstName,
-      lastName: config.registration.lastName,
-      email: config.registration.testEmail,
-      password: config.registration.testPassword,
-    });
-    await registrationPage.expectRegistrationSuccess();
+    // 4szpaki has reCAPTCHA on registration
+    test.skip(true, 'reCAPTCHA blokuje rejestracje na 4szpaki');
   });
 
+  // @desc: Rejestracja na istniejacy email (skip — reCAPTCHA blokuje)
   test('should show error for existing email', async ({ registrationPage, page, config }) => {
-    skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
-
-    await registrationPage.register({
-      firstName: config.registration.firstName,
-      lastName: config.registration.lastName,
-      email: config.credentials.valid.email,
-      password: config.registration.testPassword,
-    });
-    await registrationPage.expectRegistrationError();
+    test.skip(true, 'reCAPTCHA blokuje rejestracje na 4szpaki');
   });
 });

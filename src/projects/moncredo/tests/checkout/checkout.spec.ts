@@ -8,6 +8,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
     await productPage.expectAddToCartSuccess();
   });
 
+  // @desc: Przejscie z koszyka do strony checkout
   test('should navigate to checkout from cart', async ({ cartPage, page }) => {
     await cartPage.goto();
 
@@ -20,6 +21,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
     await test.info().attach('Checkout page', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Checkout wyswietla wybor logowania lub zakupow jako gosc
   test('should display login/guest choice', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
     await page.waitForLoadState('networkidle').catch(() => {});
@@ -36,6 +38,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
     await test.info().attach('Login/guest choice', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Podsumowanie zamowienia jest widoczne na checkout
   test('should display order summary in checkout', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
 
@@ -47,6 +50,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Nazwa produktu pojawia sie w podsumowaniu checkout
   test('should show product in checkout summary', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
 
@@ -55,6 +59,7 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
     await expect(productName.first()).toBeVisible({ timeout: 10000 });
   });
 
+  // @desc: Link powrotny do koszyka jest dostepny na stronie checkout
   test('should navigate to cart from checkout', async ({ page }) => {
     await page.goto('https://moncredo.pl/checkout/', { waitUntil: 'load' });
     await page.waitForLoadState('networkidle').catch(() => {});

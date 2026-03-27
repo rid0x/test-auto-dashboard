@@ -1,13 +1,7 @@
 import { test, expect } from '../../fixture';
 
-// Helper: add product to cart and wait for success using smart waits
-async function addProductToCart(page: any) {
-  await page.locator('#product-addtocart-button').click();
-  // Wait for success message (smart wait — no hard timeout)
-  await expect(page.locator('.message.success').first()).toBeVisible({ timeout: 10000 });
-}
-
 test.describe('Getprice - Cart @cart @e2e', () => {
+  // @desc: Pusty koszyk wyswietla komunikat o braku produktow
   test('should display empty cart', async ({ cartPage, page }) => {
     await cartPage.goto();
     await cartPage.expectCartEmpty();
@@ -16,9 +10,11 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await test.info().attach('Empty cart', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Dodanie produktu do koszyka ze strony produktu i weryfikacja koszyka
   test('should add product to cart from product page', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
     await cartPage.expectCartNotEmpty();
@@ -27,9 +23,11 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await test.info().attach('Cart with product', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Koszyk wyswietla szczegoly produktu: nazwe, cene, pole ilosci i przycisk usuwania
   test('should display cart item details', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
 
@@ -53,19 +51,16 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await test.info().attach('Cart item details', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Zmiana ilosci produktu w koszyku i weryfikacja aktualizacji
   test('should update quantity in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
 
-    await test.step('Change quantity', async () => {
-      const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
-      await qtyInput.fill('3');
-
-      const updateBtn = page.locator('.action.update, button:has-text("Aktualizuj")').first();
-      await updateBtn.click();
-      await page.waitForLoadState('load');
+    await test.step('Change quantity to 3', async () => {
+      await cartPage.updateQuantity(0, 3);
     });
 
     await cartPage.expectCartNotEmpty();
@@ -74,31 +69,36 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await test.info().attach('Updated quantity', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Usuniecie produktu z koszyka i weryfikacja pustego koszyka
   test('should remove item from cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
 
     await test.step('Remove item', async () => {
-      await page.locator('.action-delete').first().click();
-      await page.waitForLoadState('load');
+      await cartPage.removeFirstItem();
     });
 
     await cartPage.expectCartEmpty();
   });
 
+  // @desc: Koszyk wyswietla podsumowanie z kwota do zaplaty
   test('should display cart subtotal', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
     await expect(page.locator('.cart-summary').first()).toBeVisible();
   });
 
+  // @desc: Przycisk "Do kasy" jest widoczny i klikalny w koszyku
   test('should have proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
 
@@ -110,9 +110,11 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await test.info().attach('Checkout button', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Mini-koszyk aktualizuje licznik po dodaniu produktu
   test('should show mini cart after adding product', async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await addProductToCart(page);
+    await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     // Wait for cart counter to update
     await expect(page.locator('#menu-cart-icon')).toContainText(/[1-9]/, { timeout: 10000 });

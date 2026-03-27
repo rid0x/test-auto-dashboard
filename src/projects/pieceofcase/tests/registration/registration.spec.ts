@@ -8,6 +8,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
 
   // === FORM STRUCTURE ===
 
+  // @desc: Formularz rejestracji wyswietla pola: imie, nazwisko, email, haslo, potwierdzenie
   test('should display all required form fields', async ({ page }) => {
     await test.step('Firstname field', async () => {
       const field = page.locator('#firstname');
@@ -44,6 +45,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await test.info().attach('Registration form fields', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Etykiety pol sa po polsku: Imie, Nazwisko, E-mail, Haslo, Potwierdz haslo
   test('should display correct labels for all fields', async ({ page }) => {
     await expect(page.locator('label[for="firstname"]')).toContainText('Imię');
     await expect(page.locator('label[for="lastname"]')).toContainText('Nazwisko');
@@ -52,6 +54,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await expect(page.locator('label[for="password-confirmation"]')).toContainText('Potwierdź hasło');
   });
 
+  // @desc: Wymagane pola maja atrybut required lub klase required-entry
   test('should mark required fields correctly', async ({ page }) => {
     const firstname = page.locator('#firstname');
     const lastname = page.locator('#lastname');
@@ -66,6 +69,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     }
   });
 
+  // @desc: Przycisk "Utworz konto" i link "Wroc" sa widoczne
   test('should display submit button and back link', async ({ page }) => {
     await test.step('Submit button', async () => {
       const btn = page.locator('#accountcreate button[type="submit"]');
@@ -81,6 +85,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
 
   // === PASSWORD VALIDATION ===
 
+  // @desc: Miernik sily hasla reaguje na wpisywane haslo (slabe/silne)
   test('should show password strength meter', async ({ page }) => {
     const meter = page.locator('#password-strength-meter-container');
     await expect(meter).toBeVisible();
@@ -105,6 +110,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await test.info().attach('Password strength', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Rozne hasla w polach haslo/potwierdzenie sa wykrywane jako blad
   test('should validate password mismatch', async ({ page }) => {
     await page.locator('#password').fill('Password123!');
     await page.locator('#password-confirmation').fill('DifferentPass456!');
@@ -121,6 +127,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
 
   // === FIELD VALIDATION ===
 
+  // @desc: Pusty formularz wyswietla bledy walidacji na wymaganych polach
   test('should validate required fields on empty submit', async ({ page }) => {
     await page.locator('#accountcreate button[type="submit"]').click();
     // Wait for client-side validation errors to appear
@@ -134,6 +141,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await test.info().attach('Empty form validation', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Niepoprawny format email jest wykrywany przez walidacje klienta
   test('should validate email format', async ({ page }) => {
     await page.locator('#firstname').fill('Test');
     await page.locator('#lastname').fill('User');
@@ -149,6 +157,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await test.info().attach('Invalid email format', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Wszystkie pola akceptuja tekst i przechowuja wpisane wartosci
   test('should accept input in all fields', async ({ page }) => {
     await test.step('Fill all fields', async () => {
       await page.locator('#firstname').fill('Aurora');
@@ -172,6 +181,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
 
   // === NAVIGATION ===
 
+  // @desc: Link "Wroc" kieruje na strone logowania (href zawiera login)
   test('should have back button that navigates to login', async ({ page }) => {
     const backLink = page.locator('a.action.back, a:has-text("Wróć")');
     await expect(backLink.first()).toBeVisible();
@@ -181,6 +191,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
 
   // === RECAPTCHA-BLOCKED TESTS ===
 
+  // @desc: Rejestracja poprawnymi danymi konczy sie sukcesem (skip jesli reCAPTCHA)
   test('should register with valid data', async ({ registrationPage, page, config }) => {
     skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
 
@@ -193,6 +204,7 @@ test.describe('Pieceofcase - Registration @registration @e2e', () => {
     await registrationPage.expectRegistrationSuccess();
   });
 
+  // @desc: Rejestracja na istniejacy email wyswietla komunikat bledu
   test('should show error for existing email', async ({ registrationPage, page, config }) => {
     skipIfRecaptchaConfigured(config.features.hasRecaptchaOnRegistration, test.info());
 

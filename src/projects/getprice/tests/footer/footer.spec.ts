@@ -5,6 +5,7 @@ test.describe('Getprice - Footer & Newsletter @footer @e2e', () => {
     await homePage.goto();
   });
 
+  // @desc: Stopka strony jest widoczna po przewinieciu na dol
   test('should display footer', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -14,6 +15,7 @@ test.describe('Getprice - Footer & Newsletter @footer @e2e', () => {
     await test.info().attach('Footer', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Stopka zawiera linki nawigacyjne (count > 0)
   test('should have footer links', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -23,6 +25,7 @@ test.describe('Getprice - Footer & Newsletter @footer @e2e', () => {
     expect(count).toBeGreaterThan(0);
   });
 
+  // @desc: Stopka zawiera dane kontaktowe (email, telefon lub adres)
   test('should have contact information in footer', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -33,50 +36,25 @@ test.describe('Getprice - Footer & Newsletter @footer @e2e', () => {
     expect(hasContact).toBeTruthy();
   });
 
+  // @desc: Formularz zapisu na newsletter z polem email jest widoczny w stopce
   test('should display newsletter form', async ({ page }) => {
-    // Newsletter may be in footer or separate section
-    const newsletter = page.locator(
-      '#newsletter, input[name="email"][placeholder*="newsletter" i], ' +
-      'input[name="email"][placeholder*="email" i], ' +
-      'form.newsletter, .newsletter-subscribe, .footer-newsletter, ' +
-      '#newsletter-validate-detail input[type="email"]'
-    );
-
-    await page.locator('footer, .footer').first().scrollIntoViewIfNeeded();
-    await newsletter.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
-
-    const count = await newsletter.count();
-    expect(count).toBeGreaterThan(0);
+    const newsletterInput = page.locator('#newsletter-subscribe');
+    await newsletterInput.scrollIntoViewIfNeeded();
+    await expect(newsletterInput).toBeVisible();
+    await expect(newsletterInput).toHaveAttribute('type', 'email');
 
     const screenshot = await page.screenshot();
     await test.info().attach('Newsletter form', { body: screenshot, contentType: 'image/png' });
   });
 
-  test('should validate newsletter email', async ({ page }) => {
-    // Find newsletter input
-    const emailInput = page.locator(
-      '#newsletter, #newsletter-validate-detail input[type="email"], ' +
-      'form.newsletter input[type="email"], .footer input[type="email"]'
-    ).first();
-
-    await emailInput.scrollIntoViewIfNeeded();
-
-    if (await emailInput.isVisible().catch(() => false)) {
-      // Try submitting empty email
-      const submitBtn = page.locator(
-        'form.newsletter button, #newsletter-validate-detail button, ' +
-        '.footer button:has-text("Zapisz"), .footer button[type="submit"]'
-      ).first();
-
-      if (await submitBtn.isVisible().catch(() => false)) {
-        await submitBtn.click();
-        await page.waitForLoadState('domcontentloaded');
-        // Should show validation error or stay on page
-        await expect(page.locator('body')).toBeVisible();
-      }
-    }
+  // @desc: Przycisk zapisu na newsletter jest widoczny
+  test('should have newsletter submit button', async ({ page }) => {
+    const submitBtn = page.getByRole('button', { name: 'Zapisz' });
+    await submitBtn.scrollIntoViewIfNeeded();
+    await expect(submitBtn).toBeVisible();
   });
 
+  // @desc: Linki do mediow spolecznosciowych sa widoczne w stopce
   test('should have social media links', async ({ page }) => {
     const footer = page.locator('footer, .footer, .page-footer');
     await footer.first().scrollIntoViewIfNeeded();
@@ -85,8 +63,8 @@ test.describe('Getprice - Footer & Newsletter @footer @e2e', () => {
       'a[href*="facebook"], a[href*="instagram"], a[href*="linkedin"], ' +
       'a[href*="twitter"], a[href*="youtube"], a[href*="tiktok"]'
     );
+    await expect(socialLinks.first()).toBeVisible();
     const count = await socialLinks.count();
-    // Some shops may not have social links — just track
-    expect(count).toBeGreaterThanOrEqual(0);
+    expect(count).toBeGreaterThan(0);
   });
 });

@@ -1,11 +1,13 @@
 import { test, expect } from '../../fixture';
 
 test.describe('Willsoor - Cart @cart @e2e', () => {
+  // @desc: Pusty koszyk wyswietla komunikat o braku produktow
   test('should display empty cart', async ({ cartPage }) => {
     await cartPage.goto();
     await cartPage.expectCartEmpty();
   });
 
+  // @desc: Dodanie produktu do koszyka ze strony produktu
   test('should add product to cart from product page', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -15,6 +17,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
     await test.info().attach('After add to cart', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Koszyk wyswietla szczegoly dodanego produktu i pole ilosci
   test('should display cart item details', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -36,6 +39,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
     await test.info().attach('Cart item details', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Zmiana ilosci produktu w koszyku aktualizuje koszyk
   test('should update quantity in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -49,6 +53,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
     await test.info().attach('Updated quantity', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Usuniecie produktu z koszyka powoduje pusty koszyk
   test('should remove item from cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -62,6 +67,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
     await test.info().attach('Empty cart after remove', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Koszyk wyswietla podsumowanie z kwota do zaplaty
   test('should display cart subtotal', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -73,6 +79,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
     await expect(total.first()).toBeVisible();
   });
 
+  // @desc: Koszyk zawiera przycisk "Przejdz do kasy"
   test('should have proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
@@ -80,17 +87,15 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
 
     await cartPage.goto();
 
-    const checkoutBtn = page.locator(
-      'button.action.primary.checkout, ' +
-      'button:has-text("Przejdź do kasy"), ' +
-      'button[data-role="proceed-to-checkout"]'
-    );
-    await expect(checkoutBtn.first()).toBeVisible();
+    const checkoutBtn = page.getByRole('button', { name: /Przejdź do kasy/i });
+    await checkoutBtn.scrollIntoViewIfNeeded();
+    await expect(checkoutBtn).toBeVisible();
 
     const screenshot = await page.screenshot();
     await test.info().attach('Checkout button', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Mini koszyk pokazuje licznik po dodaniu produktu
   test('should show mini cart after adding product', async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
