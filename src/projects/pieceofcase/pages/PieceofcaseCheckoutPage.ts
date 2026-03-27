@@ -1,5 +1,8 @@
 import { CheckoutPage } from '../../../core/pages/CheckoutPage';
 
 export class PieceofcaseCheckoutPage extends CheckoutPage {
-  // Pieceofcase-specific overrides will be added after initial recon
+  async navigate(path: string = ''): Promise<void> {
+    await super.navigate(path);
+    await this.page.evaluate(() => document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove())).catch(() => {});
+  }
 }

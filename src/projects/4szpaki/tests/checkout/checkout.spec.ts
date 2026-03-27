@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixture';
+import { SzpakiCheckoutPage } from '../../pages/SzpakiCheckoutPage';
 
 test.describe('4szpaki - Checkout @checkout @e2e', () => {
   test.beforeEach(async ({ productPage }) => {
@@ -10,45 +11,48 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
   // @desc: Przejscie z koszyka do strony checkout
   test('should navigate to checkout from cart', async ({ cartPage, page }) => {
     await cartPage.goto();
-
-    await test.step('Click proceed to checkout', async () => {
-      await cartPage.proceedToCheckout();
-    });
-
+    await cartPage.proceedToCheckout();
     expect(page.url()).toContain('checkout');
+
     const screenshot = await page.screenshot();
     await test.info().attach('Checkout page', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Formularz checkout jest widoczny po wyborze metody platnosci
-  test('should display checkout form', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
+  // @desc: Checkout wyswietla wybor logowania lub zakupow bez konta
+  test('should display login/guest choice', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
 
-    const checkoutForm = page.locator('#checkout, .checkout-container, .opc-wrapper');
-    await expect(checkoutForm.first()).toBeVisible({ timeout: 15000 });
+    const guestBtn = page.getByRole('button', { name: /Zakupy bez logowania/i });
+    await expect(guestBtn).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
-    await test.info().attach('Checkout form', { body: screenshot, contentType: 'image/png' });
+    await test.info().attach('Checkout login/guest', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Podsumowanie zamowienia jest widoczne na checkout
-  test('should display order summary in checkout', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
+  // @desc: Formularz dostawy jest widoczny po wyborze zakupow bez logowania
+  test('should display shipping form after guest selection', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
+    await (checkoutPage as SzpakiCheckoutPage).continueAsGuest();
 
-    const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
+    await expect(page.getByRole('textbox', { name: /E-mail/i }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('textbox', { name: /Imię/i }).first()).toBeVisible();
+
+    const screenshot = await page.screenshot();
+    await test.info().attach('Shipping form', { body: screenshot, contentType: 'image/png' });
+  });
+
+  // @desc: Podsumowanie zamowienia z produktem widoczne na checkout
+  test('should display order summary in checkout', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
+
+    // Order summary should be visible even on login/guest step
+    const summary = page.locator('.opc-block-summary, .opc-sidebar, :has-text("Podsumowanie")');
     await expect(summary.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
-  });
-
-  // @desc: Link powrotny do koszyka jest dostepny na stronie checkout
-  test('should navigate to cart from checkout', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/checkout/`, { waitUntil: 'load' });
-    await page.waitForLoadState('networkidle').catch(() => {});
-
-    const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');
-    const hasCartLink = await cartLink.first().isVisible().catch(() => false);
-    expect(hasCartLink).toBeDefined();
   });
 });

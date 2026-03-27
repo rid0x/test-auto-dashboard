@@ -107,7 +107,7 @@ test.describe('Pieceofcase - Login @login @e2e', () => {
 
   // @desc: Link "Zaloz konto" / "Zarejestruj sie" jest widoczny
   test('should have create account link', async ({ page }) => {
-    const createLink = page.locator('a[href*="account/create"], a:has-text("Zarejestruj"), a:has-text("Create an Account")');
+    const createLink = page.locator('a[href*="account/create"]:visible, a:has-text("Utwórz konto"):visible, a:has-text("Zarejestruj"):visible');
     await expect(createLink.first()).toBeVisible();
 
     const screenshot = await page.screenshot();

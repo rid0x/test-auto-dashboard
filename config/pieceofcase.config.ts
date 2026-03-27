@@ -6,8 +6,8 @@ export const pieceofcaseConfig: ProjectConfig = {
 
   credentials: {
     valid: {
-      email: process.env.PIECEOFCASE_USER_EMAIL || '',
-      password: process.env.PIECEOFCASE_USER_PASSWORD || '',
+      email: process.env.PIECEOFCASE_USER_EMAIL || 'l.tumiel@auroracreation.com',
+      password: process.env.PIECEOFCASE_USER_PASSWORD || 'Kokoko90!',
     },
     invalid: {
       email: 'invalid@pieceofcase.pl',
@@ -49,7 +49,7 @@ export const pieceofcaseConfig: ProjectConfig = {
 
   api: {
     baseUrl: process.env.PIECEOFCASE_API_URL || 'https://pieceofcase.pl',
-    restEndpoint: '/rest/V1',
+    restEndpoint: '/rest/pl/V1',
     graphqlEndpoint: '/graphql',
   },
 };

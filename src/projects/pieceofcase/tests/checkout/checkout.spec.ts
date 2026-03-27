@@ -21,8 +21,8 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
   });
 
   // @desc: Formularz checkout jest widoczny po wyborze metody platnosci
-  test('should display checkout form', async ({ page }) => {
-    await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
+  test('should display checkout form', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
 
     const checkoutForm = page.locator('#checkout, .checkout-container, .opc-wrapper');
     await expect(checkoutForm.first()).toBeVisible({ timeout: 15000 });
@@ -32,8 +32,8 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
   });
 
   // @desc: Podsumowanie zamowienia jest widoczne na checkout
-  test('should display order summary in checkout', async ({ page }) => {
-    await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
+  test('should display order summary in checkout', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
 
     const summary = page.locator('.opc-block-summary, .cart-summary, :has-text("Podsumowanie")');
     await expect(summary.first()).toBeVisible({ timeout: 10000 });
@@ -43,8 +43,8 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
   });
 
   // @desc: Link powrotny do koszyka jest dostepny na stronie checkout
-  test('should navigate to cart from checkout', async ({ page }) => {
-    await page.goto('https://pieceofcase.pl/checkout/', { waitUntil: 'load' });
+  test('should navigate to cart from checkout', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
     await page.waitForLoadState('networkidle').catch(() => {});
 
     const cartLink = page.locator('a[href*="cart"], :has-text("Wróć do koszyka")');

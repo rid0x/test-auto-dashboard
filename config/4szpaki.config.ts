@@ -6,8 +6,8 @@ export const szpakiConfig: ProjectConfig = {
 
   credentials: {
     valid: {
-      email: process.env.SZPAKI_USER_EMAIL || '',
-      password: process.env.SZPAKI_USER_PASSWORD || '',
+      email: process.env.SZPAKI_USER_EMAIL || 'l.tumiel@auroracreation.com',
+      password: process.env.SZPAKI_USER_PASSWORD || 'Kokoko90!',
     },
     invalid: {
       email: 'invalid@4szpaki.pl',
@@ -44,7 +44,7 @@ export const szpakiConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: true,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all',
+    cookieConsentSelector: 'text=Zaakceptuj wszystkie',
   },
 
   api: {

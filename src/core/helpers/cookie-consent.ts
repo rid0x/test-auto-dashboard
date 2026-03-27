@@ -10,7 +10,7 @@ export async function acceptCookies(page: Page, customSelector?: string): Promis
   if (customSelector) {
     try {
       const el = page.locator(customSelector);
-      await el.first().waitFor({ timeout: 10000, state: 'visible' });
+      await el.first().waitFor({ timeout: 15000, state: 'visible' });
       await el.first().click();
       await el.first().waitFor({ timeout: 3000, state: 'hidden' }).catch(() => {});
       return;
@@ -80,23 +80,30 @@ export async function dismissSalesmanagoPopup(page: Page): Promise<void> {
  * Call once per test — runs in background.
  */
 export function setupSalesmanagoAutoDismiss(page: Page): void {
-  const checkAndDismiss = async () => {
+  const hidePopup = async () => {
     try {
+      // Force-hide salesmanago iframes and overlays via JS
+      await page.evaluate(() => {
+        document.querySelectorAll('iframe[title*="salesmanago"], [class*="salesmanago"], .sm-popup-overlay').forEach(el => {
+          (el as HTMLElement).style.display = 'none';
+        });
+      }).catch(() => {});
+
+      // Also try clicking dismiss button
       const iframe = page.locator('iframe[title*="salesmanago"]');
-      if (await iframe.first().isVisible({ timeout: 500 }).catch(() => false)) {
+      if (await iframe.first().isVisible({ timeout: 300 }).catch(() => false)) {
         const frame = iframe.first().contentFrame();
         await frame.getByRole('button', { name: 'Może później' }).click({ timeout: 1000 }).catch(() => {});
       }
     } catch { /* ignore */ }
   };
 
-  // Check periodically for 60 seconds
-  const interval = setInterval(checkAndDismiss, 3000);
-  setTimeout(() => clearInterval(interval), 60000);
+  // Check every 2s for 90 seconds
+  const interval = setInterval(hidePopup, 2000);
+  setTimeout(() => clearInterval(interval), 90000);
 
-  // Also try to dismiss on any dialog/popup event
   page.on('frameattached', async () => {
-    await new Promise(r => setTimeout(r, 1000));
-    await checkAndDismiss();
+    await new Promise(r => setTimeout(r, 500));
+    await hidePopup();
   });
 }
