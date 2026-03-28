@@ -113,6 +113,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should add product with quantity 2', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(2);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     await cartPage.expectCartNotEmpty();
     const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
@@ -126,6 +127,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should display cart totals with price', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     const totals = page.locator('.cart-summary, .cart-totals, .grand.totals .price, .order-total');
     await expect(totals.first()).toBeVisible({ timeout: 10000 });
@@ -137,6 +139,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should increase quantity in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
     await qtyInput.fill('3');
@@ -152,6 +155,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should decrease quantity in cart to 1', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(3);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
     await qtyInput.fill('1');
@@ -167,6 +171,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should remove product and show empty cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     await cartPage.removeFirstItem();
     await page.waitForTimeout(2000);
@@ -179,6 +184,7 @@ test.describe('Willsoor - Cart @cart @e2e', () => {
   test('should click proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
     expect(page.url()).toContain('checkout');
