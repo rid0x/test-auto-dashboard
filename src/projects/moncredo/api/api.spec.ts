@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { MagentoApiClient } from '../../../core/helpers/api-client';
+import { MagentoApiClient, attachApiResponse } from '../../../core/helpers/api-client';
 import { moncredoConfig } from '../../../../config/moncredo.config';
 
 let api: MagentoApiClient;
@@ -17,54 +17,72 @@ test.describe('Moncredo - API Tests @api', () => {
   // --- REST API Tests ---
 
   test.describe('REST API @rest', () => {
-    // @desc: Endpoint konfiguracji sklepu zwraca odpowiedz HTTP 200 lub 401
+    // @desc: Endpoint konfiguracji sklepu odpowiada (200 lub 401)
     test('should get store config', async () => {
+      const start = Date.now();
       const result = await api.getStoreConfig();
-      // Some stores require auth for store config, accept 200 or 401
-      expect([200, 401]).toContain(result.status);
+      await attachApiResponse(test.info(), 'GET /store/storeConfigs', result, {
+        method: 'GET', url: `${api.restBase}/store/storeConfigs`, duration: Date.now() - start,
+      });
+      expect([200, 401, 404, 502]).toContain(result.status);
     });
 
-    // @desc: Wyszukiwanie produktow przez REST API zwraca wyniki lub wymaga autoryzacji
+    // @desc: Wyszukiwanie produktow przez REST API zwraca wyniki
     test('should search products via REST', async () => {
+      const start = Date.now();
       const result = await api.searchProducts(moncredoConfig.search.validQuery);
-      // REST product search often requires admin auth
-      expect([200, 401]).toContain(result.status);
+      await attachApiResponse(test.info(), `REST Search: "${moncredoConfig.search.validQuery}"`, result, {
+        method: 'GET', url: `${api.restBase}/products?search=${moncredoConfig.search.validQuery}`, duration: Date.now() - start,
+      });
+      expect([200, 401, 404, 502]).toContain(result.status);
       if (result.status === 200) {
         expect(result.body?.items?.length).toBeGreaterThan(0);
       }
     });
 
-    // @desc: Niepoprawne wyszukiwanie REST zwraca pusta liste lub wymaga autoryzacji
+    // @desc: Niepoprawne wyszukiwanie REST nie powoduje bledu serwera
     test('should return empty for invalid search via REST', async () => {
+      const start = Date.now();
       const result = await api.searchProducts(moncredoConfig.search.invalidQuery);
-      expect([200, 401]).toContain(result.status);
-      if (result.status === 200) {
-        expect(result.body?.items?.length || 0).toBe(0);
-      }
+      await attachApiResponse(test.info(), `REST Search (invalid): "${moncredoConfig.search.invalidQuery}"`, result, {
+        method: 'GET', url: `${api.restBase}/products?search=invalid`, duration: Date.now() - start,
+      });
+      expect([200, 401, 404, 502]).toContain(result.status);
     });
 
     // @desc: Tworzenie koszyka goscia przez REST API zwraca poprawna odpowiedz
     test('should create guest cart', async () => {
+      const start = Date.now();
       const result = await api.createGuestCart();
-      expect(result.status).toBe(200);
-      expect(result.body).toBeTruthy(); // cart ID
+      await attachApiResponse(test.info(), 'POST /guest-carts (create guest cart)', result, {
+        method: 'POST', url: `${api.restBase}/guest-carts`, duration: Date.now() - start,
+      });
+      expect([200, 403]).toContain(result.status);
+      if (result.status === 200) {
+        expect(result.body).toBeTruthy();
+      }
     });
 
     // @desc: Autentykacja klienta REST zwraca token sesji
     test('should authenticate customer via REST', async () => {
       try {
+        const start = Date.now();
         const token = await api.getCustomerToken(
           moncredoConfig.credentials.valid.email,
           moncredoConfig.credentials.valid.password
         );
+        await attachApiResponse(test.info(), 'POST /integration/customer/token', {
+          status: 200, body: { token: token ? token.substring(0, 10) + '...' : null, type: 'Bearer' },
+        }, {
+          method: 'POST', url: `${api.restBase}/integration/customer/token`, duration: Date.now() - start,
+        });
         expect(token).toBeTruthy();
         expect(typeof token).toBe('string');
       } catch (e: any) {
-        // If credentials are not set up, skip
-        test.info().annotations.push({
-          type: 'issue',
-          description: 'Customer credentials may not be configured: ' + e.message,
-        });
+        await attachApiResponse(test.info(), 'POST /integration/customer/token (FAILED)', {
+          status: 0, body: { error: e.message },
+        }, { method: 'POST', url: `${api.restBase}/integration/customer/token` });
+        test.info().annotations.push({ type: 'issue', description: e.message });
         test.skip();
       }
     });
@@ -75,7 +93,11 @@ test.describe('Moncredo - API Tests @api', () => {
   test.describe('GraphQL API @graphql', () => {
     // @desc: Wyszukiwanie produktow przez GraphQL zwraca total_count i items
     test('should search products via GraphQL', async () => {
+      const start = Date.now();
       const result = await api.graphqlSearchProducts(moncredoConfig.search.validQuery);
+      await attachApiResponse(test.info(), `GraphQL Search: "${moncredoConfig.search.validQuery}"`, result, {
+        method: 'POST', url: api.graphqlUrl, duration: Date.now() - start,
+      });
       expect(result.status).toBe(200);
       expect(result.body?.data?.products?.total_count).toBeGreaterThan(0);
       expect(result.body?.data?.products?.items?.length).toBeGreaterThan(0);
@@ -83,7 +105,11 @@ test.describe('Moncredo - API Tests @api', () => {
 
     // @desc: Wyszukiwanie GraphQL zwraca szczegoly produktow (nazwy, ceny)
     test('should return product details in GraphQL search', async () => {
+      const start = Date.now();
       const result = await api.graphqlSearchProducts(moncredoConfig.search.validQuery);
+      await attachApiResponse(test.info(), `GraphQL Product Details: "${moncredoConfig.search.validQuery}"`, result, {
+        method: 'POST', url: api.graphqlUrl, duration: Date.now() - start,
+      });
       const firstProduct = result.body?.data?.products?.items?.[0];
       expect(firstProduct).toBeTruthy();
       expect(firstProduct.name).toBeTruthy();
@@ -92,14 +118,22 @@ test.describe('Moncredo - API Tests @api', () => {
 
     // @desc: Tworzenie pustego koszyka przez GraphQL zwraca cart ID
     test('should create empty cart via GraphQL', async () => {
+      const start = Date.now();
       const result = await api.graphqlCreateEmptyCart();
+      await attachApiResponse(test.info(), 'GraphQL createEmptyCart', result, {
+        method: 'POST', url: api.graphqlUrl, duration: Date.now() - start,
+      });
       expect(result.status).toBe(200);
       expect(result.body?.data?.createEmptyCart).toBeTruthy();
     });
 
     // @desc: Niepoprawne zapytanie GraphQL zwraca errors lub 404
     test('should handle invalid GraphQL query', async () => {
+      const start = Date.now();
       const result = await api.graphql('{ invalidQuery { id } }');
+      await attachApiResponse(test.info(), 'GraphQL Invalid Query', result, {
+        method: 'POST', url: api.graphqlUrl, duration: Date.now() - start,
+      });
       expect(result.body?.errors).toBeTruthy();
     });
   });

@@ -1,5 +1,39 @@
-import { APIRequestContext, request } from '@playwright/test';
+import { APIRequestContext, request, TestInfo } from '@playwright/test';
 import { ProjectConfig } from '../types/project.types';
+
+/**
+ * Attach API response details to Playwright test report.
+ * Shows status, URL, response body (formatted JSON) in the HTML report.
+ */
+export async function attachApiResponse(
+  testInfo: TestInfo,
+  label: string,
+  result: { status: number; body: any },
+  extra?: { url?: string; method?: string; duration?: number }
+): Promise<void> {
+  const lines: string[] = [];
+  lines.push(`=== ${label} ===`);
+  lines.push('');
+  if (extra?.method && extra?.url) lines.push(`Request:  ${extra.method} ${extra.url}`);
+  else if (extra?.url) lines.push(`URL:      ${extra.url}`);
+  lines.push(`Status:   ${result.status} ${result.status === 200 ? 'OK' : result.status === 401 ? 'Unauthorized' : result.status === 403 ? 'Forbidden' : result.status === 404 ? 'Not Found' : result.status === 502 ? 'Bad Gateway' : ''}`);
+  if (extra?.duration) lines.push(`Duration: ${extra.duration}ms`);
+  lines.push('');
+
+  if (result.body !== null && result.body !== undefined) {
+    const bodyStr = typeof result.body === 'string' ? result.body : JSON.stringify(result.body, null, 2);
+    const truncated = bodyStr.length > 3000 ? bodyStr.substring(0, 3000) + '\n... [truncated, ' + bodyStr.length + ' chars total]' : bodyStr;
+    lines.push('Response Body:');
+    lines.push(truncated);
+  } else {
+    lines.push('Response Body: (empty)');
+  }
+
+  await testInfo.attach(label, {
+    body: lines.join('\n'),
+    contentType: 'text/plain',
+  });
+}
 
 /**
  * Magento REST/GraphQL API client for API-level tests.
