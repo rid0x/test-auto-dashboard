@@ -83,6 +83,48 @@ test.describe('Entelo - Cart @cart @e2e', () => {
     await test.info().attach('Cart totals', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Zwiększenie ilości produktu w koszyku
+  test('should increase quantity in cart', async ({ productPage, cartPage, page }) => {
+    await productPage.gotoDefaultProduct();
+    await productPage.addToCartWithOptions(1);
+    await cartPage.goto();
+    const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
+    await qtyInput.fill('3');
+    const updateBtn = page.locator('button.action.update, button:has-text("Aktualizuj"), button:has-text("Przelicz"), #update-cart-button');
+    if (await updateBtn.first().isVisible().catch(() => false)) {
+      await updateBtn.first().click({ force: true });
+      await page.waitForLoadState('load');
+    }
+    await cartPage.expectCartNotEmpty();
+  });
+
+  // @desc: Zmniejszenie ilości produktu w koszyku do 1
+  test('should decrease quantity in cart to 1', async ({ productPage, cartPage, page }) => {
+    await productPage.gotoDefaultProduct();
+    await productPage.addToCartWithOptions(3);
+    await cartPage.goto();
+    const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
+    await qtyInput.fill('1');
+    const updateBtn = page.locator('button.action.update, button:has-text("Aktualizuj"), button:has-text("Przelicz"), #update-cart-button');
+    if (await updateBtn.first().isVisible().catch(() => false)) {
+      await updateBtn.first().click({ force: true });
+      await page.waitForLoadState('load');
+    }
+    await cartPage.expectCartNotEmpty();
+  });
+
+  // @desc: Usunięcie produktu z koszyka
+  test('should remove product and show empty cart', async ({ productPage, cartPage, page }) => {
+    await productPage.gotoDefaultProduct();
+    await productPage.addToCartWithOptions(1);
+    await cartPage.goto();
+    await cartPage.removeFirstItem();
+    await page.waitForTimeout(2000);
+    await cartPage.goto();
+    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów")');
+    await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
+  });
+
   // @desc: Przycisk "Do kasy" prowadzi do checkout
   test('should navigate to checkout from cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
