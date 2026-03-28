@@ -1154,7 +1154,7 @@
 
         if (summary && summary.lastRun) {
           const r = summary.lastRun;
-          resultsHtml = `<span class="results-mini"><span class="pass-count">${r.passed}</span>/<span class="fail-count">${r.failed}</span></span>`;
+          resultsHtml = '';
         }
         if (summary && summary.hasNotes) {
           notesDot = '<span class="notes-dot" title="Ma notatki"></span>';
@@ -1217,7 +1217,8 @@
         const skipP = total > 0 ? (r.skipped / total * 100) : 0;
         const date = new Date(r.date).toLocaleString('pl-PL');
 
-        html += '<div class="project-results-bar">'
+        const barClick = r.reportUrl ? `onclick="window.open('${r.reportUrl}', '_blank')" style="cursor:pointer;" title="Kliknij aby otworzyc raport HTML"` : '';
+        html += '<div class="project-results-bar" ' + barClick + '>'
           + '<div class="result-stat"><span class="result-dot green"></span> <span>' + r.passed + '</span> <span class="result-label">pass</span></div>'
           + '<div class="result-stat"><span class="result-dot red"></span> <span>' + r.failed + '</span> <span class="result-label">fail</span></div>'
           + '<div class="result-stat"><span class="result-dot yellow"></span> <span>' + r.skipped + '</span> <span class="result-label">skip</span></div>'
@@ -1227,6 +1228,7 @@
           + '<div class="bar-skip" style="width:' + skipP + '%"></div>'
           + '</div>'
           + '<span class="result-label">' + date + '</span>'
+          + (r.reportUrl ? '<span class="result-label" style="color:var(--accent); margin-left:8px;">&#128279; Raport</span>' : '')
           + '</div>';
       }
 
@@ -1554,12 +1556,12 @@
               <thead>
                 <tr style="border-bottom:1px solid var(--border); text-align:left;">
                   <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:600;">Data</th>
-                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Obszar</th>
-                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Env</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Zakres</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Typ</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Przegladarka</th>
                   <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Wynik</th>
                   <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Czas</th>
                   <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:600;">Healing</th>
-                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:600; text-align:right;">Raport</th>
                 </tr>
               </thead>
               <tbody>`;
@@ -1571,29 +1573,51 @@
       for (const run of history) {
         const date = new Date(run.date);
         const dateStr = date.toLocaleDateString('pl-PL') + ' ' + date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-        const areaLabel = run.testName ? run.testName.substring(0, 40) : (run.area || 'all');
-        const envLabel = `${run.browser || 'chrome'} / ${run.device || 'desktop'}`;
-        const duration = run.duration ? (run.duration / 1000).toFixed(1) + 's' : '-';
+
+        // Scope: what was tested
+        let scopeLabel = '';
+        if (run.testName) {
+          scopeLabel = run.testName.length > 45 ? run.testName.substring(0, 42) + '...' : run.testName;
+        } else if (run.area === 'all') {
+          scopeLabel = 'Wszystkie testy';
+        } else {
+          const AREA_PL = { login:'Logowanie', registration:'Rejestracja', homepage:'Strona glowna', search:'Wyszukiwarka', cart:'Koszyk', checkout:'Checkout', 'product-page':'Karta produktu', category:'Kategoria', footer:'Stopka', api:'API', e2e:'E2E' };
+          scopeLabel = AREA_PL[run.area] || run.area || 'all';
+        }
+
+        // Type: E2E / API / mixed
+        const typeLabel = run.area === 'api' ? 'API' : (run.area === 'e2e' ? 'E2E' : (run.area === 'all' ? 'E2E + API' : 'E2E'));
+        const typeColor = run.area === 'api' ? 'var(--blue)' : (run.area === 'all' ? 'var(--violet)' : 'var(--accent)');
+
+        // Browser + device
+        const browserName = (run.browser || 'chrome').charAt(0).toUpperCase() + (run.browser || 'chrome').slice(1);
+        const deviceLabel = run.device === 'mobile' ? 'Mobile' : 'Desktop';
+        const deviceIcon = run.device === 'mobile' ? '&#128241;' : '&#128187;';
+
+        const duration = run.duration ? (run.duration / 1000 >= 60 ? (run.duration / 60000).toFixed(1) + 'min' : (run.duration / 1000).toFixed(1) + 's') : '-';
         const statusColor = run.failed > 0 ? 'var(--red)' : (run.skipped > 0 && run.passed === 0 ? 'var(--yellow)' : 'var(--green)');
         const statusIcon = run.failed > 0 ? '&#10060;' : (run.passed > 0 ? '&#9989;' : '&#9888;');
         const healCount = run.healingEvents?.length || 0;
+        const rowCursor = run.reportUrl ? 'cursor:pointer;' : '';
+        const rowClick = run.reportUrl ? `onclick="window.open('${run.reportUrl}', '_blank')"` : '';
+        const rowHover = run.reportUrl ? 'onmouseenter="this.style.background=\'var(--bg-hover)\'" onmouseleave="this.style.background=\'transparent\'"' : '';
 
         html += `
-                <tr style="border-bottom:1px solid var(--border);">
+                <tr style="border-bottom:1px solid var(--border); ${rowCursor}" ${rowClick} ${rowHover} title="${run.reportUrl ? 'Kliknij aby otworzyc raport HTML' : 'Brak raportu'}">
                   <td style="padding:10px 16px; font-size:13px; color:var(--text-muted);">${dateStr}</td>
-                  <td style="padding:10px 8px; font-size:13px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(areaLabel)}">${escapeHtml(areaLabel)}</td>
-                  <td style="padding:10px 8px; font-size:12px; color:var(--text-muted);">${envLabel}</td>
+                  <td style="padding:10px 8px; font-size:13px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(run.testName || scopeLabel)}">
+                    ${run.testName ? '<span style="color:var(--text-dim); font-size:11px;">test:</span> ' : ''}${escapeHtml(scopeLabel)}
+                  </td>
+                  <td style="padding:10px 8px; font-size:12px;"><span style="color:${typeColor}; font-weight:600;">${typeLabel}</span></td>
+                  <td style="padding:10px 8px; font-size:12px; color:var(--text-muted);">${deviceIcon} ${browserName} <span style="color:var(--text-dim)">${deviceLabel}</span></td>
                   <td style="padding:10px 8px; font-size:13px;">
                     <span style="color:${statusColor}">${statusIcon}</span>
-                    <span style="color:var(--green)">${run.passed || 0}P</span>
-                    <span style="color:var(--red)">${run.failed || 0}F</span>
-                    <span style="color:var(--yellow)">${run.skipped || 0}S</span>
+                    <span style="color:var(--green); font-weight:600;">${run.passed || 0}</span><span style="color:var(--text-dim)">P</span>
+                    <span style="color:var(--red); font-weight:600;">${run.failed || 0}</span><span style="color:var(--text-dim)">F</span>
+                    <span style="color:var(--yellow); font-weight:600;">${run.skipped || 0}</span><span style="color:var(--text-dim)">S</span>
                   </td>
                   <td style="padding:10px 8px; font-size:13px; color:var(--text-muted);">${duration}</td>
                   <td style="padding:10px 8px; font-size:13px; color:${healCount > 0 ? 'var(--orange)' : 'var(--text-muted)'};">${healCount > 0 ? healCount + ' healed' : '-'}</td>
-                  <td style="padding:10px 16px; text-align:right;">
-                    ${run.reportUrl ? `<a href="${run.reportUrl}" target="_blank" class="btn btn-sm">Raport</a>` : '-'}
-                  </td>
                 </tr>`;
       }
 
