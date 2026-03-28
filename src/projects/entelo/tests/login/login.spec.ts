@@ -8,9 +8,11 @@ test.describe('Entelo - Login @login @e2e', () => {
 
   test('should display login page correctly', async ({ loginPage, page }) => {
     expect(await loginPage.isOnLoginPage()).toBeTruthy();
-    await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
-    await expect(page.locator('#password, #pass, input[name="login[password]"]').first()).toBeVisible();
-    await expect(page.locator('button.action.login.primary, #send2, button:has-text("Zaloguj")').first()).toBeVisible();
+    // Entelo has TWO login forms (popup + page). Scope to visible form.
+    const visibleForm = page.locator('form[action*="loginPost"]:visible, form.form-login:visible').first();
+    await expect(visibleForm.locator('input[type="email"], #email').first()).toBeVisible();
+    await expect(visibleForm.locator('input[type="password"]').first()).toBeVisible();
+    await expect(visibleForm.locator('button[type="submit"]').first()).toBeVisible();
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });
@@ -43,7 +45,8 @@ test.describe('Entelo - Login @login @e2e', () => {
   });
 
   test('should have forgot password link', async ({ page }) => {
-    await expect(page.locator('a[href*="forgotpassword"], a[href*="forgot"], a:has-text("Nie pamiętasz"), a:has-text("Forgot")').first()).toBeVisible({ timeout: 10000 });
+    // Use getByRole to find the visible link
+    await expect(page.getByRole('link', { name: /Nie pamiętasz/ }).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should have create account link', async ({ page }) => {

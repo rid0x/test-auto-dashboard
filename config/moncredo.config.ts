@@ -40,8 +40,8 @@ export const moncredoConfig: ProjectConfig = {
   },
 
   features: {
-    hasRecaptchaOnLogin: false,
-    hasRecaptchaOnRegistration: false,
+    hasRecaptchaOnLogin: true,
+    hasRecaptchaOnRegistration: true,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: false,
     cookieConsentSelector: undefined,

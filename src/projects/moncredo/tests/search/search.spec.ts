@@ -16,7 +16,7 @@ test.describe('Moncredo - Search @search @e2e', () => {
 
     await test.step('Verify results page', async () => {
       expect(page.url()).toContain('catalogsearch/result');
-      const products = page.locator('.product-item');
+      const products = page.locator('.product-item-info, .cs-product-tile, .product-item-link');
       const count = await products.count();
       expect(count).toBeGreaterThan(0);
     });
@@ -38,10 +38,11 @@ test.describe('Moncredo - Search @search @e2e', () => {
   // @desc: Wpisywanie frazy wyświetla podpowiedzi autouzupełniania (Amasty)
   test('should show search suggestions (autocomplete)', async ({ page, config }) => {
     const searchInput = page.locator('#search');
-    await searchInput.click();
+    await searchInput.click({ force: true });
     await searchInput.pressSequentially(config.search.validQuery.substring(0, 3), { delay: 100 });
 
-    const suggestions = page.locator('.amsearch-highlight, .amsearch-products, .amsearch-results, [class*="amsearch"]:visible');
+    // Wait for autocomplete to appear - Moncredo uses #search_autocomplete or cs-autocomplete
+    const suggestions = page.locator('#search_autocomplete, .cs-autocomplete, .search-autocomplete');
     await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
@@ -61,10 +62,10 @@ test.describe('Moncredo - Search @search @e2e', () => {
   test('should display product info in results', async ({ page, config }) => {
     await page.goto(`https://moncredo.pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
 
-    const firstProduct = page.locator('.product-item').first();
+    const firstProduct = page.locator('.product-item-info, .cs-product-tile').first();
     await expect(firstProduct).toBeVisible();
 
-    const name = firstProduct.locator('.product-item-name, .product-item-link, a[href*=".html"]').first();
+    const name = firstProduct.locator('.product-item-name, .product-item-link, .cs-product-tile__name-link, a[href*=".html"]').first();
     await expect(name).toBeVisible();
   });
 

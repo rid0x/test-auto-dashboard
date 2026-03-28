@@ -31,7 +31,7 @@ test.describe('Moncredo - Login @login @e2e', () => {
 
   // @desc: Logowanie poprawnymi danymi konczy sie sukcesem (przekierowanie na konto)
   test('should login with valid credentials', async ({ loginPage, page, config }) => {
-    test.skip(!config.credentials.valid.email, 'BRAK DANYCH: Ustaw MOCNREDO_USER_EMAIL i MOCNREDO_USER_PASSWORD w .env');
+    test.skip(!config.credentials.valid.email, 'BRAK DANYCH: Ustaw MONCREDO_USER_EMAIL i MONCREDO_USER_PASSWORD w .env');
     await skipIfRecaptcha(page, test.info());
 
     await test.step('Fill login form', async () => {

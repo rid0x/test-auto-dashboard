@@ -1,5 +1,13 @@
 import { RegistrationPage } from '../../../core/pages/RegistrationPage';
+import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
 export class MoncredoRegistrationPage extends RegistrationPage {
-  // Moncredo-specific overrides will be added after initial recon
+  protected get submitButton(): HealableLocator {
+    return healable('Create account button',
+      '#send2',
+      'button.action.submit.primary',
+      'button:has-text("Zarejestruj się")',
+      '.action.submit'
+    );
+  }
 }

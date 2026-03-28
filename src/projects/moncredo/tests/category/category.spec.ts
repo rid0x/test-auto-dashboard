@@ -36,11 +36,11 @@ test.describe('Moncredo - Category @category @e2e', () => {
 
   // @desc: Produkty na liscie maja widoczna nazwe i cene
   test('should display product names and prices', async ({ page }) => {
-    const firstProduct = page.locator('.product-item, li.product-item').first();
+    const firstProduct = page.locator('.product-item-info, .cs-product-tile, li.product-item').first();
     await expect(firstProduct).toBeVisible();
 
     // Product should have a name
-    const productName = firstProduct.locator('.product-item-name, .product-item-link, .product-name, a[href*=".html"]').first();
+    const productName = firstProduct.locator('.product-item-name, .product-item-link, .cs-product-tile__name-link, a[href*=".html"]').first();
     await expect(productName).toBeVisible();
   });
 

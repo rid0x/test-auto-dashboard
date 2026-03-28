@@ -107,15 +107,8 @@ test.describe('Pierrerene - Login @login @e2e', () => {
 
   // @desc: Link "Zaloz konto" / "Zarejestruj sie" jest widoczny
   test('should have create account link', async ({ page }) => {
-    const createLink = page.locator(
-      'a[href*="account/create"], a[href*="create"], ' +
-      'a:has-text("Załóż konto"), a:has-text("Zarejestruj się"), ' +
-      'a:has-text("Zarejestruj"), a:has-text("Utwórz konto"), ' +
-      'a:has-text("Chcę utworzyć"), a:has-text("utworzyć własne konto"), ' +
-      'a:has-text("Create an Account"), a:has-text("Register")'
-    );
-    // Wait longer and scroll to ensure visibility
-    await page.waitForTimeout(2000);
+    // Use getByRole to find visible create account link
+    const createLink = page.getByRole('link', { name: /Utwórz konto|Załóż konto|Zarejestruj|utworzyć|Create/i });
     await expect(createLink.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();

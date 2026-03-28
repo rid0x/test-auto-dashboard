@@ -416,6 +416,60 @@ app.get('/api/results/:project', (req, res) => {
   }
 });
 
+// Project notes (*.md files)
+app.get('/api/notes/:project', (req, res) => {
+  const projectDir = path.join(ROOT, 'src', 'projects', req.params.project);
+  const mdFiles = [
+    path.join(projectDir, `${req.params.project}.md`),
+    path.join(projectDir, 'notes.md'),
+    path.join(projectDir, 'README.md'),
+  ];
+
+  for (const mdFile of mdFiles) {
+    if (fs.existsSync(mdFile)) {
+      const content = fs.readFileSync(mdFile, 'utf-8');
+      return res.json({ file: path.basename(mdFile), content });
+    }
+  }
+  res.json(null);
+});
+
+// All projects summary (pass/fail from latest results + history)
+app.get('/api/summary', (_req, res) => {
+  const projectsDir = path.join(ROOT, 'src', 'projects');
+  if (!fs.existsSync(projectsDir)) return res.json([]);
+
+  const summaries = fs.readdirSync(projectsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => {
+      const name = d.name;
+      const resultsFile = path.join(ROOT, 'reports', name, 'results.json');
+      const history = loadHistory(name);
+      const lastRun = history.length > 0 ? history[0] : null;
+
+      // Check if project notes exist
+      const hasNotes = [
+        path.join(projectsDir, name, `${name}.md`),
+        path.join(projectsDir, name, 'notes.md'),
+      ].some(f => fs.existsSync(f));
+
+      return {
+        name,
+        lastRun: lastRun ? {
+          date: lastRun.date,
+          passed: lastRun.passed || 0,
+          failed: lastRun.failed || 0,
+          skipped: lastRun.skipped || 0,
+          total: lastRun.total || 0,
+          duration: lastRun.duration || 0,
+        } : null,
+        hasNotes,
+      };
+    });
+
+  res.json(summaries);
+});
+
 // --- WebSocket: Live test runner ---
 const activeProcesses = new Map<string, ChildProcess>();
 

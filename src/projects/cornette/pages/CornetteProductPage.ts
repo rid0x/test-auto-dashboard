@@ -57,22 +57,36 @@ export class CornetteProductPage extends ProductPage {
     await this.page.waitForLoadState('networkidle').catch(() => {});
     await this.page.waitForTimeout(2000);
 
-    // Try to find swatch options (JS-rendered by Magento_Swatches)
     try {
-      const swatchExists = await this.page.locator('.swatch-option').first().isVisible({ timeout: 10000 }).catch(() => false);
+      // Cornette uses <select class="swatch-select"> for size/color options
+      const selectSwatches = this.page.locator('select.swatch-select');
+      const selectCount = await selectSwatches.count();
+
+      if (selectCount > 0) {
+        for (let i = 0; i < selectCount; i++) {
+          const select = selectSwatches.nth(i);
+          if (await select.isVisible().catch(() => false)) {
+            // Get available options (skip first empty/placeholder)
+            const options = await select.locator('option').evaluateAll(opts =>
+              opts.filter(o => o.value && o.value !== '0' && !o.disabled).map(o => o.value)
+            );
+            if (options.length > 0) {
+              await select.selectOption(options[0]);
+              await this.page.waitForTimeout(500);
+            }
+          }
+        }
+        await this.page.waitForTimeout(1000);
+        return;
+      }
+
+      // Fallback: try swatch buttons
+      const swatchExists = await this.page.locator('.swatch-option').first().isVisible({ timeout: 5000 }).catch(() => false);
       if (swatchExists) {
         await this.dismissCookieOverlay();
         const swatch = this.page.locator('.swatch-option:not(.disabled):not(.selected)').first();
         await swatch.click({ force: true });
         await this.page.waitForTimeout(1000);
-      } else {
-        // Fallback: try via JS evaluation
-        const clicked = await this.page.evaluate(() => {
-          const opt = document.querySelector('.swatch-option:not(.disabled)') as HTMLElement;
-          if (opt) { opt.click(); return true; }
-          return false;
-        });
-        if (clicked) await this.page.waitForTimeout(1000);
       }
     } catch {
       // Simple product - no swatches needed

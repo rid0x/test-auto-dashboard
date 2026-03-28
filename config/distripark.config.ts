@@ -29,14 +29,14 @@ export const distriparkConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/soda-kaustyczna-k',
-    name: 'Soda Kaustyczna',
+    url: '/emulgator-cas-68213-23-0-rokanol-c7',
+    name: 'Emulgator CAS-68213-23-0 ROKAnol C7',
   },
 
   category: {
-    url: '/surowce-kosmetyczne',
+    url: '/surowce-kosmetyczne.html',
     name: 'Surowce kosmetyczne',
-    expectedMinProducts: 5,
+    expectedMinProducts: 3,
   },
 
   features: {

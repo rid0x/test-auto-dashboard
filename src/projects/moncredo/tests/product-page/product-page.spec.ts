@@ -44,7 +44,7 @@ test.describe('Moncredo - Product Page @product-page @e2e', () => {
   // @desc: Opis lub szczegoly produktu sa widoczne na stronie
   test('should display product description/details', async ({ page }) => {
     const details = page.locator(
-      '.product-description, .tab-section, .product.info.detailed, .product-info-detailed'
+      '.cs-product-details, .product-description, .tab-section, .product.info.detailed, .product-info-detailed'
     );
     await expect(details.first()).toBeVisible({ timeout: 10000 });
   });
@@ -63,7 +63,7 @@ test.describe('Moncredo - Product Page @product-page @e2e', () => {
 
   // @desc: Breadcrumbs (sciezka nawigacji) sa widoczne
   test('should display breadcrumbs', async ({ page }) => {
-    const breadcrumbs = page.locator('.breadcrumbs, .breadcrumb, nav[aria-label="breadcrumb"]');
+    const breadcrumbs = page.locator('.cs-breadcrumbs, .breadcrumbs, .breadcrumb, nav[aria-label="breadcrumb"]');
     await expect(breadcrumbs.first()).toBeVisible();
   });
 

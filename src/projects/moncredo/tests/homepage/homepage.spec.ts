@@ -66,10 +66,10 @@ test.describe('Moncredo - Homepage @homepage @e2e', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('https://moncredo.pl', { waitUntil: 'domcontentloaded' });
 
-    // On mobile, page should still have key elements (search, cart, menu items)
+    // On mobile, page should still have key elements (search, cart, menu toggle)
     const hasSearch = await page.locator('#search, input[name="q"]').first().isVisible().catch(() => false);
-    const hasCart = await page.locator('#menu-cart-icon, button[title="Koszyk"]').first().isVisible().catch(() => false);
-    const hasMenu = await page.locator('.menu-item-link, nav.navigation, .nav-toggle').first().isVisible().catch(() => false);
+    const hasCart = await page.locator('.minicart-wrapper, a[href*="checkout/cart"], .cs-header-user-nav__item--cart').first().isVisible().catch(() => false);
+    const hasMenu = await page.locator('.cs-offcanvas-toggle, .nav-toggle, .cs-navigation, .cs-header__offcanvas-toggle').first().isVisible().catch(() => false);
     expect(hasSearch || hasCart || hasMenu).toBeTruthy();
   });
 });

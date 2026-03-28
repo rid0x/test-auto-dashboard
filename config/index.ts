@@ -9,6 +9,7 @@ import { abazurConfig } from './abazur.config';
 import { cornetteConfig } from './cornette.config';
 import { enteloConfig } from './entelo.config';
 import { distriparkConfig } from './distripark.config';
+import { elakiernikConfig } from './elakiernik.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
@@ -21,6 +22,7 @@ const projectConfigs: Record<ProjectName, ProjectConfig> = {
   cornette: cornetteConfig,
   entelo: enteloConfig,
   distripark: distriparkConfig,
+  elakiernik: elakiernikConfig,
 };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {
@@ -42,4 +44,4 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig };
+export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig };

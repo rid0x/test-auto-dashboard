@@ -6,6 +6,14 @@ export class DistriparkLoginPage extends LoginPage {
   // Distripark has TWO login forms (popup hidden + page visible)
   // Visible form uses #password (not #pass) and button.action.login.primary
 
+  protected get emailInput(): HealableLocator {
+    return healable('Distripark email input',
+      'form[action*="loginPost"] #email',
+      '#email',
+      'input[name="login[username]"]'
+    );
+  }
+
   protected get passwordInput(): HealableLocator {
     return healable('Distripark password input',
       '#password',
