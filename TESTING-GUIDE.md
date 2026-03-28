@@ -122,6 +122,59 @@ Po zakończeniu utwórz plik z:
 
 ---
 
+## Unikanie false positive i false negative
+
+**False positive** (test PASS ale nie powinien) to najgorszy scenariusz - dajesz fałszywe poczucie bezpieczeństwa. **False negative** (test FAIL ale funkcjonalność działa) to marnowanie czasu na szukanie bugów których nie ma.
+
+### Zasady pisania testów
+
+1. **Każdy test MUSI sprawdzać konkret, nie "czy strona istnieje"**
+   - ZLE: `expect(page.locator('body')).toBeVisible()` - to ZAWSZE przejdzie
+   - DOBRZE: `expect(page.locator('.message-success')).toBeVisible()` - sprawdza konkretny element
+
+2. **Asercja musi odpowiadać na pytanie "co się stało?"**
+   - ZLE: `expect(result.status).toBeTruthy()` - status 404 też jest truthy
+   - DOBRZE: `expect(result.status).toBe(200)` - jednoznaczne
+
+3. **Po akcji (click, submit) ZAWSZE weryfikuj efekt**
+   - Add to cart → sprawdź `.message-success` LUB counter minicart > 0
+   - Login → sprawdź URL `/customer/account/` LUB tekst "Witaj"
+   - Search → sprawdź count `.product-item` > 0
+
+4. **Nie ufaj samemu statusowi HTTP w testach API**
+   - Status 200 nie znaczy że odpowiedź jest poprawna - body może być pusty/błędny
+   - ZAWSZE sprawdzaj body: `expect(result.body?.items?.length).toBeGreaterThan(0)`
+   - Attachuj response do raportu (`attachApiResponse`) żeby można było zweryfikować ręcznie
+
+5. **Selektory muszą być precyzyjne**
+   - ZLE: `page.locator('button').first()` - trafia w pierwszy lepszy przycisk
+   - DOBRZE: `page.locator('#product-addtocart-button')` - trafia w konkretny element
+   - Dla resilience: używaj `healable()` z fallbackami, ale każdy fallback musi być sensowny
+
+6. **Nie maskuj failów catch-ami**
+   - ZLE: `try { await expect(x).toBeVisible(); } catch { /* ignore */ }`
+   - DOBRZE: albo test assertuje, albo `test.skip()` z wyjaśnieniem dlaczego
+
+7. **Screenshoty i attachmenty to dowód**
+   - E2E: screenshot po każdej kluczowej akcji (login, add-to-cart, checkout)
+   - API: pełny response body attachowany do raportu
+   - Jak test przechodzi ale screenshot pokazuje pustą stronę → to false positive
+
+8. **Timeout to nie rozwiązanie**
+   - `waitForTimeout(5000)` maskuje problem - element może nie istnieć wcale
+   - Zamiast timeout: `expect(element).toBeVisible({ timeout: 15000 })` - retry z asercją
+   - Lub `toPass({ intervals: [500, 1000, 2000] })` - retry z rosnącym interwałem
+
+### Checklist przed uznaniem testu za "gotowy"
+
+- [ ] Test failuje gdy powinien failować (wyłącz sieć / zmień selector → czy fail?)
+- [ ] Test nie przejdzie na pustej stronie (czy asercje są wystarczająco silne?)
+- [ ] Screenshot/attachment w raporcie potwierdza wynik
+- [ ] Selector jest unikalny (nie trafia w wiele elementów przypadkowo)
+- [ ] Po akcji jest weryfikacja (nie sam click bez sprawdzenia efektu)
+
+---
+
 ## Częste pułapki
 
 ### Breadcrumbs - ZAWSZE przez kategorię!
