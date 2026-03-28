@@ -36,7 +36,7 @@ test.describe('Pierrerene - Search @search @e2e', () => {
   // @desc: Wpisywanie frazy wyswietla podpowiedzi autouzupelniania
   test('should show search suggestions (autocomplete)', async ({ page, config }) => {
     const searchInput = page.locator('#search, .js-search-input').first();
-    await searchInput.click();
+    await searchInput.click({ force: true });
     await searchInput.pressSequentially(config.search.validQuery.substring(0, 3), { delay: 150 });
 
     const suggestions = page.locator(

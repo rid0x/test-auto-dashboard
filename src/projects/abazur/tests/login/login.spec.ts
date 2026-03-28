@@ -107,7 +107,7 @@ test.describe('Abazur - Login @login @e2e', () => {
 
   // @desc: Link "Zaloz konto" / "Zarejestruj sie" jest widoczny
   test('should have create account link', async ({ page }) => {
-    const createLink = page.locator('a[href*="account/create"], a[href*="create"], a:has-text("Załóż konto"), a:has-text("Zarejestruj się"), a:has-text("Zarejestruj"), a:has-text("Create an Account"), a:has-text("Utwórz konto")');
+    const createLink = page.getByRole('link', { name: /Załóż konto|Zarejestruj|Utwórz konto|Create/i });
     await expect(createLink.first()).toBeVisible({ timeout: 10000 });
 
     const screenshot = await page.screenshot();
