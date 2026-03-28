@@ -34,9 +34,9 @@ export const distriparkConfig: ProjectConfig = {
   },
 
   category: {
-    url: '/chemia-przemyslowa',
-    name: 'Chemia przemysłowa',
-    expectedMinProducts: 3,
+    url: '/surowce-i-polprodukty-chemiczne/surowce-chemiczne',
+    name: 'Surowce chemiczne',
+    expectedMinProducts: 5,
   },
 
   features: {

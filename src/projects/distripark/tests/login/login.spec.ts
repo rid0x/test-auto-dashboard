@@ -8,9 +8,11 @@ test.describe('Distripark - Login @login @e2e', () => {
 
   test('should display login page correctly', async ({ loginPage, page }) => {
     expect(await loginPage.isOnLoginPage()).toBeTruthy();
-    await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
-    await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
-    await expect(page.locator('#send2, button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
+    // Distripark has dual login forms - scope to visible loginPost form
+    const form = page.locator('form[action*="loginPost"]');
+    await expect(form.locator('input[name="login[username]"]').first()).toBeVisible();
+    await expect(form.locator('input[type="password"]').first()).toBeVisible();
+    await expect(form.locator('button[type="submit"]').first()).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ loginPage, page, config }) => {

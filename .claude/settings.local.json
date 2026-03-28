@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:pierrerene.pl)",
+      "WebFetch(domain:hulajnogi.pl)",
+      "WebFetch(domain:abazur.pl)",
+      "WebFetch(domain:www.pierrerene.pl)",
+      "WebFetch(domain:entelo.pl)",
+      "WebFetch(domain:distripark.pl)",
+      "WebFetch(domain:cornette.pl)",
+      "WebFetch(domain:www.entelo.pl)",
+      "WebFetch(domain:www.distripark.pl)",
+      "WebFetch(domain:www.cornette.pl)",
+      "WebSearch",
+      "WebFetch(domain:builtwith.com)",
+      "WebFetch(domain:distripark.com)",
+      "WebFetch(domain:auroracreation.com)",
+      "WebFetch(domain:auroracreation.pl)",
+      "WebFetch(domain:webcache.googleusercontent.com)",
+      "WebFetch(domain:www.wappalyzer.com)",
+      "WebFetch(domain:web.archive.org)"
+    ]
+  }
+}
