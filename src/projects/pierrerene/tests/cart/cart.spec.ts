@@ -165,7 +165,7 @@ test.describe('Pierrerene - Cart @cart @e2e', () => {
   });
 
   // @desc: Przycisk "Do kasy" prowadzi do checkout
-  test('should navigate to checkout from cart', async ({ productPage, cartPage, page }) => {
+  test('should click proceed to checkout button', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await cartPage.goto();

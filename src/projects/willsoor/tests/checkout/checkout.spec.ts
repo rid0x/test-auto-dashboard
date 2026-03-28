@@ -344,7 +344,7 @@ test.describe('Willsoor - Checkout @checkout @e2e', () => {
   });
 
   // @desc: Przycisk "Następne" przechodzi do kroku płatności
-  test('should proceed to payment step', async ({ cartPage, page }) => {
+  test('should proceed to payment step via guest', async ({ cartPage, page }) => {
     await cartPage.goto();
     await cartPage.proceedToCheckout();
     await page.waitForTimeout(8000);
