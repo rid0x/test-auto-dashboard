@@ -4,6 +4,11 @@ import { willsoorConfig } from './willsoor.config';
 import { pieceofcaseConfig } from './pieceofcase.config';
 import { szpakiConfig } from './4szpaki.config';
 import { moncredoConfig } from './moncredo.config';
+import { pierrereneConfig } from './pierrerene.config';
+import { abazurConfig } from './abazur.config';
+import { cornetteConfig } from './cornette.config';
+import { enteloConfig } from './entelo.config';
+import { distriparkConfig } from './distripark.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
@@ -11,6 +16,11 @@ const projectConfigs: Record<ProjectName, ProjectConfig> = {
   pieceofcase: pieceofcaseConfig,
   '4szpaki': szpakiConfig,
   moncredo: moncredoConfig,
+  pierrerene: pierrereneConfig,
+  abazur: abazurConfig,
+  cornette: cornetteConfig,
+  entelo: enteloConfig,
+  distripark: distriparkConfig,
 };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {
@@ -32,4 +42,4 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig };
+export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig };
