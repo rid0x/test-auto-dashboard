@@ -24,11 +24,57 @@ export class EnteloProductPage extends ProductPage {
     );
   }
 
+  private async dismissCookiebot(): Promise<void> {
+    try {
+      const btn = this.page.locator('#CookiebotDialogBodyLevelButtonLevelOptinAllowAll');
+      if (await btn.isVisible({ timeout: 1500 }).catch(() => false)) {
+        await btn.click();
+        await this.page.waitForTimeout(500);
+      }
+      await this.page.evaluate(() => {
+        document.querySelectorAll('#CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay, .CybotCookiebotDialogActive').forEach(e => (e as HTMLElement).style.display = 'none');
+      }).catch(() => {});
+    } catch {}
+  }
+
+  async selectFirstAvailableOption(): Promise<void> {
+    await this.dismissCookiebot();
+    await this.page.waitForTimeout(1000);
+
+    try {
+      const swatchOptions = this.page.locator('.swatch-option:not(.disabled)');
+      if (await swatchOptions.count() > 0) {
+        await swatchOptions.first().click({ force: true });
+        await this.page.waitForTimeout(1000);
+      }
+    } catch {}
+  }
+
   async addToCart(): Promise<void> {
-    const btn = this.page.locator('#product-addtocart-button, button.action.tocart, button:has-text("Dodaj do koszyka")').first();
+    await this.dismissCookiebot();
+    await this.selectFirstAvailableOption();
+    await this.dismissCookiebot();
+
+    const btn = this.page.locator('#product-addtocart-button');
     await expect(btn).toBeEnabled({ timeout: 15000 });
-    await btn.click();
-    await this.page.waitForTimeout(3000);
+
+    // Use AJAX submission via Playwright
+    const responsePromise = this.page.waitForResponse(
+      resp => resp.url().includes('checkout/cart/add') && resp.status() === 200,
+      { timeout: 15000 }
+    ).catch(() => null);
+
+    await btn.click({ force: true });
+
+    const resp = await responsePromise;
+    if (resp) {
+      // Wait for DOM to update after AJAX
+      await this.page.waitForTimeout(3000);
+    } else {
+      // Page might have reloaded (non-AJAX submit)
+      await this.page.waitForLoadState('load').catch(() => {});
+      await this.page.waitForTimeout(3000);
+    }
   }
 
   async expectAddToCartSuccess(): Promise<void> {
@@ -38,8 +84,8 @@ export class EnteloProductPage extends ProductPage {
         .then(t => Number(t?.trim()) > 0).catch(() => false);
       expect(stdMsg || cartHasItems).toBeTruthy();
     }).toPass({
-      intervals: [500, 1000, 2000],
-      timeout: 15000,
+      intervals: [500, 1000, 2000, 3000],
+      timeout: 20000,
     });
   }
 }

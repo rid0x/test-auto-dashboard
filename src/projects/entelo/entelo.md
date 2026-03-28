@@ -36,7 +36,18 @@
 - **reCAPTCHA**: Na rejestracji (v2)
 - **Meble**: Produkty konfiguracyjne z wieloma opcjami
 
+## Krytyczny problem: Add-to-cart nie działa w headless mode
+
+Magento RequireJS `catalogAddToCart` widget NIE inicjalizuje się poprawnie w headless Chromium:
+- Form jest valid, button enabled, no required fields empty
+- Click na button nie triggeruje żadnego AJAX request
+- jQuery.submit() również nie działa
+- Prawdopodobnie RequireJS loader fail lub dependency timeout
+
+**To kaskadowo psuje: cart (6), checkout (4), product add-to-cart (1) = 11 failures**
+
 ## TODO
-- [ ] Sprawdzić search query (może "blox" albo "meble" zamiast "krzeslo")
-- [ ] Sprawdzić product add-to-cart z nowym produktem
-- [ ] Cart/checkout po fix add-to-cart
+- [ ] Spróbować `--headed` mode (może RequireJS działa z GUI)
+- [ ] Spróbować REST API add-to-cart endpoint zamiast UI
+- [ ] Sprawdzić czy Cookiebot blokuje RequireJS modules
+- [ ] Sprawdzić inne produkty na entelo.pl

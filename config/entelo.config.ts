@@ -34,8 +34,8 @@ export const enteloConfig: ProjectConfig = {
   },
 
   category: {
-    url: '/meble.html',
-    name: 'Meble',
+    url: '/produkty/krzesla/krzesla-dziecieco-mlodziezowe-obrotowe',
+    name: 'Krzesła dziecięco-młodzieżowe obrotowe',
     expectedMinProducts: 3,
   },
 
