@@ -29,8 +29,8 @@ export const distriparkConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/lug-sodowy-roztwor-wodny',
-    name: 'Ług sodowy - roztwór wodny',
+    url: '/weglan-wapnia-stracany-kreda-techniczny',
+    name: 'Węglan wapnia (kreda techniczna)',
   },
 
   category: {

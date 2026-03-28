@@ -26,26 +26,34 @@ export class DistriparkProductPage extends ProductPage {
     await this.page.waitForTimeout(1000);
 
     try {
-      const selects = this.page.locator('.product-options-wrapper select, select.super-attribute-select');
-      for (let i = 0; i < await selects.count(); i++) {
-        const sel = selects.nth(i);
-        if (await sel.isVisible().catch(() => false)) {
-          const opts = await sel.locator('option').evaluateAll(os =>
-            os.filter(o => (o as HTMLOptionElement).value && (o as HTMLOptionElement).value !== '0' && (o as HTMLOptionElement).value !== '' && !(o as HTMLOptionElement).disabled).map(o => (o as HTMLOptionElement).value)
-          );
-          if (opts.length > 0) {
-            await sel.selectOption(opts[0]);
-            await this.page.waitForTimeout(500);
-          }
-        }
+      // Distripark uses radio buttons for packaging options (e.g., 25kg, 300kg, 1000kg)
+      // Click the first radio label via getByText
+      const radioLabels = this.page.locator('label[for*="product-option"]');
+      if (await radioLabels.count() > 0) {
+        await radioLabels.first().click();
+        await this.page.waitForTimeout(1000);
+        return;
       }
 
+      // Fallback: swatch options
       const attrs = this.page.locator('.swatch-attribute');
       for (let i = 0; i < await attrs.count(); i++) {
         const options = attrs.nth(i).locator('.swatch-option:not(.disabled)');
         if (await options.count() > 0) {
           await options.first().click({ force: true });
           await this.page.waitForTimeout(500);
+        }
+      }
+
+      // Fallback: select dropdowns
+      const selects = this.page.locator('select.super-attribute-select, .product-options-wrapper select');
+      for (let i = 0; i < await selects.count(); i++) {
+        const sel = selects.nth(i);
+        if (await sel.isVisible().catch(() => false)) {
+          const opts = await sel.locator('option').evaluateAll(os =>
+            os.filter(o => (o as HTMLOptionElement).value && (o as HTMLOptionElement).value !== '0' && (o as HTMLOptionElement).value !== '' && !(o as HTMLOptionElement).disabled).map(o => (o as HTMLOptionElement).value)
+          );
+          if (opts.length > 0) await sel.selectOption(opts[0]);
         }
       }
     } catch {}
@@ -56,7 +64,7 @@ export class DistriparkProductPage extends ProductPage {
     await this.selectFirstAvailableOption();
     await this.page.evaluate((q) => {
       const input = document.querySelector('#qty') as HTMLInputElement;
-      if (input) { input.value = q.toString(); }
+      if (input) input.value = q.toString();
     }, qty);
     await this.addToCart();
   }
@@ -64,8 +72,7 @@ export class DistriparkProductPage extends ProductPage {
   async addToCart(): Promise<void> {
     await this.dismissComplianz();
 
-    // RequireJS catalogAddToCart may not initialize in headless.
-    // Workaround: submit form data via in-page fetch.
+    // Distripark RequireJS may not initialize in headless - use in-page fetch
     const formData = await this.page.evaluate(() => {
       const form = document.querySelector('#product_addtocart_form') as HTMLFormElement;
       if (!form) return null;
@@ -79,8 +86,7 @@ export class DistriparkProductPage extends ProductPage {
       await this.page.evaluate(async (fd: { action: string; data: Record<string, string> }) => {
         const params = new URLSearchParams(fd.data);
         await fetch(fd.action, {
-          method: 'POST',
-          body: params,
+          method: 'POST', body: params,
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'same-origin',
         });
@@ -90,10 +96,9 @@ export class DistriparkProductPage extends ProductPage {
   }
 
   async expectAddToCartSuccess(): Promise<void> {
-    // Navigate to cart and verify
     await this.page.goto(this.config.baseUrl + '/checkout/cart/', { waitUntil: 'networkidle' });
     await expect(
-      this.page.locator('#shopping-cart-table, .cart.items, .cart-container .cart.item').first()
+      this.page.locator('#shopping-cart-table, .cart.items').first()
     ).toBeVisible({ timeout: 10000 });
   }
 }

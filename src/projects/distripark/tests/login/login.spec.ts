@@ -8,11 +8,9 @@ test.describe('Distripark - Login @login @e2e', () => {
 
   test('should display login page correctly', async ({ loginPage, page }) => {
     expect(await loginPage.isOnLoginPage()).toBeTruthy();
-    // Distripark has TWO login forms (popup + page). Scope to visible form.
-    const visibleForm = page.locator('form[action*="loginPost"]:visible, form.form-login:visible').first();
-    await expect(visibleForm.locator('input[type="email"], #email').first()).toBeVisible();
-    await expect(visibleForm.locator('input[type="password"]').first()).toBeVisible();
-    await expect(visibleForm.locator('button[type="submit"]').first()).toBeVisible();
+    await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
+    await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
+    await expect(page.locator('#send2, button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ loginPage, page, config }) => {
