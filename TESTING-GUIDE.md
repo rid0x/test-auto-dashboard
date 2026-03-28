@@ -111,6 +111,13 @@ npx cross-env PROJECT=myproject npx playwright test --project=myproject-desktop-
 
 **NIE trać czasu** na pełne suite po każdej drobnej zmianie - 10-15min na nic.
 
+**FOKUS: Jeden projekt, jeden test naraz.**
+- NIE rób wielu projektów równocześnie
+- NIE puszczaj background tasków na inne projekty
+- NIE kopiuj generycznych testów 1:1 między projektami - każdy sklep jest INNY
+- Skończ JEDEN projekt w 100% → dopiero wtedy następny
+- Jak piszesz nowy test: sprawdź najpierw jak dany sklep działa (inspekcja), potem pisz test
+
 ### 6. Notatki per projekt (`src/projects/{project}/{project}.md`)
 
 Po zakończeniu utwórz plik z:
