@@ -29,13 +29,13 @@ export const distriparkConfig: ProjectConfig = {
   },
 
   product: {
-    url: '/emulgator-cas-68213-23-0-rokanol-c7',
-    name: 'Emulgator CAS-68213-23-0 ROKAnol C7',
+    url: '/lug-sodowy-roztwor-wodny',
+    name: 'Ług sodowy - roztwór wodny',
   },
 
   category: {
-    url: '/surowce-kosmetyczne.html',
-    name: 'Surowce kosmetyczne',
+    url: '/chemia-przemyslowa',
+    name: 'Chemia przemysłowa',
     expectedMinProducts: 3,
   },
 

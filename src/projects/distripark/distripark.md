@@ -6,9 +6,9 @@
 
 ---
 
-## Kluczowy problem: B2B sklep
+## Kluczowy problem: Wymaga logowania do zakupów
 
-Distripark.com to sklep B2B (hurtowy) z chemikaliami. **Brak przycisku "Dodaj do koszyka" dla niezalogowanych użytkowników.** Wszystkie testy koszyka, checkout i add-to-cart failują z tego powodu.
+Distripark.com wymaga logowania do dodawania produktów do koszyka (endpoint zwraca `backUrl` redirect zamiast success). Konto `l.tumiel@auroracreation.com` zwraca "Nieprawidłowe dane logowania lub Twoje konto jest tymczasowo zablokowane".
 
 ## Znane problemy
 
