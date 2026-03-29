@@ -21,13 +21,9 @@ test.describe('Bladeville - Homepage @homepage @e2e', () => {
     await test.info().attach('Logo visible', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Pole wyszukiwania jest widoczne na stronie glownej
-  test('should display search bar', async ({ page }) => {
-    const searchInput = page.locator('#search');
-    await expect(searchInput.first()).toBeVisible();
-
-    const screenshot = await page.screenshot();
-    await test.info().attach('Search bar', { body: screenshot, contentType: 'image/png' });
+  // @desc: Pole wyszukiwania (trigger) jest widoczne na stronie glownej
+  test('should display search bar', async ({ homePage }) => {
+    await homePage.expectSearchVisible();
   });
 
   // @desc: Menu nawigacji jest widoczne na stronie glownej

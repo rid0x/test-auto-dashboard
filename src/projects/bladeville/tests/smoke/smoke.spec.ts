@@ -58,7 +58,7 @@ test.describe('Bladeville - Smoke Tests @smoke', () => {
   test('smoke: search returns results', async ({ homePage, page, config }) => {
     await homePage.goto();
     // Bladeville search is in sidebar - open it first
-    const searchTrigger = page.locator('.navbar-menu a[title="Szukaj"], .icon-search').first();
+    const searchTrigger = page.getByRole('link', { name: 'Szukaj' }).first();
     if (await searchTrigger.isVisible({ timeout: 3000 }).catch(() => false)) {
       await searchTrigger.click();
       await page.waitForTimeout(500);

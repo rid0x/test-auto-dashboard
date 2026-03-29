@@ -4,7 +4,7 @@ import { test, expect } from '../../fixture';
  * Helper: open Bladeville sidebar search panel before interacting with #search
  */
 async function openSearchPanel(page: any): Promise<void> {
-  const searchTrigger = page.locator('.navbar-menu a[title="Szukaj"], .icon-search').first();
+  const searchTrigger = page.getByRole('link', { name: 'Szukaj' }).first();
   if (await searchTrigger.isVisible({ timeout: 3000 }).catch(() => false)) {
     await searchTrigger.click();
     await page.waitForTimeout(500);

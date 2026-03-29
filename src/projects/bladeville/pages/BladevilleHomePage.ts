@@ -38,8 +38,8 @@ export class BladevilleHomePage extends HomePage {
   }
 
   async expectSearchVisible(): Promise<void> {
-    // Bladeville search is in sidebar - check trigger icon exists
-    const searchTrigger = this.page.locator('.navbar-menu a[title="Szukaj"], .icon-search, #search');
+    // Bladeville search is in sidebar - check trigger link exists
+    const searchTrigger = this.page.getByRole('link', { name: 'Szukaj' }).or(this.page.locator('.icon-search, #search'));
     await this.assertVisible(searchTrigger, 'Search trigger');
   }
 }
