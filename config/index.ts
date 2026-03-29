@@ -10,6 +10,8 @@ import { cornetteConfig } from './cornette.config';
 import { enteloConfig } from './entelo.config';
 import { distriparkConfig } from './distripark.config';
 import { elakiernikConfig } from './elakiernik.config';
+import { hulajnogimicroConfig } from './hulajnogimicro.config';
+import { bladevilleConfig } from './bladeville.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
@@ -23,6 +25,8 @@ const projectConfigs: Record<ProjectName, ProjectConfig> = {
   entelo: enteloConfig,
   distripark: distriparkConfig,
   elakiernik: elakiernikConfig,
+  hulajnogimicro: hulajnogimicroConfig,
+  bladeville: bladevilleConfig,
 };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {
@@ -44,4 +48,4 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig };
+export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig, hulajnogimicroConfig, bladevilleConfig };

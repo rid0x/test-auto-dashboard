@@ -89,6 +89,8 @@ function getBaseUrl(project: string): string {
     pieceofcase: process.env.PIECEOFCASE_BASE_URL || 'https://pieceofcase.pl',
     '4szpaki': process.env.SZPAKI_BASE_URL || 'https://4szpaki.pl',
     moncredo: process.env.MOCNREDO_BASE_URL || 'https://moncredo.pl',
+    hulajnogimicro: process.env.HULAJNOGIMICRO_BASE_URL || 'https://hulajnogimicro.pl',
+    bladeville: process.env.BLADEVILLE_BASE_URL || 'https://bladeville.pl',
   };
   return urls[project] || 'https://localhost';
 }
