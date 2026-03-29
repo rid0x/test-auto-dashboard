@@ -27,7 +27,9 @@ export class PierrereneProductPage extends ProductPage {
   async addToCart(): Promise<void> {
     const btn = this.page.locator('#product-addtocart-button');
     await expect(btn).toBeEnabled({ timeout: 15000 });
-    await btn.click();
+    // Wait for loading mask to disappear before clicking
+    await this.page.locator('.loading-mask').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+    await btn.click({ force: true });
     await this.page.waitForTimeout(3000);
   }
 

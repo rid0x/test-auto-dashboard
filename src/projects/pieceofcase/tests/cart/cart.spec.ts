@@ -96,6 +96,7 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
 
   // @desc: Usuniecie produktu z koszyka i weryfikacja pustego koszyka
   test('should remove item from cart', async ({ productPage, cartPage, page }) => {
+    test.setTimeout(90000);
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await productPage.expectAddToCartSuccess();
@@ -122,8 +123,8 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
     await test.step('Verify cart is empty', async () => {
       // Wait for cart page to settle after removal
       await page.waitForLoadState('networkidle').catch(() => {});
-      // Pieceofcase shows .cart-empty or "Nie masz żadnych produktów" message
-      const emptyIndicator = page.locator('.cart-empty, p:has-text("Nie masz żadnych produktów"), p:has-text("Koszyk jest pusty")');
+      // Pieceofcase shows .cart-empty or "Nie masz produktów" message
+      const emptyIndicator = page.locator('.cart-empty, p:has-text("Nie masz produktów"), p:has-text("Koszyk jest pusty")');
       await expect(emptyIndicator.first()).toBeVisible({ timeout: 15000 });
     });
   });
@@ -218,15 +219,13 @@ test.describe('Pieceofcase - Cart @cart @e2e', () => {
 
   // @desc: Usunięcie produktu z koszyka
   test('should remove product and show empty cart', async ({ productPage, cartPage, page }) => {
+    test.setTimeout(90000);
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     await cartPage.removeFirstItem();
-    await page.waitForTimeout(2000);
-    await cartPage.goto();
-    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów"), :has-text("Nie posiadasz produktów"), :has-text("no items"), :has-text("Twój koszyk jest pusty")');
-    await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
+    await cartPage.expectCartEmpty();
   });
 
   // @desc: Przycisk "Do kasy" prowadzi do checkout

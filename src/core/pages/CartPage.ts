@@ -8,6 +8,8 @@ export abstract class CartPage extends BasePage {
       '#shopping-cart-table',
       '.cart.table-wrapper',
       'table.cart.items',
+      'table:has(caption)',
+      'form#form-validate table',
       '.cart-container'
     );
   }
@@ -24,6 +26,7 @@ export abstract class CartPage extends BasePage {
   protected get emptyCartMessage(): HealableLocator {
     return healable('Empty cart message',
       '.cart-empty',
+      'p:has-text("Nie masz produktów")',
       ':has-text("Koszyk jest pusty")',
       ':has-text("You have no items")',
       '.empty-cart'
@@ -36,7 +39,9 @@ export abstract class CartPage extends BasePage {
       'a.action.delete',
       '.action-delete',
       'a[title="Usuń"]',
-      'a[title="Remove item"]'
+      'a[title="Usuń produkt"]',
+      'a[title="Remove item"]',
+      'a:has-text("Usuń")'
     );
   }
 
@@ -85,8 +90,18 @@ export abstract class CartPage extends BasePage {
   }
 
   async expectCartEmpty(): Promise<void> {
-    const msg = await this.findWithHealing(this.emptyCartMessage, { timeout: 10000 });
-    await this.assertVisible(msg, 'Empty cart message');
+    // Wait for the page to settle after removal
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    try {
+      const msg = await this.findWithHealing(this.emptyCartMessage, { timeout: 10000 });
+      await this.assertVisible(msg, 'Empty cart message');
+    } catch {
+      // Fallback: reload cart page and check again
+      await this.goto();
+      await this.page.waitForLoadState('networkidle').catch(() => {});
+      const msg = await this.findWithHealing(this.emptyCartMessage, { timeout: 10000 });
+      await this.assertVisible(msg, 'Empty cart message');
+    }
   }
 
   async getCartItemCount(): Promise<number> {
@@ -100,7 +115,14 @@ export abstract class CartPage extends BasePage {
 
   async removeFirstItem(): Promise<void> {
     const btn = await this.findWithHealing(this.removeItemButton);
-    await btn.click();
+    await btn.click({ force: true });
+
+    // Handle confirmation modal if it appears
+    const confirmBtn = this.page.locator('button.action-accept, button.action-primary, button:has-text("OK")');
+    if (await confirmBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+      await confirmBtn.first().click({ force: true });
+    }
+
     await this.page.waitForLoadState('load');
   }
 

@@ -190,21 +190,14 @@ test.describe('Elakiernik - Checkout @checkout @e2e', () => {
   });
 
   // @desc: Pola firmy (NIP, nazwa) pojawiaja sie po wybraniu opcji "Firma"
-  test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
-    await cartPage.goto();
-    await cartPage.proceedToCheckout();
-    await page.waitForTimeout(8000);
+  test('should display company fields when Firma is selected', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
+    await (checkoutPage as ElakiernikCheckoutPage).continueAsGuest();
 
-    // Handle guest login step (e-lakiernik 4-step checkout with "ZAKUPY BEZ LOGOWANIA")
-    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
-    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await guestBtn.first().click();
-      await page.waitForTimeout(5000);
-    }
-
-    // Wait for the shipping form to load
-    const checkoutForm = page.locator('#customer-email, input[name="username"], input[name="firstname"]');
-    if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+    // Wait for the shipping form to load (elakiernik uses label-based textboxes)
+    const checkoutForm = page.getByRole('textbox', { name: /E-mail/i }).first();
+    if (!(await checkoutForm.isVisible({ timeout: 15000 }).catch(() => false))) {
       test.skip(true, 'Checkout form nie załadował się');
     }
 

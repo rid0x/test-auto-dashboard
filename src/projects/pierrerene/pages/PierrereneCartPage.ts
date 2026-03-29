@@ -9,6 +9,7 @@ export class PierrereneCartPage extends CartPage {
       'a[title="Usuń produkt"]',
       'a[title="Usuń"]',
       'a[title="Remove item"]',
+      'a:has-text("Usuń")',
       'div[class*="remove"]',
       '.action-delete'
     );
@@ -21,13 +22,15 @@ export class PierrereneCartPage extends CartPage {
   async removeFirstItem(): Promise<void> {
     const btn = await this.findWithHealing(this.removeItemButton, { timeout: 10000 });
     await btn.click({ force: true });
+    await this.page.waitForTimeout(2000);
 
-    // Handle confirmation modal if present
-    const confirmBtn = this.page.locator('button.action-accept, button.action-primary, button:has-text("OK"), button:has-text("Tak")');
-    if (await confirmBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-      await confirmBtn.first().click();
+    // Handle confirmation modal if present (Magento 2 custom modal)
+    const confirmBtn = this.page.locator('button.action-accept, button.action-primary.action-accept, button:has-text("OK"), button:has-text("Tak")');
+    if (await confirmBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+      await confirmBtn.first().click({ force: true });
     }
 
     await this.page.waitForLoadState('load');
+    await this.page.waitForTimeout(2000);
   }
 }
