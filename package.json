@@ -175,7 +175,9 @@
     "test:cornette:smoke": "cross-env PROJECT=cornette npx playwright test --grep @smoke",
     "test:entelo:smoke": "cross-env PROJECT=entelo npx playwright test --grep @smoke",
     "test:distripark:smoke": "cross-env PROJECT=distripark npx playwright test --grep @smoke",
-    "test:elakiernik:smoke": "cross-env PROJECT=elakiernik npx playwright test --grep @smoke"
+    "test:elakiernik:smoke": "cross-env PROJECT=elakiernik npx playwright test --grep @smoke",
+    "test:hulajnogimicro:smoke": "cross-env PROJECT=hulajnogimicro npx playwright test --grep @smoke",
+    "test:bladeville:smoke": "cross-env PROJECT=bladeville npx playwright test --grep @smoke"
   },
   "keywords": [
     "playwright",
