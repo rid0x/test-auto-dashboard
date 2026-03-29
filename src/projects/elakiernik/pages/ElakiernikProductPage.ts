@@ -36,12 +36,13 @@ export class ElakiernikProductPage extends ProductPage {
 
   async selectFirstAvailableOption(): Promise<void> {
     await this.dismissCookiebot();
-    await this.page.waitForLoadState('networkidle').catch(() => {});
-    await this.page.waitForTimeout(1000);
+
+    // Quick check: if no options wrapper exists, this is a simple product
+    const hasOptions = await this.page.locator('.product-options-wrapper').isVisible({ timeout: 2000 }).catch(() => false);
+    if (!hasOptions) return;
 
     try {
-      // Handle select-based options (e-lakiernik may have configurable products)
-      const selects = this.page.locator('.product-options-wrapper select, select.super-attribute-select, select.product-custom-option');
+      const selects = this.page.locator('.product-options-wrapper select, select.super-attribute-select');
       const count = await selects.count();
       for (let i = 0; i < count; i++) {
         const sel = selects.nth(i);

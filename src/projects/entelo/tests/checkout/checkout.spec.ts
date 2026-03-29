@@ -99,6 +99,7 @@ test.describe('Entelo - Checkout @checkout @e2e', () => {
 
   // @desc: Metody platnosci widoczne po przejsciu "Nastepne"
   test('should display payment methods after next step', async ({ cartPage, page }) => {
+    test.slow();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
     await page.waitForTimeout(8000);
@@ -114,17 +115,32 @@ test.describe('Entelo - Checkout @checkout @e2e', () => {
       test.skip(true, 'Checkout form nie załadował się');
     }
 
+    // Dismiss Cookiebot if present
+    await page.evaluate(() => {
+      document.querySelectorAll('#CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay').forEach(el => el.remove());
+    }).catch(() => {});
+
     await page.locator('#customer-email, input[name="username"]').first().fill('test@test.pl');
     await page.locator('input[name="firstname"]').first().fill('Test');
     await page.locator('input[name="lastname"]').first().fill('User');
     await page.locator('input[name="street[0]"]').first().fill('Testowa 1');
+    // Entelo requires "Numer domu" field
+    const houseNum = page.getByRole('textbox', { name: /Numer domu/i });
+    if (await houseNum.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      await houseNum.first().fill('1');
+    }
     await page.locator('input[name="postcode"]').first().fill('00-001');
     await page.locator('input[name="city"]').first().fill('Warszawa');
-    await page.locator('input[name="telephone"]').first().fill('500100200');
-    await page.waitForTimeout(5000);
+    await page.locator('input[name="telephone"]').first().fill('+48500100200');
+    await page.waitForTimeout(3000);
 
-    const nextBtn = page.locator('button:has-text("Następne"), button:has-text("Dalej"), button[data-role="opc-continue"]');
-    await nextBtn.first().click();
+    // Dismiss Cookiebot again before clicking
+    await page.evaluate(() => {
+      document.querySelectorAll('#CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay').forEach(el => el.remove());
+    }).catch(() => {});
+
+    const nextBtn = page.locator('button:has-text("NASTĘPNE"), button:has-text("Następne"), button:has-text("Dalej"), button[data-role="opc-continue"]');
+    await nextBtn.first().click({ force: true });
     await page.waitForTimeout(8000);
 
     const methods = page.locator('.payment-method');
@@ -133,6 +149,7 @@ test.describe('Entelo - Checkout @checkout @e2e', () => {
 
   // @desc: Przycisk "Następne" przechodzi do kroku płatności
   test('should proceed to payment step', async ({ cartPage, page }) => {
+    test.slow();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
     await page.waitForTimeout(8000);

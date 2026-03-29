@@ -72,6 +72,17 @@ export class WillsoorProductPage extends ProductPage {
     const isVisible = await qtyInput.first().isVisible().catch(() => false);
     if (isVisible) {
       await qtyInput.first().fill(qty.toString());
+    } else {
+      // Hidden or readonly input - set value via JS
+      await this.page.evaluate((q) => {
+        const input = document.querySelector('#qty, input[name="qty"]') as HTMLInputElement;
+        if (input) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
+          nativeSetter.call(input, String(q));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }, qty);
     }
   }
 

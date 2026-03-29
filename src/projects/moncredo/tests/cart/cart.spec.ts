@@ -210,7 +210,7 @@ test.describe('Moncredo - Cart @cart @e2e', () => {
   // @desc: Zmniejszenie ilości produktu w koszyku do 1
   test('should decrease quantity in cart to 1', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
-    await productPage.addToCartWithOptions(3);
+    await productPage.addToCartWithOptions(2);
     await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     const qtyInput = page.locator('input.qty, input[name*="qty"]').first();

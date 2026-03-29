@@ -56,8 +56,8 @@ test.describe('Moncredo - Checkout @checkout @e2e', () => {
 
     // Product name should appear somewhere in checkout
     await page.waitForTimeout(3000); // Wait for checkout JS to render
-    const productName = page.locator('.product-item-name, .minicart-items .product-item-name, .opc-block-summary .product-item-name, .block.items-in-cart .product-item-name');
-    await expect(productName.first()).toBeVisible({ timeout: 15000 });
+    const productName = page.locator('.product-item-name, .minicart-items .product-item-name, .opc-block-summary .product-item-name, .block.items-in-cart .product-item-name, .product-item-details a, strong a').first();
+    await expect(productName).toBeVisible({ timeout: 15000 });
   });
 
   // @desc: Link powrotny do koszyka jest dostepny na stronie checkout

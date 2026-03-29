@@ -101,9 +101,7 @@ test.describe('Cornette - Minicart @minicart @e2e', () => {
     await cartPage.goto();
     await cartPage.expectCartNotEmpty();
     // Use broad selector that works across standard Magento and custom themes
-    const productName = page.locator('.product-item-name, .product-item-details a, td.col.item a').first();
-    const fallback = page.locator('strong a, .cart.table a[href*="/"]').first();
-    const target = await productName.isVisible({ timeout: 5000 }).catch(() => false) ? productName : fallback;
-    await expect(target).toBeVisible({ timeout: 10000 });
+    const productName = page.locator('.product-item-name, .product-item-details a, td.col.item a, strong a, .cart.table a[href*="/"]').first();
+    await expect(productName).toBeVisible({ timeout: 10000 });
   });
 });
