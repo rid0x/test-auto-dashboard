@@ -39,21 +39,27 @@ export class HulajnogimicroProductPage extends ProductPage {
   /**
    * Select first available color option from the swatch listbox.
    * Hulajnogimicro uses a listbox with role=option for color selection.
+   *
+   * IMPORTANT: The first option is visually pre-selected (aria-checked=true)
+   * but the hidden super_attribute input is empty until a JS click event fires.
+   * To ensure the input gets a value, we click a different option first, then
+   * click back to the first option. This triggers the Magento swatch JS properly.
    */
   async selectFirstAvailableOption(): Promise<void> {
-    // Hulajnogimicro uses swatch options (listbox) for color
-    const swatchOptions = this.page.locator('.swatch-option, [role="option"]');
+    const swatchOptions = this.page.locator('.swatch-option');
     try {
       await swatchOptions.first().waitFor({ state: 'visible', timeout: 5000 });
-      // First option is usually pre-selected; just verify it exists
       const count = await swatchOptions.count();
-      if (count > 0) {
-        const firstOption = swatchOptions.first();
-        const isSelected = await firstOption.getAttribute('aria-checked');
-        if (isSelected !== 'true') {
-          await firstOption.click();
-          await this.page.waitForTimeout(500);
-        }
+      if (count >= 2) {
+        // Click 2nd option first to trigger JS initialization, then click 1st
+        await swatchOptions.nth(1).click();
+        await this.page.waitForTimeout(1000);
+        await swatchOptions.first().click();
+        await this.page.waitForTimeout(1000);
+      } else if (count === 1) {
+        // Only one option — click it to trigger JS
+        await swatchOptions.first().click();
+        await this.page.waitForTimeout(1000);
       }
     } catch {
       // No swatch options — simple product
@@ -61,23 +67,22 @@ export class HulajnogimicroProductPage extends ProductPage {
   }
 
   /**
-   * Add to cart — Hulajnogimicro has no qty input on product page.
-   * The add-to-cart button triggers an AJAX request.
+   * Add to cart — Hulajnogimicro submits via AJAX form post.
+   * Wait for the customer/section/load response which confirms cart update.
    */
   async addToCart(): Promise<void> {
     const addBtn = this.page.locator('button:has-text("Dodaj do koszyka")').first();
 
-    const responsePromise = this.page.waitForResponse(
-      resp => resp.url().includes('/checkout/cart/add') || resp.url().includes('/cart/add'),
-      { timeout: 15000 }
+    const sectionPromise = this.page.waitForResponse(
+      resp => resp.url().includes('customer/section/load') && resp.status() === 200,
+      { timeout: 20000 }
     ).catch(() => null);
 
     await addBtn.click();
 
-    await Promise.race([
-      responsePromise,
-      this.page.waitForLoadState('load'),
-    ]);
+    await sectionPromise;
+    // Extra settle time for UI to update (Dziękujemy! text, minicart counter)
+    await this.page.waitForTimeout(2000);
   }
 
   async setQuantity(qty: number): Promise<void> {
@@ -101,9 +106,23 @@ export class HulajnogimicroProductPage extends ProductPage {
       if (!hasQty) {
         for (let i = 1; i < qty; i++) {
           await this.page.waitForTimeout(2000);
+          // Dismiss the offcanvas minicart overlay that opens after first add-to-cart
+          await this.dismissOffcanvasOverlay();
           await this.addToCart();
         }
       }
+    }
+  }
+
+  /**
+   * Dismiss the offcanvas minicart overlay that blocks clicks.
+   * Clicks the overlay or the close button to close it.
+   */
+  private async dismissOffcanvasOverlay(): Promise<void> {
+    const overlay = this.page.locator('.cs-offcanvas__overlay.overlay--visible, .overlay--visible');
+    if (await overlay.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+      await overlay.first().click({ force: true });
+      await this.page.waitForTimeout(1000);
     }
   }
 

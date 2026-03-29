@@ -57,10 +57,27 @@ test.describe('Hulajnogimicro - Smoke Tests @smoke', () => {
   // === SEARCH ===
   test('smoke: search returns results', async ({ homePage, page, config }) => {
     await homePage.goto();
-    await page.locator('#search, .js-search-input, input[name="q"]').first().fill(config.search.validQuery);
-    await page.locator('#search, .js-search-input, input[name="q"]').first().press('Enter');
+
+    // Hulajnogimicro hides the search input - click the search icon (li "Szukaj") to reveal it
+    const searchIcon = page.locator('li:has-text("Szukaj")');
+    await searchIcon.click();
+    await page.waitForTimeout(1000);
+
+    // Now the #search input should be visible
+    const searchInput = page.locator('#search');
+    await searchInput.waitFor({ state: 'visible', timeout: 5000 });
+    await searchInput.fill(config.search.validQuery);
+    await searchInput.press('Enter');
     await page.waitForLoadState('load');
-    const products = page.locator('.product-item, .product-item-info');
+
+    // Click the "Produkty" tab to reveal product grid
+    const produktyTab = page.locator('a[href="#tab-content-products"]');
+    if (await produktyTab.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await produktyTab.click();
+      await page.waitForTimeout(1000);
+    }
+
+    const products = page.locator('.cs-product-tile');
     await expect(products.first()).toBeVisible({ timeout: 15000 });
     expect(await products.count()).toBeGreaterThan(0);
     const screenshot = await page.screenshot();

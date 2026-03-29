@@ -49,8 +49,11 @@ test.describe('Hulajnogimicro - Product Page @product-page @e2e', () => {
 
   // @desc: SKU produktu jest widoczny na stronie
   test('should display product SKU', async ({ page }) => {
-    const skuText = await page.locator('text=SKU').first().textContent().catch(() => '');
-    expect(skuText).toContain('SKU');
+    // Hulajnogimicro shows SKU in a .product.attribute.sku container with .value child
+    const skuValue = page.locator('.product.attribute.sku .value, [itemprop="sku"], .sku .value');
+    await expect(skuValue.first()).toBeVisible({ timeout: 10000 });
+    const skuText = await skuValue.first().textContent();
+    expect(skuText?.trim().length).toBeGreaterThan(0);
 
     const screenshot = await page.screenshot();
     await test.info().attach('Product SKU', { body: screenshot, contentType: 'image/png' });

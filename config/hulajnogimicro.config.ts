@@ -6,8 +6,8 @@ export const hulajnogimicroConfig: ProjectConfig = {
 
   credentials: {
     valid: {
-      email: process.env.HULAJNOGIMICRO_USER_EMAIL || 'test@hulajnogimicro.pl',
-      password: process.env.HULAJNOGIMICRO_USER_PASSWORD || 'TestPassword123!',
+      email: process.env.HULAJNOGIMICRO_USER_EMAIL || 'l.tumiel@auroracreation.com',
+      password: process.env.HULAJNOGIMICRO_USER_PASSWORD || 'Kokoko90!',
     },
     invalid: {
       email: 'invalid@hulajnogimicro.pl',

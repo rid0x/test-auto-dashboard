@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { HomePage } from '../../../core/pages/HomePage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
@@ -13,19 +14,28 @@ export class HulajnogimicroHomePage extends HomePage {
     );
   }
 
+  /** The search icon/trigger that reveals the search input */
+  protected get searchIcon(): HealableLocator {
+    return healable('Hulajnogimicro search icon',
+      'li:has-text("Szukaj")',
+      '.cs-header__search',
+      'img[alt="search"]'
+    );
+  }
+
   protected get searchButton(): HealableLocator {
     return healable('Hulajnogimicro search button',
+      'button.cs-header-search__button',
       'button.action.search',
-      'button[title="Szukaj"]',
-      '.cs-header-search__button'
+      'button[title="Szukaj"]'
     );
   }
 
   protected get logo(): HealableLocator {
     return healable('Hulajnogimicro logo',
+      '.cs-logo__image',
       'img[alt*="Micro"]',
-      '.page-header img',
-      'header img',
+      '.cs-header__logo img',
       'a.logo'
     );
   }
@@ -33,18 +43,27 @@ export class HulajnogimicroHomePage extends HomePage {
   protected get cartIcon(): HealableLocator {
     return healable('Hulajnogimicro cart icon',
       'a[href*="checkout/cart"]',
-      '.minicart-wrapper',
       'a:has-text("Toggle offcanvas minicart")',
+      '.minicart-wrapper',
       '.showcart'
     );
   }
 
   protected get navigationMenu(): HealableLocator {
     return healable('Hulajnogimicro navigation',
-      '.nav-sections',
-      'nav.navigation',
       'nav[aria-label="Main Navigation"]',
-      '.navigation'
+      'nav.cs-navigation',
+      '.nav-sections',
+      'nav.navigation'
     );
+  }
+
+  /**
+   * On hulajnogimicro.pl the search input is hidden behind a search icon.
+   * We verify the search icon is visible instead of the hidden input.
+   */
+  async expectSearchVisible(): Promise<void> {
+    const el = await this.findWithHealing(this.searchIcon);
+    await this.assertVisible(el, 'Search icon');
   }
 }

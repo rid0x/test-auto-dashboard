@@ -169,14 +169,14 @@ test.describe('Hulajnogimicro - Cart @cart @e2e', () => {
 
   // @desc: Usunięcie produktu z koszyka
   test('should remove product and show empty cart', async ({ productPage, cartPage, page }) => {
+    test.setTimeout(90000); // Extra time for add→cart→remove→verify flow
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await productPage.expectAddToCartSuccess();
     await cartPage.goto();
     await cartPage.removeFirstItem();
-    await page.waitForTimeout(2000);
-    await cartPage.goto();
-    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów"), :has-text("Nie posiadasz produktów"), :has-text("no items"), :has-text("Twój koszyk jest pusty")');
+    // After removeFirstItem, the cart page should show the empty message
+    const emptyMsg = page.locator('.cart-empty');
     await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
   });
 

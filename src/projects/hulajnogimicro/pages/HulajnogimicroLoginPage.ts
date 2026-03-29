@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { LoginPage } from '../../../core/pages/LoginPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
@@ -41,5 +42,22 @@ export class HulajnogimicroLoginPage extends LoginPage {
       'a:has-text("Utwórz konto")',
       '.action.create'
     );
+  }
+
+  /**
+   * Override: Hulajnogimicro Creativestyle theme does not have .greet.welcome
+   * or .customer-welcome. After login, the page redirects to /customer/account/
+   * which shows "Moje konto" heading and "Wyloguj się" link.
+   */
+  async expectLoginSuccess(): Promise<void> {
+    await expect(async () => {
+      const isAccountPage = this.page.url().includes('/customer/account');
+      const hasLogout = await this.page.locator('a:has-text("Wyloguj się"), :has-text("Wyloguj się")').first().isVisible().catch(() => false);
+      const hasMyAccount = await this.page.locator('h1:has-text("Moje konto")').isVisible().catch(() => false);
+      expect(isAccountPage || hasLogout || hasMyAccount).toBeTruthy();
+    }).toPass({
+      intervals: [500, 1000, 2000],
+      timeout: 10000,
+    });
   }
 }

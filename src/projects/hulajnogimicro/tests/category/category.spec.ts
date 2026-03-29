@@ -34,10 +34,10 @@ test.describe('Hulajnogimicro - Category @category @e2e', () => {
 
   // @desc: Produkty na liscie maja widoczna nazwe i cene
   test('should display product names and prices', async ({ page }) => {
-    const firstProduct = page.locator('.product-item, li.product-item').first();
+    const firstProduct = page.locator('.cs-product-tile').first();
     await expect(firstProduct).toBeVisible();
 
-    const productName = firstProduct.locator('.product-item-name, .product-item-link, .product-name').first();
+    const productName = firstProduct.locator('.product-item-link, .cs-product-tile__name a').first();
     await expect(productName).toBeVisible();
 
     // Hulajnogimicro shows price as text "699,00zł"

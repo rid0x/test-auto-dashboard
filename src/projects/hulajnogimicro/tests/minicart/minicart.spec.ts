@@ -12,9 +12,14 @@ test.describe('Hulajnogimicro - Minicart @minicart @e2e', () => {
   // @desc: Minicart pokazuje komunikat o pustym koszyku
   test('should show empty cart message in minicart', async ({ homePage, page }) => {
     await homePage.goto();
-    // Hulajnogimicro has an offcanvas minicart dialog
-    const emptyText = page.locator('dialog:has-text("Nie posiadasz produktów")');
-    await expect(emptyText.first()).toBeAttached();
+    // Hulajnogimicro has a minicart link; click it to navigate to cart page
+    const cartLink = page.locator('a[href*="checkout/cart"]').first();
+    await cartLink.click();
+    await page.waitForLoadState('load');
+
+    // Verify empty cart message on cart page
+    const emptyMsg = page.locator('.cart-empty, :has-text("Nie posiadasz produktów")');
+    await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Empty minicart', { body: screenshot, contentType: 'image/png' });
@@ -65,22 +70,24 @@ test.describe('Hulajnogimicro - Minicart @minicart @e2e', () => {
   test('should open minicart or navigate to cart on click', async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
-    await page.waitForTimeout(2000);
+    await productPage.expectAddToCartSuccess();
 
     // Navigate to homepage
     await page.goto(page.url().split('/').slice(0, 3).join('/'), { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
-    const toggle = page.locator('a[href*="checkout/cart"], .minicart-wrapper a').first();
+    const toggle = page.locator('a[href*="checkout/cart"]').first();
     if (await toggle.isVisible().catch(() => false)) {
       await toggle.click({ force: true });
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
 
-      // Either minicart dropdown/offcanvas appears OR we navigated to cart page
-      const dialog = page.locator('dialog, .block-minicart, #minicart-content-wrapper, .minicart-items');
-      const isDialog = await dialog.first().isVisible().catch(() => false);
+      // Hulajnogimicro cart icon opens an offcanvas minicart dialog
+      // OR navigates to /checkout/cart/ page
       const isCartPage = page.url().includes('checkout/cart');
-      expect(isDialog || isCartPage).toBeTruthy();
+      const offcanvasDialog = page.locator('dialog, .cs-offcanvas, .block-minicart');
+      const dialogVisible = await offcanvasDialog.first().isVisible().catch(() => false);
+      const hasItems = await page.locator('tbody.cart.item, .cart.item, .cs-minicart-product').first().isVisible().catch(() => false);
+      expect(isCartPage || dialogVisible || hasItems).toBeTruthy();
 
       const screenshot = await page.screenshot();
       await test.info().attach('Minicart expanded or cart page', { body: screenshot, contentType: 'image/png' });

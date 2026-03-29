@@ -6,8 +6,8 @@ export const bladevilleConfig: ProjectConfig = {
 
   credentials: {
     valid: {
-      email: process.env.BLADEVILLE_USER_EMAIL || 'test@bladeville.pl',
-      password: process.env.BLADEVILLE_USER_PASSWORD || 'TestPassword123!',
+      email: process.env.BLADEVILLE_USER_EMAIL || 'l.tumiel@auroracreation.com',
+      password: process.env.BLADEVILLE_USER_PASSWORD || 'Kokoko90!',
     },
     invalid: {
       email: 'invalid@bladeville.pl',

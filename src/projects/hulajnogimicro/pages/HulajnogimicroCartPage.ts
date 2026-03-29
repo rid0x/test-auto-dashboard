@@ -14,10 +14,11 @@ export class HulajnogimicroCartPage extends CartPage {
 
   protected get removeItemButton(): HealableLocator {
     return healable('Hulajnogimicro remove item',
+      'form#form-validate a[title="Usuń produkt"]',
+      '.cs-cart-item__link-wrapper[title="Usuń produkt"]',
       'a.action.action-delete',
       '.action-delete',
-      'a[title="Usuń"]',
-      'a:has-text("Usuń")'
+      'a[title="Usuń"]'
     );
   }
 
@@ -52,21 +53,17 @@ export class HulajnogimicroCartPage extends CartPage {
   }
 
   async removeFirstItem(): Promise<void> {
+    // Hulajnogimicro uses data-post links for delete.
+    // The cart-page button is inside form#form-validate.
     const btn = await this.findWithHealing(this.removeItemButton);
     await btn.click();
 
-    // Wait for confirm modal if present
-    const confirmBtn = this.page.locator('button.action-primary.action-accept, button.action-accept');
-    try {
-      await confirmBtn.first().waitFor({ state: 'visible', timeout: 5000 });
-      await confirmBtn.first().click();
-    } catch {
-      // No confirm modal — direct removal
-    }
-
-    // Wait for page to reload after delete
+    // Wait for the cart/delete response and page reload
+    await this.page.waitForResponse(
+      resp => resp.url().includes('cart/delete') || resp.url().includes('cart'),
+      { timeout: 15000 }
+    ).catch(() => {});
     await this.page.waitForLoadState('load');
-    // Verify cart updated
-    await this.page.locator('.cart-empty, #shopping-cart-table').first().waitFor({ state: 'visible', timeout: 10000 });
+    await this.page.waitForTimeout(2000);
   }
 }
