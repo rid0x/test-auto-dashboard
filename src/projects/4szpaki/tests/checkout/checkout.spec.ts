@@ -58,6 +58,52 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
     await test.info().attach('Shipping form', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Po wyborze "Firma" pojawiaja sie pola NIP i nazwa firmy
+  test('should display company fields when Firma is selected', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
+    await (checkoutPage as SzpakiCheckoutPage).continueAsGuest();
+
+    await test.step('Wait for form to load', async () => {
+      await expect(page.getByRole('textbox', { name: /E-mail/i }).first()).toBeVisible({ timeout: 15000 });
+    });
+
+    await test.step('Click Firma radio/label', async () => {
+      // Try clicking the label that contains "Firma"
+      const firmaLabel = page.locator('label').filter({ hasText: 'Firma (chcę fakturę VAT)' });
+      if (await firmaLabel.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await firmaLabel.click();
+      } else {
+        // Fallback: try getByText or radio role
+        const firmaText = page.getByText('Firma', { exact: false });
+        if (await firmaText.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+          await firmaText.first().click();
+        } else {
+          const firmaRadio = page.getByRole('radio', { name: /firma/i });
+          await firmaRadio.click();
+        }
+      }
+      await page.waitForTimeout(1000);
+    });
+
+    await test.step('Verify NIP field is visible', async () => {
+      const nipByAttr = page.locator('input[name="vat_id"]');
+      const nipByRole = page.getByRole('textbox', { name: /NIP/i });
+      const nipField = nipByAttr.or(nipByRole);
+      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Verify Company/Firma name field is visible', async () => {
+      const companyByAttr = page.locator('input[name="company"]');
+      const companyByRole = page.getByRole('textbox', { name: /Firma/i });
+      const companyField = companyByAttr.or(companyByRole);
+      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    const screenshot2 = await page.screenshot({ fullPage: true });
+    await test.info().attach('Firma fields', { body: screenshot2, contentType: 'image/png' });
+  });
+
   // @desc: Metody dostawy sa widoczne po wypelnieniu adresu
   test('should display shipping methods', async ({ checkoutPage, page }) => {
     await checkoutPage.goto();
@@ -108,13 +154,13 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
       phone: '+48510245267',
     });
 
-    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed('DPD  Kurier');
+    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed();
 
     const screenshot = await page.screenshot();
     await test.info().attach('Payment step', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Krok platnosci wyswietla metody platnosci (BLIK, karta, PayPo, przelew, PayPal)
+  // @desc: Krok podsumowania wyswietla sekcje platnosci (4szpaki redirect po kliknieciu "Kupuje i place")
   test('should display payment methods', async ({ checkoutPage, page }) => {
     await checkoutPage.goto();
     await page.waitForLoadState('load');
@@ -130,24 +176,15 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
       phone: '+48510245267',
     });
 
-    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed('DPD  Kurier');
+    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed();
 
-    const expectedPayments = [
-      'BLIK',
-      'Płatność kartą',
-      'PayPo',
-      'Przelew online',
-      'PayPal',
-    ];
-
-    for (const payment of expectedPayments) {
-      await test.step(`Platnosc: ${payment}`, async () => {
-        await expect(page.locator('label').filter({ hasText: payment }).first()).toBeVisible({ timeout: 10000 });
-      });
-    }
+    // 4szpaki: payment is handled via external gateway (redirect after "Kupuję i płacę")
+    // Verify payment info section and place order button are visible
+    await expect(page.getByText('Informacje o płatności')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: /Kupuję i płacę/i })).toBeVisible();
 
     const screenshot = await page.screenshot({ fullPage: true });
-    await test.info().attach('Payment methods', { body: screenshot, contentType: 'image/png' });
+    await test.info().attach('Payment step', { body: screenshot, contentType: 'image/png' });
   });
 
   // @desc: Zgody, komentarz i przycisk "Kupuje i place" widoczne na kroku platnosci
@@ -166,11 +203,11 @@ test.describe('4szpaki - Checkout @checkout @e2e', () => {
       phone: '+48510245267',
     });
 
-    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed('DPD  Kurier');
+    await (checkoutPage as SzpakiCheckoutPage).selectShippingAndProceed();
 
     await test.step('Zgody', async () => {
-      await expect(page.locator('label').filter({ hasText: /Zaznacz wszystkie zgody/i })).toBeVisible();
-      await expect(page.locator('label').filter({ hasText: /regulamin/i }).first()).toBeVisible();
+      await expect(page.getByRole('checkbox', { name: /Zaznacz wszystkie zgody/i })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('checkbox', { name: /regulamin/i })).toBeVisible();
     });
 
     await test.step('Komentarz', async () => {

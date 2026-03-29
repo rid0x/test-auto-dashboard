@@ -22,7 +22,8 @@ test.describe('Abazur - Checkout @checkout @e2e', () => {
     await page.waitForTimeout(3000);
 
     await test.step('Email', async () => {
-      await expect(page.locator('#customer-email, input[name="username"], input[type="email"]').first()).toBeVisible({ timeout: 20000 });
+      const email = page.locator('#customer-email, input[name="username"]').or(page.getByRole('textbox', { name: /e-mail/i }));
+      await expect(email.first()).toBeVisible({ timeout: 20000 });
     });
 
     await test.step('Imie i Nazwisko', async () => {
@@ -33,7 +34,8 @@ test.describe('Abazur - Checkout @checkout @e2e', () => {
     });
 
     await test.step('Adres: ulica, kod pocztowy, miasto', async () => {
-      await expect(page.locator('input[name="street[0]"]').first()).toBeVisible({ timeout: 15000 });
+      const street = page.locator('input[name="street[0]"]').or(page.getByRole('textbox', { name: /Ulica/i }));
+      await expect(street.first()).toBeVisible({ timeout: 15000 });
       const postcode = page.locator('input[name="postcode"]').or(page.getByRole('textbox', { name: /Kod pocztowy/i }));
       await expect(postcode.first()).toBeVisible({ timeout: 15000 });
       const city = page.locator('input[name="city"]').or(page.getByRole('textbox', { name: /Miasto/i }));
@@ -231,5 +233,43 @@ test.describe('Abazur - Checkout @checkout @e2e', () => {
     await expect(summary.first()).toBeVisible();
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
+  });
+
+  // @desc: Pola NIP i Firma widoczne po wybraniu opcji Firma (faktura VAT)
+  test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
+    await cartPage.goto();
+    await cartPage.proceedToCheckout();
+    await page.waitForTimeout(8000);
+
+    // Abazur checkout loads the billing form directly (no guest step)
+    const checkoutForm = page.locator('#billing-address-container, .form-billing-address, input[name="billing-type"]');
+    if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+      test.skip(true, 'Checkout billing form nie załadował się');
+    }
+
+    await test.step('Verify Osoba prywatna/Firma radio buttons are visible', async () => {
+      // Abazur uses custom-styled radios: #billing1 (Osoba prywatna) and #billing2 (Firma)
+      // The radio inputs are hidden; labels are the clickable elements
+      const firmaLabel = page.locator('label[for="billing2"]');
+      await expect(firmaLabel).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Click Firma radio to switch to company billing', async () => {
+      await page.locator('label[for="billing2"]').click();
+      await page.waitForTimeout(2000);
+    });
+
+    await test.step('Verify NIP field is visible', async () => {
+      const nipField = page.locator('input[name="vat_id"]');
+      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Verify Company/Firma name field is visible', async () => {
+      const companyField = page.locator('input[name="company"]');
+      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Firma fields visible', { body: screenshot, contentType: 'image/png' });
   });
 });

@@ -96,9 +96,11 @@ test.describe('4szpaki - Minicart @minicart @e2e', () => {
   test('should show product name in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
-    const productName = page.locator('.product-item-name, .cart.item .product-item-name, .item-info .product-item-name');
-    await expect(productName.first()).toBeVisible({ timeout: 10000 });
+    await cartPage.expectCartNotEmpty();
+    const productName = page.getByRole('link', { name: /Superkrem|product/i }).first();
+    await expect(productName).toBeVisible({ timeout: 10000 });
   });
 });

@@ -183,4 +183,50 @@ test.describe('Elakiernik - Checkout @checkout @e2e', () => {
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
+
+  // @desc: Pola firmy (NIP, nazwa) pojawiaja sie po wybraniu opcji "Firma"
+  test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
+    await cartPage.goto();
+    await cartPage.proceedToCheckout();
+    await page.waitForTimeout(8000);
+
+    // Handle guest login step (e-lakiernik 4-step checkout with "ZAKUPY BEZ LOGOWANIA")
+    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
+    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.first().click();
+      await page.waitForTimeout(5000);
+    }
+
+    // Wait for the shipping form to load
+    const checkoutForm = page.locator('#customer-email, input[name="username"], input[name="firstname"]');
+    if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+      test.skip(true, 'Checkout form nie załadował się');
+    }
+
+    // Verify "Osoba fizyczna" radio is checked by default
+    const privateRadio = page.locator('input#billing1[name="billing-type"][value="private"]');
+    await expect(privateRadio).toBeChecked({ timeout: 10000 });
+
+    // Verify company (Firma) and NIP fields are hidden by default
+    const companyFieldContainer = page.locator('div[name="billingAddress.company"]');
+    const nipFieldContainer = page.locator('div[name="billingAddress.vat_id"]');
+    await expect(companyFieldContainer).toBeHidden();
+    await expect(nipFieldContainer).toBeHidden();
+
+    // Click the "Firma" radio button (id="billing2")
+    const firmaRadio = page.locator('input#billing2[name="billing-type"][value="company"]');
+    await firmaRadio.evaluate((el: HTMLInputElement) => el.click());
+    await page.waitForTimeout(2000);
+
+    // Verify company name field becomes visible
+    const companyInput = page.locator('input[name="company"]');
+    await expect(companyInput).toBeVisible({ timeout: 10000 });
+
+    // Verify NIP field becomes visible
+    const nipInput = page.locator('input[name="vat_id"]');
+    await expect(nipInput).toBeVisible({ timeout: 10000 });
+
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Company fields visible', { body: screenshot, contentType: 'image/png' });
+  });
 });

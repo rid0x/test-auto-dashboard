@@ -44,7 +44,7 @@ export const pierrereneConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: false,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: '.ec-gtm-cookie-directive a.accept-all',
+    cookieConsentSelector: '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
   },
 
   api: {

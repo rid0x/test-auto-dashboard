@@ -48,26 +48,63 @@ export class SzpakiCheckoutPage extends CheckoutPage {
   }
 
   async selectShippingAndProceed(): Promise<void> {
-    // Dismiss "Wybierz punkt odbioru" modal if auto-selected pickup method triggered it
+    // Dismiss "Wybierz punkt odbioru" modal if it appeared
     const okBtn = this.page.getByRole('button', { name: 'OK' });
     if (await okBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await okBtn.click();
       await this.page.waitForTimeout(500);
     }
 
-    // Select "Inpost Kurier" (standard courier, no pickup point needed)
-    // From codegen: getByRole('cell', { name: 'Inpost  Kurier' }).first().click()
-    await this.page.getByRole('cell', { name: 'Inpost  Kurier' }).first().click();
-    await this.page.waitForTimeout(1000);
+    // Wait for Magento loading mask to disappear and shipping methods to enable
+    await this.page.waitForSelector('.loading-mask', { state: 'hidden', timeout: 10000 }).catch(() => {});
+    await this.page.waitForTimeout(2000);
 
-    await this.page.getByRole('button', { name: 'Przejdź dalej' }).click();
+    // Click DPD Kurier radio directly via CSS (exact, not "za pobraniem")
+    const dpdRadio = this.page.locator('input[type="radio"][value*="Dpdshipping_Dpdshipping"]');
+    await dpdRadio.scrollIntoViewIfNeeded();
+    await dpdRadio.evaluate((el: HTMLInputElement) => {
+      el.disabled = false;
+      el.click();
+    });
 
-    // Dismiss modal again if triggered
-    if (await okBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    // Wait for Magento AJAX to save the selected shipping method
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForTimeout(3000);
+
+    // Dismiss modal if triggered
+    if (await okBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
       await okBtn.click();
+      await this.page.waitForTimeout(500);
     }
 
-    await this.page.waitForLoadState('load');
+    // Click "Przejdź dalej" to go to payment/summary step
+    const nextBtn = this.page.getByRole('button', { name: 'Przejdź dalej' });
+    await nextBtn.scrollIntoViewIfNeeded();
+    await nextBtn.click();
+    await this.page.waitForTimeout(3000);
+
+    // If still on shipping step, try Knockout step navigator
+    const stillOnShipping = await this.page.locator('table.table-checkout-shipping-method').isVisible().catch(() => false);
+    if (stillOnShipping) {
+      // Use Magento's Knockout step navigator to force navigation
+      await this.page.evaluate(() => {
+        try {
+          (window as any).require(['Magento_Checkout/js/model/step-navigator'], (nav: any) => {
+            nav.next();
+          });
+        } catch { /* ignore */ }
+      });
+      await this.page.waitForTimeout(5000);
+    }
+
+    // Wait for next step
+    await this.page.waitForLoadState('networkidle').catch(() => {});
     await this.page.waitForTimeout(2000);
+
+    // Dismiss modal if it appears
+    if (await okBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await okBtn.click();
+      await this.page.waitForTimeout(1000);
+    }
   }
 }

@@ -193,4 +193,58 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
+
+  // @desc: Po wyborze "Firma" pojawiaja sie pola NIP i nazwa firmy
+  test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
+    await cartPage.goto();
+    await cartPage.proceedToCheckout();
+    await page.waitForTimeout(8000);
+
+    // Handle guest/login step
+    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
+    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.first().click();
+      await page.waitForTimeout(5000);
+    }
+
+    // Remove popup overlays (pieceofcase has __pb popups)
+    await page.evaluate(() => document.querySelectorAll('[id^="__pb"], [data-gr="popup-container"]').forEach(el => el.remove())).catch(() => {});
+
+    await test.step('Wait for form to load', async () => {
+      const checkoutForm = page.locator('input[name="firstname"], #customer-email, input[name="billing-type"]');
+      if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+        test.skip(true, 'Checkout form nie załadował się');
+      }
+    });
+
+    await test.step('Click Firma radio button', async () => {
+      // Pieceofcase uses radio buttons: #billing1 (Osoba fizyczna) and #billing2 (Firma)
+      const firmaRadio = page.locator('#billing2');
+      if (await firmaRadio.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await firmaRadio.check({ force: true });
+      } else {
+        // Fallback: click label
+        const firmaLabel = page.locator('label[for="billing2"]');
+        if (await firmaLabel.isVisible({ timeout: 5000 }).catch(() => false)) {
+          await firmaLabel.click();
+        } else {
+          test.skip(true, 'Firma radio nie znaleziony');
+        }
+      }
+      await page.waitForTimeout(1000);
+    });
+
+    await test.step('Verify Company (Firma) name field is visible', async () => {
+      const companyField = page.locator('input[name="company"]');
+      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Verify NIP field is visible', async () => {
+      const nipField = page.locator('input[name="vat_id"]');
+      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Firma/NIP fields', { body: screenshot, contentType: 'image/png' });
+  });
 });

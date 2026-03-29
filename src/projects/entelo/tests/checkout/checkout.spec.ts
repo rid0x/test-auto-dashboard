@@ -180,4 +180,58 @@ test.describe('Entelo - Checkout @checkout @e2e', () => {
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
+
+  // @desc: Pola NIP i Firma widoczne po wybraniu opcji Firma (faktura VAT)
+  test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
+    await cartPage.goto();
+    await cartPage.proceedToCheckout();
+    await page.waitForTimeout(8000);
+
+    // Dismiss Cookiebot overlay if present
+    const cookieBtn = page.locator('#CookiebotDialogBodyLevelButtonLevelOptinAllowAll');
+    if (await cookieBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await cookieBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    await page.evaluate(() => {
+      document.querySelectorAll('#CybotCookiebotDialog, #CybotCookiebotDialogBodyUnderlay').forEach(e => (e as HTMLElement).style.display = 'none');
+    }).catch(() => {});
+
+    // Entelo checkout loads the billing form directly (no guest step)
+    const checkoutForm = page.locator('.field-choices, #billing-private, .billing-address-form');
+    if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+      test.skip(true, 'Checkout billing form nie załadował się');
+    }
+
+    await test.step('Verify Osoba Prywatna/Firma radio buttons are visible', async () => {
+      // Entelo uses visible radios: #billing-private (Osoba Prywatna) and #billing-company (Firma)
+      const firmaRadio = page.locator('#billing-company');
+      await expect(firmaRadio).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Click Firma radio to switch to company billing', async () => {
+      // Entelo radios are directly visible and clickable
+      const firmaLabel = page.locator('label[for="billing-company"]');
+      if (await firmaLabel.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await firmaLabel.click();
+      } else {
+        await page.locator('#billing-company').click({ force: true });
+      }
+      await page.waitForTimeout(2000);
+    });
+
+    await test.step('Verify NIP field is visible', async () => {
+      // Entelo labels NIP as "Numer NIP"
+      const nipField = page.locator('input[name="vat_id"]');
+      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Verify Company/Firma name field is visible', async () => {
+      const companyField = page.locator('input[name="company"]');
+      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Firma fields visible', { body: screenshot, contentType: 'image/png' });
+  });
 });

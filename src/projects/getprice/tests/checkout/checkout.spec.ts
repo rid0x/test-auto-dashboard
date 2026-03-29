@@ -210,4 +210,41 @@ test.describe('Getprice - Checkout @checkout @e2e', () => {
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Order summary', { body: screenshot, contentType: 'image/png' });
   });
+
+  // @desc: Po zaznaczeniu checkboxa faktury pojawiaja sie pola NIP i firma
+  test('should display company fields when Firma is selected', async ({ checkoutPage, page }) => {
+    await checkoutPage.goto();
+    await page.waitForLoadState('load');
+    await (checkoutPage as import('../../pages/GetpriceCheckoutPage').GetpriceCheckoutPage).continueAsGuest();
+
+    await test.step('Wait for form to load', async () => {
+      const checkoutForm = page.locator('input[name="firstname"], #customer-email');
+      await expect(checkoutForm.first()).toBeVisible({ timeout: 15000 });
+    });
+
+    await test.step('Check invoice checkbox (Potrzebuję fakturę)', async () => {
+      // Getprice uses a custom-styled checkbox - click the label text instead
+      const invoiceLabel = page.getByText('Potrzebuję fakturę', { exact: false });
+      if (await invoiceLabel.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+        await invoiceLabel.first().click();
+      } else {
+        // Fallback: force click the checkbox via JS
+        await page.locator('input[name="is_vat_payer"]').first().evaluate((el: HTMLInputElement) => el.click());
+      }
+      await page.waitForTimeout(1000);
+    });
+
+    await test.step('Verify NIP field is visible', async () => {
+      const nipField = page.locator('input[name="vat_id"]');
+      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    await test.step('Verify Company (Firma) name field is visible', async () => {
+      const companyField = page.locator('input[name="company"]');
+      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+    });
+
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Firma/NIP fields', { body: screenshot, contentType: 'image/png' });
+  });
 });

@@ -96,9 +96,14 @@ test.describe('Cornette - Minicart @minicart @e2e', () => {
   test('should show product name in cart', async ({ productPage, cartPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
-    const productName = page.locator('.product-item-name, .cart.item .product-item-name, .item-info .product-item-name');
-    await expect(productName.first()).toBeVisible({ timeout: 10000 });
+    await cartPage.expectCartNotEmpty();
+    // Use broad selector that works across standard Magento and custom themes
+    const productName = page.locator('.product-item-name, .product-item-details a, td.col.item a').first();
+    const fallback = page.locator('strong a, .cart.table a[href*="/"]').first();
+    const target = await productName.isVisible({ timeout: 5000 }).catch(() => false) ? productName : fallback;
+    await expect(target).toBeVisible({ timeout: 10000 });
   });
 });

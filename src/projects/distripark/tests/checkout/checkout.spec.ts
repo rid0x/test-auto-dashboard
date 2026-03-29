@@ -105,7 +105,7 @@ test.describe('Distripark - Checkout @checkout @e2e', () => {
     await page.waitForTimeout(8000);
 
     await expect(page.getByText('Przelew tradycyjny')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('PayU')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Płatność PayU')).toBeVisible({ timeout: 5000 });
   });
 
   // @desc: Zgody/regulamin na stronie płatności

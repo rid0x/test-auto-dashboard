@@ -27,10 +27,17 @@ export class DistriparkProductPage extends ProductPage {
 
     try {
       // Distripark uses radio buttons for packaging options (e.g., 25kg, 300kg, 1000kg)
-      // Click the first radio label via getByText
-      const radioLabels = this.page.locator('label[for*="product-option"]');
-      if (await radioLabels.count() > 0) {
-        await radioLabels.first().click();
+      // Click the radio input directly, then trigger change for Knockout
+      const radioInputs = this.page.locator('input.super-attribute-radio, input[id*="product-option"]');
+      if (await radioInputs.count() > 0) {
+        await radioInputs.first().check({ force: true });
+        await this.page.waitForTimeout(500);
+        // Also trigger via JS for Knockout
+        await radioInputs.first().evaluate((el: HTMLInputElement) => {
+          el.checked = true;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.dispatchEvent(new Event('click', { bubbles: true }));
+        });
         await this.page.waitForTimeout(1000);
         return;
       }
@@ -73,12 +80,31 @@ export class DistriparkProductPage extends ProductPage {
     await this.dismissComplianz();
 
     // Distripark RequireJS may not initialize in headless - use in-page fetch
+    // Manually ensure the first radio option is selected in the form
     const formData = await this.page.evaluate(() => {
       const form = document.querySelector('#product_addtocart_form') as HTMLFormElement;
       if (!form) return null;
+
+      // Force-select the first radio option if none is checked
+      const radios = form.querySelectorAll<HTMLInputElement>('input.super-attribute-radio, input[name*="super_attribute"]');
+      let hasCheckedRadio = false;
+      radios.forEach(r => { if (r.checked) hasCheckedRadio = true; });
+      if (!hasCheckedRadio && radios.length > 0) {
+        radios[0].checked = true;
+      }
+
       const fd = new FormData(form);
       const data: Record<string, string> = {};
       fd.forEach((v, k) => { data[k] = v.toString(); });
+
+      // Double-check: ensure super_attribute is present
+      if (!Object.keys(data).some(k => k.startsWith('super_attribute'))) {
+        const firstRadio = radios[0];
+        if (firstRadio) {
+          data[firstRadio.name] = firstRadio.value;
+        }
+      }
+
       return { action: form.action, data };
     });
 

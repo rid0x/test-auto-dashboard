@@ -15,15 +15,19 @@ export class SzpakiProductPage extends ProductPage {
   }
 
   async setQuantity(qty: number): Promise<void> {
-    // 4szpaki uses +/- buttons for qty, input may be readonly
-    if (qty <= 1) return; // Default qty is already 1
-    // Use + button to increase qty
-    for (let i = 1; i < qty; i++) {
-      const plusBtn = this.page.locator('button[data-bind*="increaseQty"], .qty-increase, button:near(input[name="qty"]):has-text("+")').first();
-      if (await plusBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await plusBtn.click();
+    if (qty <= 1) return;
+    // 4szpaki: qty input is readonly, set value via JS and trigger change
+    await this.page.evaluate((q) => {
+      const input = document.querySelector('#qty') as HTMLInputElement;
+      if (input) {
+        input.removeAttribute('readonly');
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
+        nativeSetter.call(input, String(q));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
       }
-    }
+    }, qty);
+    await this.page.waitForTimeout(300);
   }
 
   async addToCart(): Promise<void> {

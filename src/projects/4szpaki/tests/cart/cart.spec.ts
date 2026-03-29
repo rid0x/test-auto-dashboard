@@ -165,7 +165,7 @@ test.describe('4szpaki - Cart @cart @e2e', () => {
     await cartPage.removeFirstItem();
     await page.waitForTimeout(2000);
     await cartPage.goto();
-    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów")');
+    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów"), :has-text("Nie posiadasz produktów")');
     await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
   });
 

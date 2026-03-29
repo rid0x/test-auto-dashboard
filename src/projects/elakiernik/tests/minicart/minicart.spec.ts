@@ -98,7 +98,11 @@ test.describe('Elakiernik - Minicart @minicart @e2e', () => {
     await productPage.addToCartWithOptions(1);
 
     await cartPage.goto();
-    const productName = page.locator('.product-item-name, .cart.item .product-item-name, .item-info .product-item-name');
-    await expect(productName.first()).toBeVisible({ timeout: 10000 });
+    await cartPage.expectCartNotEmpty();
+    // Elakiernik uses strong > link for product name, not .product-item-name
+    const productName = page.locator('.product-item-name, strong a[href*="lakiernik"]').first();
+    const productNameAlt = page.getByRole('link', { name: /Gąbka|Honeycomb/i }).first();
+    const target = await productName.isVisible({ timeout: 3000 }).catch(() => false) ? productName : productNameAlt;
+    await expect(target).toBeVisible({ timeout: 10000 });
   });
 });

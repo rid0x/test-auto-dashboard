@@ -44,7 +44,7 @@ export class MoncredoCartPage extends CartPage {
 
   async removeFirstItem(): Promise<void> {
     const btn = await this.findWithHealing(this.removeItemButton);
-    await btn.click();
+    await btn.evaluate((el: HTMLElement) => el.click());
 
     // Handle potential confirmation modal
     try {
