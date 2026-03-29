@@ -4,14 +4,14 @@ import { skipIfRecaptcha } from '../../../../core/helpers/recaptcha';
 /**
  * SMOKE TESTS - Bladeville
  * Minimalna sciezka krytyczna: homepage → login → search → kategoria → produkt → koszyk → checkout
- * ~12 testow, ~2-3 min zamiast 15 min pelnego suite
+ * Bladeville: sidebar search, hamburger menu, SVG logo, Amasty GDPR cookie
  */
 test.describe('Bladeville - Smoke Tests @smoke', () => {
 
   // === HOMEPAGE ===
   test('smoke: homepage loads', async ({ homePage, page, config }) => {
     await homePage.goto();
-    await expect(page).toHaveURL(new RegExp(config.baseUrl.replace('https://', '').replace('www.', '')));
+    await expect(page).toHaveURL(/bladeville\.pl/);
     await homePage.expectLogoVisible();
     await homePage.expectSearchVisible();
     const screenshot = await page.screenshot();
@@ -23,7 +23,7 @@ test.describe('Bladeville - Smoke Tests @smoke', () => {
     await loginPage.goto();
     expect(await loginPage.isOnLoginPage()).toBeTruthy();
     await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
-    await expect(page.locator('#pass, #password, input[name="login[password]"]').first()).toBeVisible();
+    await expect(page.locator('#password, #pass, input[name="login[password]"]').first()).toBeVisible();
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });
@@ -57,8 +57,16 @@ test.describe('Bladeville - Smoke Tests @smoke', () => {
   // === SEARCH ===
   test('smoke: search returns results', async ({ homePage, page, config }) => {
     await homePage.goto();
-    await page.locator('#search, .js-search-input, input[name="q"]').first().fill(config.search.validQuery);
-    await page.locator('#search, .js-search-input, input[name="q"]').first().press('Enter');
+    // Bladeville search is in sidebar - open it first
+    const searchTrigger = page.locator('.navbar-menu a[title="Szukaj"], .icon-search').first();
+    if (await searchTrigger.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await searchTrigger.click();
+      await page.waitForTimeout(500);
+    }
+    const searchInput = page.locator('#search, input[name="q"]').first();
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill(config.search.validQuery);
+    await searchInput.press('Enter');
     await page.waitForLoadState('load');
     const products = page.locator('.product-item, .product-item-info');
     await expect(products.first()).toBeVisible({ timeout: 15000 });
@@ -123,7 +131,7 @@ test.describe('Bladeville - Smoke Tests @smoke', () => {
     await productPage.expectAddToCartSuccess();
     await checkoutPage.goto();
     await page.waitForLoadState('load');
-    const formField = page.locator('#customer-email, input[name="username"], input[name="firstname"], input[name="custom_attributes[customer-email]"]').first();
+    const formField = page.locator('#customer-email, input[name="username"], input[name="firstname"]').first();
     await expect(formField).toBeVisible({ timeout: 20000 });
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Checkout form', { body: screenshot, contentType: 'image/png' });

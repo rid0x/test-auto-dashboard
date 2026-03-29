@@ -13,6 +13,7 @@ export class BladevilleLoginPage extends LoginPage {
   protected get passwordInput(): HealableLocator {
     return healable('Bladeville password input',
       'input[name="login[password]"]',
+      '#password',
       '#pass',
       'input[type="password"]'
     );

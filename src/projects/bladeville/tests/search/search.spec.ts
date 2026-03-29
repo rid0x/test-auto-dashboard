@@ -1,5 +1,16 @@
 import { test, expect } from '../../fixture';
 
+/**
+ * Helper: open Bladeville sidebar search panel before interacting with #search
+ */
+async function openSearchPanel(page: any): Promise<void> {
+  const searchTrigger = page.locator('.navbar-menu a[title="Szukaj"], .icon-search').first();
+  if (await searchTrigger.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await searchTrigger.click();
+    await page.waitForTimeout(500);
+  }
+}
+
 test.describe('Bladeville - Search @search @e2e', () => {
   test.beforeEach(async ({ homePage }) => {
     await homePage.goto();
@@ -28,11 +39,12 @@ test.describe('Bladeville - Search @search @e2e', () => {
 
   // @desc: Podpowiedzi wyszukiwania pojawiaja sie po wpisaniu tekstu
   test('should show search suggestions', async ({ page, config }) => {
+    await openSearchPanel(page);
     const searchInput = page.locator('#search, input[name="q"]').first();
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
     await searchInput.click();
     await searchInput.pressSequentially(config.search.validQuery.substring(0, 4), { delay: 100 });
 
-    // Wait for Magento AJAX autocomplete response
     const suggestions = page.locator('#search_autocomplete, .search-autocomplete');
     await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
 
@@ -42,12 +54,15 @@ test.describe('Bladeville - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie klawiszem Enter przenosi na strone wynikow
   test('should search via Enter key', async ({ page, config }) => {
+    await openSearchPanel(page);
     const searchInput = page.locator('#search, input[name="q"]').first();
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
     await searchInput.fill(config.search.validQuery);
     await searchInput.press('Enter');
 
-    await page.waitForURL(/catalogsearch\/result/, { timeout: 15000 });
-    expect(page.url()).toContain('catalogsearch/result');
+    await page.waitForLoadState('load');
+    const products = page.locator('.product-item');
+    await expect(products.first()).toBeVisible({ timeout: 15000 });
   });
 
   // @desc: Wyniki wyszukiwania wyswietlaja nazwe produktu
@@ -59,13 +74,11 @@ test.describe('Bladeville - Search @search @e2e', () => {
 
     const name = firstProduct.locator('.product-item-name, .product-item-link, a strong').first();
     await expect(name).toBeVisible();
-
-    const screenshot = await page.screenshot();
-    await test.info().attach('Product info', { body: screenshot, contentType: 'image/png' });
   });
 
   // @desc: Puste wyszukiwanie nie powoduje bledu na stronie
   test('should handle empty search', async ({ page }) => {
+    await openSearchPanel(page);
     const searchInput = page.locator('#search, input[name="q"]').first();
     await searchInput.fill('');
     await page.keyboard.press('Enter');

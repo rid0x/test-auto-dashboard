@@ -2,46 +2,44 @@ import { HomePage } from '../../../core/pages/HomePage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
 
 export class BladevilleHomePage extends HomePage {
-  // Bladeville uses standard Magento #search input
+  // Bladeville uses sidebar search panel - must open it first
   protected get searchInput(): HealableLocator {
     return healable('Bladeville search input',
       '#search',
       'input[name="q"]',
-      'input[placeholder*="Szukaj w sklepie"]',
       'input[placeholder*="Szukaj"]'
-    );
-  }
-
-  protected get searchButton(): HealableLocator {
-    return healable('Bladeville search button',
-      'button.action.search',
-      'button[title="Szukaj"]',
-      '.block-search button[type="submit"]'
     );
   }
 
   protected get logo(): HealableLocator {
     return healable('Bladeville logo',
-      'a.logo img',
-      'a.logo',
-      '.page-header .logo',
-      'a[href="https://bladeville.pl/"] img'
+      'a.navbar-logo',
+      'div.navbar-logo',
+      '.navbar-logo svg',
+      'a[href="https://bladeville.pl/"]'
     );
   }
 
   protected get cartIcon(): HealableLocator {
     return healable('Bladeville cart icon',
+      'a.js--show-minicart',
+      'li.item-basket a',
       'a[href*="checkout/cart"]',
-      '.minicart-wrapper',
-      '[data-block="minicart"]'
+      '.minicart-wrapper'
     );
   }
 
   protected get navigationMenu(): HealableLocator {
     return healable('Bladeville navigation menu',
-      'nav.navigation',
-      '.nav-sections',
-      '.navigation'
+      '.navbar-menu',
+      'aside#page-menu ul.menu',
+      'nav.navigation'
     );
+  }
+
+  async expectSearchVisible(): Promise<void> {
+    // Bladeville search is in sidebar - check trigger icon exists
+    const searchTrigger = this.page.locator('.navbar-menu a[title="Szukaj"], .icon-search, #search');
+    await this.assertVisible(searchTrigger, 'Search trigger');
   }
 }
