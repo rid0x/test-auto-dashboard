@@ -39,11 +39,19 @@ test.describe('Moncredo - Smoke Tests @smoke', () => {
   });
 
   // === REGISTRATION ===
-  test('smoke: registration form displays', async ({ registrationPage, page }) => {
+  test('smoke: register new account', async ({ registrationPage, page, config }) => {
     await registrationPage.goto();
-    await expect(page.locator('#firstname, #email_address').first()).toBeVisible();
+    await skipIfRecaptcha(page, test.info());
+
+    await registrationPage.register({
+      firstName: config.registration.firstName,
+      lastName: config.registration.lastName,
+      email: config.registration.testEmail,
+      password: config.registration.testPassword,
+    });
+
     const screenshot = await page.screenshot();
-    await test.info().attach('Registration form', { body: screenshot, contentType: 'image/png' });
+    await test.info().attach('After registration', { body: screenshot, contentType: 'image/png' });
   });
 
   // === SEARCH ===
