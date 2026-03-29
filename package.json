@@ -164,7 +164,18 @@
     "dashboard:once": "npx ts-node dashboard/server.ts",
     "------- UTILS -------": "",
     "clean": "rimraf reports dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:getprice:smoke": "cross-env PROJECT=getprice npx playwright test --grep @smoke",
+    "test:willsoor:smoke": "cross-env PROJECT=willsoor npx playwright test --grep @smoke",
+    "test:pieceofcase:smoke": "cross-env PROJECT=pieceofcase npx playwright test --grep @smoke",
+    "test:4szpaki:smoke": "cross-env PROJECT=4szpaki npx playwright test --grep @smoke",
+    "test:moncredo:smoke": "cross-env PROJECT=moncredo npx playwright test --grep @smoke",
+    "test:pierrerene:smoke": "cross-env PROJECT=pierrerene npx playwright test --grep @smoke",
+    "test:abazur:smoke": "cross-env PROJECT=abazur npx playwright test --grep @smoke",
+    "test:cornette:smoke": "cross-env PROJECT=cornette npx playwright test --grep @smoke",
+    "test:entelo:smoke": "cross-env PROJECT=entelo npx playwright test --grep @smoke",
+    "test:distripark:smoke": "cross-env PROJECT=distripark npx playwright test --grep @smoke",
+    "test:elakiernik:smoke": "cross-env PROJECT=elakiernik npx playwright test --grep @smoke"
   },
   "keywords": [
     "playwright",

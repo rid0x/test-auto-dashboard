@@ -269,6 +269,44 @@
 
     .notes-modal-close:hover { color: var(--text); }
 
+    /* Confirm run modal */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 300;
+      padding: 40px;
+    }
+    .confirm-modal.visible { display: flex; align-items: center; justify-content: center; }
+    .confirm-modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    .confirm-modal-box h3 {
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+    .confirm-modal-box .confirm-details {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .confirm-modal-box .confirm-details strong {
+      color: var(--text);
+    }
+    .confirm-modal-box .confirm-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
     .notes-content {
       white-space: pre-wrap;
       font-size: 12px;
@@ -457,6 +495,52 @@
     .btn-sm { padding: 5px 10px; font-size: 10px; }
 
     .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* --- Custom Tooltips --- */
+    .btn-tooltip {
+      position: relative;
+    }
+    .btn-tooltip .tooltip-content {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      white-space: nowrap;
+      z-index: 200;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+    .btn-tooltip .tooltip-content::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 5px solid var(--border2);
+    }
+    .btn-tooltip:hover .tooltip-content {
+      display: block;
+    }
+    .tooltip-content .tt-title {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .tooltip-content .tt-count {
+      color: var(--accent);
+      font-weight: 600;
+    }
 
     /* --- Cards --- */
     .card {
@@ -1191,18 +1275,48 @@
             <div class="subtitle">${project.totalTests} testów w ${project.areas.length} obszarach</div>
           </div>
           <div class="btn-group">
-            <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')">
-              Uruchom wszystkie
-            </button>
-            <button class="btn" onclick="runTests('${project.name}', 'e2e')">
-              Tylko E2E
-            </button>
-            <button class="btn" onclick="runTests('${project.name}', 'api')">
-              Tylko API
-            </button>
-            <button class="btn" onclick="showHistory('${project.name}')">
-              Historia
-            </button>
+            <span class="btn-tooltip">
+              <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')">Uruchom wszystkie</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Wszystkie testy</div>
+                E2E + API, wszystkie obszary<br>
+                Login, rejestracja, search, kategoria,<br>
+                produkt, koszyk, checkout, footer, API<br>
+                <span class="tt-count">~${project.totalTests} testow</span> | ~15 min
+              </span>
+            </span>
+            <span class="btn-tooltip">
+              <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="runTests('${project.name}', 'smoke')">Smoke</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Smoke Tests — szybki health check</div>
+                Krytyczna sciezka zakupowa:<br>
+                Homepage → Login → Search → Kategoria<br>
+                → Karta produktu → Dodaj do koszyka<br>
+                → Koszyk → Przejdz do checkout<br>
+                <span class="tt-count">~12 testow</span> | ~2-3 min
+              </span>
+            </span>
+            <span class="btn-tooltip">
+              <button class="btn" onclick="runTests('${project.name}', 'e2e')">E2E</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Testy E2E (przegladarkowe)</div>
+                Pelne testy interfejsu uzytkownika:<br>
+                Formularze, nawigacja, koszyk, checkout,<br>
+                filtry, sortowanie, breadcrumbs, footer<br>
+                <span class="tt-count">~${project.areas.filter(a => a.name !== 'api').reduce((s,a) => s + a.testCount, 0)} testow</span> | ~12 min
+              </span>
+            </span>
+            <span class="btn-tooltip">
+              <button class="btn" onclick="runTests('${project.name}', 'api')">API</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Testy API (REST + GraphQL)</div>
+                Bez przegladarki — HTTP requests:<br>
+                Store config, search, guest cart,<br>
+                customer auth, GraphQL products<br>
+                <span class="tt-count">~${project.areas.find(a => a.name === 'api')?.testCount || 9} testow</span> | ~10 sec
+              </span>
+            </span>
+            <button class="btn" onclick="showHistory('${project.name}')">Historia</button>
             ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')">Notatki</button>' : ''}
           </div>
         </div>`;
@@ -1452,6 +1566,13 @@
     }
 
     // --- Run / Stop ---
+    const RUN_TYPE_INFO = {
+      all: { label: 'Wszystkie testy', desc: 'E2E + API — pelny zestaw testow', color: 'var(--accent)' },
+      smoke: { label: 'Smoke Tests', desc: 'Szybki health check: homepage → login → search → kategoria → produkt → koszyk → checkout', color: 'var(--green)' },
+      e2e: { label: 'Testy E2E', desc: 'Testy przegladarkowe — formularze, nawigacja, koszyk, checkout, filtry', color: 'var(--blue)' },
+      api: { label: 'Testy API', desc: 'REST + GraphQL — store config, search, cart, auth', color: 'var(--violet)' },
+    };
+
     function runTests(project, area, testName) {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         alert('WebSocket nie polaczony. Odswierz strone.');
@@ -1460,17 +1581,39 @@
 
       const browser = document.getElementById('browser-select').value;
       const device = document.getElementById('device-select').value;
+      const typeKey = area || 'all';
+      const typeInfo = RUN_TYPE_INFO[typeKey] || { label: testName || area, desc: 'Pojedynczy test lub obszar', color: 'var(--text)' };
 
-      clearTerminal();
-      ws.send(JSON.stringify({
-        type: 'run',
-        project,
-        area: area === 'all' ? null : area,
-        testName: testName || null,
-        headed: headedMode,
-        browser,
-        device,
-      }));
+      // Show confirmation modal
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-title').textContent = 'Uruchomić testy?';
+      document.getElementById('confirm-details').innerHTML =
+        '<strong>Projekt:</strong> ' + project +
+        '<br><strong>Typ:</strong> <span style="color:' + typeInfo.color + '">' + typeInfo.label + '</span>' +
+        (testName ? '<br><strong>Test:</strong> ' + testName : '') +
+        '<br><strong>Przeglądarka:</strong> ' + browser.charAt(0).toUpperCase() + browser.slice(1) + ' / ' + device.charAt(0).toUpperCase() + device.slice(1) +
+        '<br><br><span style="color:var(--text-dim)">' + typeInfo.desc + '</span>';
+
+      const runBtn = document.getElementById('confirm-run-btn');
+      runBtn.onclick = function() {
+        closeConfirm();
+        clearTerminal();
+        ws.send(JSON.stringify({
+          type: 'run',
+          project,
+          area: area === 'all' ? null : area,
+          testName: testName || null,
+          headed: headedMode,
+          browser,
+          device,
+        }));
+      };
+
+      modal.classList.add('visible');
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirm-modal').classList.remove('visible');
     }
 
     function stopRun() {
@@ -1676,6 +1819,18 @@
   <div class="notes-modal-content">
     <button class="notes-modal-close" onclick="closeNotes()">&times;</button>
     <div class="notes-content" id="notes-content"></div>
+  </div>
+</div>
+
+<!-- Confirm Run Modal -->
+<div class="confirm-modal" id="confirm-modal" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal-box">
+    <h3 id="confirm-title">Uruchomić testy?</h3>
+    <div class="confirm-details" id="confirm-details"></div>
+    <div class="confirm-buttons">
+      <button class="btn" onclick="closeConfirm()">Anuluj</button>
+      <button class="btn btn-primary" id="confirm-run-btn">Uruchom</button>
+    </div>
   </div>
 </div>
 </body>
