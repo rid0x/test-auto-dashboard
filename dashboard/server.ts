@@ -496,9 +496,6 @@ wss.on('connection', (ws: WebSocket) => {
       } else if (area && area !== 'all') {
         const tag = area === 'api' ? '@api' : `@${area}`;
         args.push('--grep', tag);
-      } else {
-        // "all" mode: exclude smoke tests (they duplicate other area tests)
-        args.push('--grep-invert', '@smoke');
       }
 
       if (headed) {
