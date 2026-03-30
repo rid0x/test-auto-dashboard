@@ -1326,6 +1326,26 @@
                 <span class="tt-count">~21 testow</span> | ~30 sec
               </span>
             </span>
+            <span class="btn-tooltip">
+              <button class="btn" style="border-color:var(--blue); color:var(--blue);" onclick="runTests('${project.name}', 'seo')">SEO</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Testy SEO</div>
+                Meta title/description, canonical URL,<br>
+                robots.txt, sitemap.xml, H1 structure,<br>
+                JSON-LD, Open Graph, image alt, 404<br>
+                <span class="tt-count">~15 testow</span> | ~1 min
+              </span>
+            </span>
+            <span class="btn-tooltip">
+              <button class="btn" style="border-color:var(--yellow); color:var(--yellow);" onclick="runTests('${project.name}', 'a11y')">A11y</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Testy dostepnosci (Accessibility)</div>
+                Image alt, form labels, skip-to-content,<br>
+                keyboard navigation, focus outline,<br>
+                semantic HTML, lang attr, kontrast<br>
+                <span class="tt-count">~10 testow</span> | ~1 min
+              </span>
+            </span>
             <button class="btn" onclick="showHistory('${project.name}')">Historia</button>
             ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')">Notatki</button>' : ''}
           </div>
@@ -1582,6 +1602,8 @@
       e2e: { label: 'Testy E2E', desc: 'Testy przegladarkowe — formularze, nawigacja, koszyk, checkout, filtry', color: 'var(--blue)' },
       api: { label: 'Testy API', desc: 'REST + GraphQL — store config, search, cart, auth', color: 'var(--violet)' },
       security: { label: 'Testy Security', desc: 'SQL Injection, XSS, Security Headers, CSRF, Exposed paths, API auth, Cookies', color: 'var(--red)' },
+      seo: { label: 'Testy SEO', desc: 'Meta tags, canonical URL, robots.txt, sitemap, H1, JSON-LD, Open Graph, image alt, 404', color: 'var(--blue)' },
+      a11y: { label: 'Testy Accessibility', desc: 'Image alt, form labels, keyboard nav, focus outline, semantic HTML, lang, kontrast', color: 'var(--yellow)' },
     };
 
     function runTests(project, area, testName) {
