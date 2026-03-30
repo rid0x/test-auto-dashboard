@@ -107,13 +107,14 @@ test.describe('Pieceofcase - Minicart @minicart @e2e', () => {
 
   // @desc: Nazwa produktu widoczna w koszyku po dodaniu
   test('should show product name in cart', async ({ productPage, cartPage, page }) => {
+    test.slow();
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await productPage.expectAddToCartSuccess();
 
     await cartPage.goto();
     await cartPage.expectCartNotEmpty();
-    const productName = page.locator('.product-item-name, .product-item-details a, td.col.item a, strong a, .cart.table a[href*="/"]').first();
+    const productName = page.locator('#shopping-cart-table strong a, #shopping-cart-table .product-item-name, .cart.table td strong a, .cart-container strong a').first();
     await expect(productName).toBeVisible({ timeout: 10000 });
   });
 });

@@ -1,13 +1,14 @@
 import { LoginPage } from '../../../core/pages/LoginPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
+import { setupPbPopupAutoDismiss } from '../../../core/helpers/cookie-consent';
 
 export class PieceofcaseLoginPage extends LoginPage {
   protected get loginButton(): HealableLocator {
     return healable('Login button',
-      'button:has-text("Zaloguj się")',
-      '#send2',
-      'button[type="submit"]',
-      'button.action.login'
+      'button:has-text("Zaloguj się"):visible',
+      '#send2:visible',
+      'button.action.login:visible',
+      'button[type="submit"]:visible:has-text("Zaloguj")'
     );
   }
 
@@ -23,6 +24,6 @@ export class PieceofcaseLoginPage extends LoginPage {
 
   async navigate(path: string = ''): Promise<void> {
     await super.navigate(path);
-    await this.page.evaluate(() => document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove())).catch(() => {});
+    await setupPbPopupAutoDismiss(this.page);
   }
 }

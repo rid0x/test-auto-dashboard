@@ -1,7 +1,16 @@
 import { ProductPage } from '../../../core/pages/ProductPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
+import { setupPbPopupAutoDismiss } from '../../../core/helpers/cookie-consent';
 
 export class PieceofcaseProductPage extends ProductPage {
+  protected get successMessage(): HealableLocator {
+    return healable('Add to cart success message',
+      'text=Produkt dodany do koszyka',
+      '.message-success',
+      '[data-ui-id="message-success"]'
+    );
+  }
+
   protected get productPrice(): HealableLocator {
     return healable('Product price',
       '[data-price-type="finalPrice"]',
@@ -12,15 +21,19 @@ export class PieceofcaseProductPage extends ProductPage {
   }
 
   async navigate(path: string = ''): Promise<void> {
+    // Block GetResponse popup scripts to prevent iframe overlay on product page
+    await this.page.route(url => url.hostname.includes('gr-cdn.com'), route => route.abort()).catch(() => {});
     await super.navigate(path);
-    // Force-remove cookie overlay + any popup overlays
-    await this.page.evaluate(() => {
-      document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove());
-      document.querySelectorAll('[data-gr="popup-container"]').forEach(el => el.remove());
-    }).catch(() => {});
-    await this.page.addStyleTag({
-      content: '[data-gr="popup-container"] { display: none !important; pointer-events: none !important; }'
-    }).catch(() => {});
+    await setupPbPopupAutoDismiss(this.page);
+  }
+
+  async setQuantity(qty: number): Promise<void> {
+    if (qty === 1) return; // Default is already 1, skip
+    // Pieceofcase uses +/- buttons instead of standard #qty input
+    const input = this.page.locator('input[type="number"], input.qty, input[name="qty"]').first();
+    if (await input.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await input.fill(qty.toString());
+    }
   }
 
   async selectFirstAvailableOption(): Promise<void> {

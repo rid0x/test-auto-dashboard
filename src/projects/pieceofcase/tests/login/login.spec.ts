@@ -17,11 +17,11 @@ test.describe('Pieceofcase - Login @login @e2e', () => {
     });
 
     await test.step('Verify password field visible', async () => {
-      await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
+      await expect(page.locator('input[name="login[password]"]').first()).toBeVisible();
     });
 
     await test.step('Verify login button visible', async () => {
-      await expect(page.locator('button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
+      await expect(page.locator('button:has-text("Zaloguj"):visible').first()).toBeVisible();
     });
 
     const screenshot = await page.screenshot();
@@ -98,7 +98,7 @@ test.describe('Pieceofcase - Login @login @e2e', () => {
 
   // @desc: Link "Nie pamietasz hasla" jest widoczny na stronie logowania
   test('should have forgot password link', async ({ page }) => {
-    const forgotLink = page.locator('a[href*="forgotpassword"], a:has-text("Nie pamiętasz"), a:has-text("Forgot")');
+    const forgotLink = page.locator('a[href*="forgotpassword"]:visible');
     await expect(forgotLink.first()).toBeVisible();
 
     const screenshot = await page.screenshot();

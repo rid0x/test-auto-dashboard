@@ -23,7 +23,7 @@ test.describe('Pieceofcase - Smoke Tests @smoke', () => {
     await loginPage.goto();
     expect(await loginPage.isOnLoginPage()).toBeTruthy();
     await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
-    await expect(page.locator('#pass, #password, input[name="login[password]"]').first()).toBeVisible();
+    await expect(page.locator('input[name="login[password]"]').first()).toBeVisible();
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });

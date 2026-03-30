@@ -75,6 +75,22 @@ export async function dismissSalesmanagoPopup(page: Page): Promise<void> {
 }
 
 /**
+ * Auto-dismiss __pb cookie overlays and GetResponse popups ("Dołącz do nas!" etc.).
+ * One-time removal of __pb elements + persistent CSS to hide data-gr popups.
+ */
+export async function setupPbPopupAutoDismiss(page: Page): Promise<void> {
+  // One-time removal of __pb overlays (same as original behavior)
+  await page.evaluate(() => {
+    document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove());
+    document.querySelectorAll('[data-gr="popup-container"]').forEach(el => el.remove());
+  }).catch(() => {});
+  // Persistent CSS to block delayed popups (data-gr, GetResponse dialogs)
+  await page.addStyleTag({
+    content: `[data-gr="popup-container"], [role="dialog"][aria-label="Popup"] { display: none !important; pointer-events: none !important; }`
+  }).catch(() => {});
+}
+
+/**
  * Set up auto-dismiss for salesmanago popup.
  * Watches for the iframe to appear and dismisses it automatically.
  * Call once per test — runs in background.

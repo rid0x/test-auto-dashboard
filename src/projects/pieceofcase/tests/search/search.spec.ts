@@ -8,9 +8,10 @@ test.describe('Pieceofcase - Search @search @e2e', () => {
   // @desc: Wyszukiwanie poprawnej frazy zwraca liste produktow (count > 0)
   test('should find results for valid query', async ({ page, config }) => {
     await test.step('Submit search form', async () => {
-      await page.locator('#search').fill(config.search.validQuery);
-      await page.locator('#search_mini_form').evaluate(form => (form as HTMLFormElement).submit());
-      await page.waitForLoadState('load');
+      const searchInput = page.locator('#search');
+      await searchInput.fill(config.search.validQuery);
+      await searchInput.press('Enter');
+      await page.waitForURL('**/catalogsearch/result/**', { timeout: 15000 });
     });
 
     await test.step('Verify results page', async () => {
@@ -62,9 +63,10 @@ test.describe('Pieceofcase - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie przez formularz (submit) przenosi na strone wynikow
   test('should search via form submit', async ({ page, config }) => {
-    await page.locator('#search').fill(config.search.validQuery);
-    await page.locator('#search_mini_form').evaluate(form => (form as HTMLFormElement).submit());
-    await page.waitForLoadState('load');
+    const searchInput = page.locator('#search');
+    await searchInput.fill(config.search.validQuery);
+    await searchInput.press('Enter');
+    await page.waitForURL('**/catalogsearch/result/**', { timeout: 15000 });
 
     expect(page.url()).toContain('catalogsearch/result');
   });

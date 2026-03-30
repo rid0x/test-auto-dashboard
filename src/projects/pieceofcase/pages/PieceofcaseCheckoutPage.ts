@@ -1,8 +1,9 @@
 import { CheckoutPage } from '../../../core/pages/CheckoutPage';
+import { setupPbPopupAutoDismiss } from '../../../core/helpers/cookie-consent';
 
 export class PieceofcaseCheckoutPage extends CheckoutPage {
   async navigate(path: string = ''): Promise<void> {
     await super.navigate(path);
-    await this.page.evaluate(() => document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove())).catch(() => {});
+    await setupPbPopupAutoDismiss(this.page);
   }
 }

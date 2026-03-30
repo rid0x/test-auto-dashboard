@@ -1,5 +1,6 @@
 import { RegistrationPage } from '../../../core/pages/RegistrationPage';
 import { healable, HealableLocator } from '../../../core/helpers/auto-healing';
+import { setupPbPopupAutoDismiss } from '../../../core/helpers/cookie-consent';
 
 export class PieceofcaseRegistrationPage extends RegistrationPage {
   protected get submitButton(): HealableLocator {
@@ -12,6 +13,6 @@ export class PieceofcaseRegistrationPage extends RegistrationPage {
 
   async navigate(path: string = ''): Promise<void> {
     await super.navigate(path);
-    await this.page.evaluate(() => document.querySelectorAll('[id^="__pb"]').forEach(el => el.remove())).catch(() => {});
+    await setupPbPopupAutoDismiss(this.page);
   }
 }

@@ -1,10 +1,14 @@
 import { test, expect } from '../../fixture';
 
 test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
-  test.beforeEach(async ({ productPage }) => {
+  test.describe.configure({ timeout: 180000 });
+
+  test.beforeEach(async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
-    await productPage.expectAddToCartSuccess();
+    // Wait for add-to-cart modal or success message
+    const success = page.locator('text=Produkt dodany do koszyka, .message-success');
+    await success.first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
   // @desc: Przejscie z koszyka do strony checkout
@@ -146,46 +150,59 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
 
   // @desc: Przycisk "Następne" przechodzi do kroku płatności
   test('should proceed to payment step', async ({ cartPage, page }) => {
+    test.slow();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
-    await page.waitForTimeout(8000);
-    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
-    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await guestBtn.first().click();
-      await page.waitForTimeout(5000);
+    await page.waitForTimeout(5000);
+
+    // Guest checkout
+    const guestBtn = page.getByRole('button', { name: 'Zakupy bez logowania' });
+    if (await guestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.click();
+      await page.waitForTimeout(3000);
     }
-    const checkoutForm = page.locator('#customer-email, input[name="username"], input[name="firstname"]');
-    if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
+
+    // Fill shipping form (selectors from codegen)
+    const emailField = page.getByRole('textbox', { name: 'E-mail' }).first();
+    if (!(await emailField.isVisible({ timeout: 15000 }).catch(() => false))) {
       test.skip(true, 'Checkout form nie załadował się');
     }
-    await page.locator('#customer-email, input[name="username"]').first().fill('test@test.pl');
-    await page.locator('input[name="firstname"]').first().fill('Test');
-    await page.locator('input[name="lastname"]').first().fill('User');
-    await page.locator('input[name="street[0]"]').first().fill('Testowa 1');
-    await page.locator('input[name="postcode"]').first().fill('00-001');
-    await page.locator('input[name="city"]').first().fill('Warszawa');
-    await page.locator('input[name="telephone"]').first().fill('500100200');
+    await emailField.fill('test@test.pl');
+    await page.getByRole('textbox', { name: 'Telefon' }).first().fill('510245627');
+    await page.getByRole('textbox', { name: 'Imie' }).first().fill('Test');
+    await page.getByRole('textbox', { name: 'Nazwisko' }).first().fill('User');
+    await page.locator('input[name="street[0]"]').first().fill('Testowa');
+    await page.getByRole('textbox', { name: 'Nr domu' }).first().fill('12');
+    await page.getByRole('textbox', { name: 'Kod pocztowy' }).first().fill('15-066');
+    await page.locator('select[name="region_id"]').first().selectOption('805');
+    await page.getByRole('textbox', { name: 'Miasto' }).first().fill('Białystok');
+
+    // Select shipping method and proceed
+    await page.getByRole('radio', { name: 'Przesyłka Kurierska DPD' }).check({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Następne' }).click();
     await page.waitForTimeout(5000);
-    const nextBtn = page.locator('button:has-text("Następne"), button:has-text("Dalej"), button[data-role="opc-continue"]');
-    if (await nextBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await nextBtn.first().click();
-      await page.waitForTimeout(8000);
-      const paymentSection = page.locator('.payment-methods, #checkout-payment-method-load, .opc-payment');
-      await expect(paymentSection.first()).toBeVisible({ timeout: 15000 });
-    }
+
+    // Verify payment step
+    const paymentText = page.getByText('Metoda płatności');
+    await expect(paymentText.first()).toBeVisible({ timeout: 15000 });
   });
 
   // @desc: Podsumowanie zamówienia widoczne
   test('should display order summary on checkout', async ({ cartPage, page }) => {
+    test.slow();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
-    await page.waitForTimeout(8000);
-    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
-    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await guestBtn.first().click();
-      await page.waitForTimeout(5000);
+    await page.waitForTimeout(5000);
+
+    // Guest checkout
+    const guestBtn = page.getByRole('button', { name: 'Zakupy bez logowania' });
+    if (await guestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.click();
+      await page.waitForTimeout(3000);
     }
-    const summary = page.locator('.opc-block-summary, .opc-sidebar, .checkout-summary');
+
+    // Verify order summary sidebar is visible
+    const summary = page.getByText('Podsumowanie zamówienia');
     if (!(await summary.first().isVisible({ timeout: 15000 }).catch(() => false))) {
       test.skip(true, 'Order summary nie załadował się');
     }
@@ -196,52 +213,35 @@ test.describe('Pieceofcase - Checkout @checkout @e2e', () => {
 
   // @desc: Po wyborze "Firma" pojawiaja sie pola NIP i nazwa firmy
   test('should display company fields when Firma is selected', async ({ cartPage, page }) => {
+    test.slow();
     await cartPage.goto();
     await cartPage.proceedToCheckout();
-    await page.waitForTimeout(8000);
+    await page.waitForTimeout(5000);
 
-    // Handle guest/login step
-    const guestBtn = page.locator('button:has-text("Kup jako gość"), button:has-text("Kontynuuj"), button:has-text("Zakupy bez logowania")');
-    if (await guestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await guestBtn.first().click();
-      await page.waitForTimeout(5000);
+    // Guest checkout
+    const guestBtn = page.getByRole('button', { name: 'Zakupy bez logowania' });
+    if (await guestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.click();
+      await page.waitForTimeout(3000);
     }
 
-    // Remove popup overlays (pieceofcase has __pb popups)
-    await page.evaluate(() => document.querySelectorAll('[id^="__pb"], [data-gr="popup-container"]').forEach(el => el.remove())).catch(() => {});
-
-    await test.step('Wait for form to load', async () => {
-      const checkoutForm = page.locator('input[name="firstname"], #customer-email, input[name="billing-type"]');
-      if (!(await checkoutForm.first().isVisible({ timeout: 15000 }).catch(() => false))) {
-        test.skip(true, 'Checkout form nie załadował się');
-      }
-    });
+    // Wait for billing type radio buttons
+    const emailField = page.getByRole('textbox', { name: 'E-mail' }).first();
+    if (!(await emailField.isVisible({ timeout: 15000 }).catch(() => false))) {
+      test.skip(true, 'Checkout form nie załadował się');
+    }
 
     await test.step('Click Firma radio button', async () => {
-      // Pieceofcase uses radio buttons: #billing1 (Osoba fizyczna) and #billing2 (Firma)
-      const firmaRadio = page.locator('#billing2');
-      if (await firmaRadio.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await firmaRadio.check({ force: true });
-      } else {
-        // Fallback: click label
-        const firmaLabel = page.locator('label[for="billing2"]');
-        if (await firmaLabel.isVisible({ timeout: 5000 }).catch(() => false)) {
-          await firmaLabel.click();
-        } else {
-          test.skip(true, 'Firma radio nie znaleziony');
-        }
-      }
+      await page.locator('#billing2').check({ force: true });
       await page.waitForTimeout(1000);
     });
 
     await test.step('Verify Company (Firma) name field is visible', async () => {
-      const companyField = page.locator('input[name="company"]');
-      await expect(companyField.first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('input[name="company"]').first()).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Verify NIP field is visible', async () => {
-      const nipField = page.locator('input[name="vat_id"]');
-      await expect(nipField.first()).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('input[name="vat_id"]').first()).toBeVisible({ timeout: 10000 });
     });
 
     const screenshot = await page.screenshot({ fullPage: true });

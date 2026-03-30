@@ -44,7 +44,7 @@ export const pieceofcaseConfig: ProjectConfig = {
     hasRecaptchaOnRegistration: false,
     hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: 'button.__pb-cookie_button_accept',
+    cookieConsentSelector: 'button:has-text("Akceptuję wszystkie"), button.__pb-cookie_button_accept',
   },
 
   api: {
