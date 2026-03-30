@@ -1316,6 +1316,16 @@
                 <span class="tt-count">~${project.areas.find(a => a.name === 'api')?.testCount || 9} testow</span> | ~10 sec
               </span>
             </span>
+            <span class="btn-tooltip">
+              <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="runTests('${project.name}', 'security')">Security</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Testy bezpieczenstwa</div>
+                SQL Injection, XSS, Security Headers,<br>
+                CSRF tokens, Exposed paths (.env, .git),<br>
+                API auth, Cookie flags<br>
+                <span class="tt-count">~21 testow</span> | ~30 sec
+              </span>
+            </span>
             <button class="btn" onclick="showHistory('${project.name}')">Historia</button>
             ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')">Notatki</button>' : ''}
           </div>
@@ -1571,6 +1581,7 @@
       smoke: { label: 'Smoke Tests', desc: 'Szybki health check: homepage → login → search → kategoria → produkt → koszyk → checkout', color: 'var(--green)' },
       e2e: { label: 'Testy E2E', desc: 'Testy przegladarkowe — formularze, nawigacja, koszyk, checkout, filtry', color: 'var(--blue)' },
       api: { label: 'Testy API', desc: 'REST + GraphQL — store config, search, cart, auth', color: 'var(--violet)' },
+      security: { label: 'Testy Security', desc: 'SQL Injection, XSS, Security Headers, CSRF, Exposed paths, API auth, Cookies', color: 'var(--red)' },
     };
 
     function runTests(project, area, testName) {
