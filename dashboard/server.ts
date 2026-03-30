@@ -287,8 +287,8 @@ function discoverProject(projectName: string): ProjectInfo | null {
     }
   }
 
-  // Exclude smoke tests from total count (smoke tests duplicate tests from other areas)
-  const totalTests = areas.filter(a => a.name !== 'smoke').reduce((sum, a) => sum + a.testCount, 0);
+  // Exclude smoke and security from total count (run via dedicated buttons only)
+  const totalTests = areas.filter(a => a.name !== 'smoke' && a.name !== 'security').reduce((sum, a) => sum + a.testCount, 0);
   const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1);
 
   return { name: projectName, displayName, areas, totalTests };
@@ -496,6 +496,9 @@ wss.on('connection', (ws: WebSocket) => {
       } else if (area && area !== 'all') {
         const tag = area === 'api' ? '@api' : `@${area}`;
         args.push('--grep', tag);
+      } else {
+        // "all" mode: exclude smoke (duplicates) and security (separate button)
+        args.push('--grep-invert', '@smoke|@security');
       }
 
       if (headed) {
