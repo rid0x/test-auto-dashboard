@@ -229,6 +229,38 @@ Po zakończeniu utwórz plik z:
 
 ---
 
+## Testy bezpieczeństwa (Security Tests)
+
+Każdy nowy projekt **MUSI** mieć testy bezpieczeństwa w `tests/security/security.spec.ts` z tagiem `@security`.
+
+### Co testujemy (21 testów per projekt):
+
+| Obszar | Testy | Co sprawdza |
+|--------|-------|-------------|
+| SQL Injection | 3 | Search, login form, URL params - czy nie wycieka DB error |
+| XSS | 2 | Script tags, event handlers - czy są escapowane |
+| Security Headers | 4 | X-Frame-Options, X-Content-Type, HSTS, HTTP→HTTPS redirect |
+| CSRF | 2 | form_key token na login i rejestracji |
+| Exposed Paths | 6 | .env, /var/log, /app/etc, .git, phpinfo, /admin |
+| API Security | 3 | Customer/order data + GraphQL wymaga auth |
+| Cookie Security | 1 | Flagi HttpOnly, Secure, SameSite |
+
+### Jak dodać do nowego projektu:
+
+1. Skopiuj `security.spec.ts` z istniejącego projektu (np. `4szpaki`)
+2. Zamień config import i nazwy na nowy projekt
+3. Dostosuj cookie dismiss do danego sklepu (Amasty, CookieYes, Cookiebot, brak)
+4. Zmień domain w cookie check
+5. Puść testy: `npx cross-env PROJECT=nowy npx playwright test --grep @security`
+6. **Faile = prawdziwe problemy bezpieczeństwa** - nie naprawiaj testów, zgłoś klientowi
+
+### Ważne:
+- Test security **NIGDY** nie powinien być false positive - jeśli failuje to strona ma problem
+- Nie dodawaj `test.skip()` na failach security - to realne luki do zgłoszenia
+- Cookie overlay może blokować SQL injection login test - użyj `{ force: true }`
+
+---
+
 ## Struktura plików per projekt
 
 ```
