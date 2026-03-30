@@ -9,5 +9,5 @@ echo  ========================================
 echo.
 echo  Starting...
 echo.
-npx ts-node dashboard/server.ts
+npx nodemon --watch dashboard --watch src --ext ts,html,css,js --exec "npx ts-node dashboard/server.ts"
 pause
