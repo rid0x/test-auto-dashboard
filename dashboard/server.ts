@@ -723,34 +723,33 @@ function getStoreUrls(): { name: string; url: string }[] {
 
 async function pingStore(url: string): Promise<UptimePing> {
   const start = Date.now();
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      redirect: 'follow',
-      headers: { 'User-Agent': 'UptimeMonitor/1.0' },
-    });
-    clearTimeout(timeout);
-    const responseTime = Date.now() - start;
-    return {
-      timestamp: new Date().toISOString(),
-      status: response.status,
-      responseTime,
-      ok: response.status >= 200 && response.status < 400,
-    };
-  } catch (e: any) {
-    return {
-      timestamp: new Date().toISOString(),
-      status: 0,
-      responseTime: Date.now() - start,
-      ok: false,
-    };
-  }
+  return new Promise((resolve) => {
+    try {
+      const lib = url.startsWith('https') ? require('https') : require('http');
+      const req = lib.get(url, { timeout: 10000, headers: { 'User-Agent': 'UptimeMonitor/1.0' } }, (res: any) => {
+        res.resume(); // drain response
+        resolve({
+          timestamp: new Date().toISOString(),
+          status: res.statusCode || 0,
+          responseTime: Date.now() - start,
+          ok: res.statusCode >= 200 && res.statusCode < 400,
+        });
+      });
+      req.on('error', () => {
+        resolve({ timestamp: new Date().toISOString(), status: 0, responseTime: Date.now() - start, ok: false });
+      });
+      req.on('timeout', () => {
+        req.destroy();
+        resolve({ timestamp: new Date().toISOString(), status: 0, responseTime: Date.now() - start, ok: false });
+      });
+    } catch {
+      resolve({ timestamp: new Date().toISOString(), status: 0, responseTime: Date.now() - start, ok: false });
+    }
+  });
 }
 
 async function runUptimeCheck(): Promise<void> {
+  try {
   const stores = getStoreUrls();
   const data = loadUptimeData();
 
@@ -792,6 +791,9 @@ async function runUptimeCheck(): Promise<void> {
       client.send(JSON.stringify({ type: 'uptime:update', data }));
     }
   });
+  } catch (e) {
+    console.error('Uptime check error (non-fatal):', e);
+  }
 }
 
 // API endpoint for uptime data
@@ -802,7 +804,7 @@ app.get('/api/uptime', (_req, res) => {
 // Start uptime monitoring
 let uptimeTimer: ReturnType<typeof setInterval> | null = null;
 function startUptimeMonitoring() {
-  console.log('  📡 Uptime monitoring started (every 5 min)');
+  console.log(`  📡 Uptime monitoring started (every ${UPTIME_INTERVAL / 1000}s)`);
   runUptimeCheck(); // First check immediately
   uptimeTimer = setInterval(runUptimeCheck, UPTIME_INTERVAL);
 }
