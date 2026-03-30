@@ -1252,41 +1252,15 @@
       let html = '<div class="sidebar-section">'
         + '<div class="sidebar-item ' + (!activeProject ? 'active' : '') + '" onclick="showOverview()" style="margin-bottom:8px; border-bottom:1px solid var(--border);">'
         + '<span class="name" style="font-weight:700;">Przeglad</span>'
-        + '<span class="badge" style="background:var(--accent);">' + projects.length + '</span>'
         + '</div>'
         + '<div class="sidebar-section-title">Projekty</div>';
 
       for (const project of projects) {
         const isActive = activeProject && activeProject.name === project.name;
-        const summary = projectSummaries[project.name];
-        let statusBadge = '';
-        let notesDot = '';
-
-        if (summary && summary.lastRun) {
-          const r = summary.lastRun;
-          const total = r.passed + r.failed + r.skipped;
-          const passRate = total > 0 ? r.passed / total : 0;
-
-          if (r.failed === 0 && r.passed > 0) {
-            statusBadge = '<span class="status-badge stable" title="0 faili w ostatnim runie">stabilny</span>';
-          } else if (passRate >= 0.9) {
-            statusBadge = '<span class="status-badge good" title="' + Math.round(passRate*100) + '% pass rate">dobry</span>';
-          } else {
-            statusBadge = '<span class="status-badge needs-fix" title="' + r.failed + ' faili do naprawy">do naprawy</span>';
-          }
-        } else {
-          statusBadge = '<span class="status-badge new-project" title="Brak historii runow">nowy</span>';
-        }
-
-        if (summary && summary.hasNotes) {
-          notesDot = '<span class="notes-dot" title="Ma notatki"></span>';
-        }
 
         html += `
           <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="showProject(findProject('${project.name}'))">
             <span class="name">${project.displayName}</span>
-            ${statusBadge}${notesDot}
-            <span class="badge">${project.totalTests}</span>
           </div>`;
       }
 
