@@ -1346,6 +1346,15 @@
                 <span class="tt-count">~10 testow</span> | ~1 min
               </span>
             </span>
+            <span class="btn-tooltip">
+              <button class="btn" onclick="runTests('${project.name}', 'links')">Links</button>
+              <span class="tooltip-content">
+                <div class="tt-title">Martwe linki (Broken Links)</div>
+                Nawigacja, footer, breadcrumbs,<br>
+                linki produktow w kategorii, strona 404<br>
+                <span class="tt-count">~5 testow</span> | ~1 min
+              </span>
+            </span>
             <button class="btn" onclick="showHistory('${project.name}')">Historia</button>
             ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')">Notatki</button>' : ''}
           </div>
@@ -1604,6 +1613,7 @@
       security: { label: 'Testy Security', desc: 'SQL Injection, XSS, Security Headers, CSRF, Exposed paths, API auth, Cookies', color: 'var(--red)' },
       seo: { label: 'Testy SEO', desc: 'Meta tags, canonical URL, robots.txt, sitemap, H1, JSON-LD, Open Graph, image alt, 404', color: 'var(--blue)' },
       a11y: { label: 'Testy Accessibility', desc: 'Image alt, form labels, keyboard nav, focus outline, semantic HTML, lang, kontrast', color: 'var(--yellow)' },
+      links: { label: 'Broken Links', desc: 'Nawigacja, footer, breadcrumbs, linki produktow, strona 404', color: 'var(--text-muted)' },
     };
 
     function runTests(project, area, testName) {

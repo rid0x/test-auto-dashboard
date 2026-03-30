@@ -288,7 +288,7 @@ function discoverProject(projectName: string): ProjectInfo | null {
   }
 
   // Exclude dedicated-button areas from total count
-  const excludeFromTotal = ['smoke', 'security', 'seo', 'a11y', 'performance'];
+  const excludeFromTotal = ['smoke', 'security', 'seo', 'a11y', 'performance', 'links'];
   const totalTests = areas.filter(a => !excludeFromTotal.includes(a.name)).reduce((sum, a) => sum + a.testCount, 0);
   const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1);
 
@@ -499,7 +499,7 @@ wss.on('connection', (ws: WebSocket) => {
         args.push('--grep', tag);
       } else {
         // "all" mode: exclude dedicated-button tests
-        args.push('--grep-invert', '@smoke|@security|@seo|@a11y|@performance');
+        args.push('--grep-invert', '@smoke|@security|@seo|@a11y|@performance|@links');
       }
 
       if (headed) {
