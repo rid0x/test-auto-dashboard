@@ -3,6 +3,12 @@ import { hulajnogimicroConfig } from '../../../../../config/hulajnogimicro.confi
 
 const BASE = hulajnogimicroConfig.baseUrl;
 
+// Social media sites block non-browser requests (return 400/403) - skip them
+const SOCIAL_DOMAINS = ['facebook.com', 'instagram.com', 'linkedin.com', 'tiktok.com', 'twitter.com', 'x.com', 'pinterest.com', 'youtube.com'];
+function isSocialMedia(url: string): boolean {
+  return SOCIAL_DOMAINS.some(d => url.includes(d));
+}
+
 test.describe('Hulajnogimicro - Broken Links Tests @links', () => {
 
   // ============================================================
@@ -26,6 +32,7 @@ test.describe('Hulajnogimicro - Broken Links Tests @links', () => {
     let broken = 0;
 
     for (const link of links) {
+      if (isSocialMedia(link!)) { results.push(`SKIP [social] ${link}`); continue; }
       const response = await request.get(link!).catch(() => null);
       const status = response?.status() || 0;
       const ok = status >= 200 && status < 400;
@@ -65,6 +72,7 @@ test.describe('Hulajnogimicro - Broken Links Tests @links', () => {
 
     for (let link of links) {
       if (link!.startsWith('/')) link = `${BASE}${link}`;
+      if (isSocialMedia(link!)) { results.push(`SKIP [social] ${link}`); continue; }
       const response = await request.get(link!).catch(() => null);
       const status = response?.status() || 0;
       const ok = status >= 200 && status < 400;
@@ -101,6 +109,7 @@ test.describe('Hulajnogimicro - Broken Links Tests @links', () => {
 
     for (let link of links) {
       if (link!.startsWith('/')) link = `${BASE}${link}`;
+      if (isSocialMedia(link!)) { results.push(`SKIP [social] ${link}`); continue; }
       const response = await request.get(link!).catch(() => null);
       const status = response?.status() || 0;
       const ok = status >= 200 && status < 400;
@@ -137,6 +146,7 @@ test.describe('Hulajnogimicro - Broken Links Tests @links', () => {
 
     for (let link of links) {
       if (link!.startsWith('/')) link = `${BASE}${link}`;
+      if (isSocialMedia(link!)) { results.push(`SKIP [social] ${link}`); continue; }
       const response = await request.get(link!).catch(() => null);
       const status = response?.status() || 0;
       const ok = status >= 200 && status < 400;
