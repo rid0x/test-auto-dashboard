@@ -681,8 +681,8 @@ interface UptimeStore {
   history: UptimePing[]; // last 288 pings (24h at 5min intervals)
 }
 
-const UPTIME_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const UPTIME_HISTORY_MAX = 288; // 24h of 5min pings
+const UPTIME_INTERVAL = 60 * 1000; // 1 minute
+const UPTIME_HISTORY_MAX = 1440; // 24h of 1min pings
 
 function getUptimePath(): string {
   const dir = path.join(ROOT, 'reports');
