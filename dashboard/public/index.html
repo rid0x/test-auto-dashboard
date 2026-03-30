@@ -232,6 +232,20 @@
       flex-shrink: 0;
     }
 
+    .status-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .status-badge.stable { background: rgba(16,185,129,0.15); color: var(--green); }
+    .status-badge.needs-fix { background: rgba(239,68,68,0.15); color: var(--red); }
+    .status-badge.new-project { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .status-badge.good { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
     /* Notes modal */
     .notes-modal {
       display: none;
@@ -1245,13 +1259,25 @@
       for (const project of projects) {
         const isActive = activeProject && activeProject.name === project.name;
         const summary = projectSummaries[project.name];
-        let resultsHtml = '';
+        let statusBadge = '';
         let notesDot = '';
 
         if (summary && summary.lastRun) {
           const r = summary.lastRun;
-          resultsHtml = '';
+          const total = r.passed + r.failed + r.skipped;
+          const passRate = total > 0 ? r.passed / total : 0;
+
+          if (r.failed === 0 && r.passed > 0) {
+            statusBadge = '<span class="status-badge stable" title="0 faili w ostatnim runie">stabilny</span>';
+          } else if (passRate >= 0.9) {
+            statusBadge = '<span class="status-badge good" title="' + Math.round(passRate*100) + '% pass rate">dobry</span>';
+          } else {
+            statusBadge = '<span class="status-badge needs-fix" title="' + r.failed + ' faili do naprawy">do naprawy</span>';
+          }
+        } else {
+          statusBadge = '<span class="status-badge new-project" title="Brak historii runow">nowy</span>';
         }
+
         if (summary && summary.hasNotes) {
           notesDot = '<span class="notes-dot" title="Ma notatki"></span>';
         }
@@ -1259,7 +1285,7 @@
         html += `
           <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="showProject(findProject('${project.name}'))">
             <span class="name">${project.displayName}</span>
-            ${resultsHtml}${notesDot}
+            ${statusBadge}${notesDot}
             <span class="badge">${project.totalTests}</span>
           </div>`;
       }
@@ -1928,7 +1954,16 @@
 
         html += `
                 <tr style="border-bottom:1px solid var(--border); cursor:pointer;" onclick="showProject(findProject('${project.name}'))" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background='transparent'">
-                  <td style="padding:12px 16px; font-size:13px; font-weight:600;">${project.displayName}</td>
+                  <td style="padding:12px 16px; font-size:13px; font-weight:600;">${project.displayName} ${(() => {
+                    const s = projectSummaries[project.name];
+                    if (!s || !s.lastRun) return '<span class="status-badge new-project">nowy</span>';
+                    const r = s.lastRun;
+                    const total = r.passed + r.failed + r.skipped;
+                    const rate = total > 0 ? r.passed / total : 0;
+                    if (r.failed === 0 && r.passed > 0) return '<span class="status-badge stable">stabilny</span>';
+                    if (rate >= 0.9) return '<span class="status-badge good">dobry</span>';
+                    return '<span class="status-badge needs-fix">do naprawy</span>';
+                  })()}</td>
                   <td style="padding:12px 8px; font-size:13px;"><span style="color:var(--accent); font-weight:600;">${project.totalTests}</span></td>
                   <td style="padding:12px 8px; font-size:12px;">${runHtml}</td>
                   <td style="padding:12px 8px; font-size:12px;">${uptimeHtml}</td>
