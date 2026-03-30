@@ -7,7 +7,11 @@ echo   Test Automation Dashboard
 echo   http://localhost:3000
 echo  ========================================
 echo.
+
+:start
 echo  Starting...
+npx ts-node dashboard/server.ts
 echo.
-npx nodemon --watch dashboard --watch src --ext ts,html,css,js --exec "npx ts-node dashboard/server.ts"
-pause
+echo  Dashboard stopped. Restarting in 3 seconds...
+timeout /t 3 /nobreak >nul
+goto start
