@@ -661,8 +661,155 @@ wss.on('connection', (ws: WebSocket) => {
   });
 });
 
+// --- Uptime Monitoring ---
+
+interface UptimePing {
+  timestamp: string;
+  status: number;
+  responseTime: number;
+  ok: boolean;
+}
+
+interface UptimeStore {
+  name: string;
+  url: string;
+  current: 'up' | 'down' | 'unknown';
+  lastCheck: string | null;
+  lastStatus: number;
+  lastResponseTime: number;
+  uptime24h: number; // percentage
+  history: UptimePing[]; // last 288 pings (24h at 5min intervals)
+}
+
+const UPTIME_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const UPTIME_HISTORY_MAX = 288; // 24h of 5min pings
+
+function getUptimePath(): string {
+  const dir = path.join(ROOT, 'reports');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return path.join(dir, 'uptime.json');
+}
+
+function loadUptimeData(): Record<string, UptimeStore> {
+  const p = getUptimePath();
+  if (fs.existsSync(p)) {
+    try { return JSON.parse(fs.readFileSync(p, 'utf-8')); } catch { return {}; }
+  }
+  return {};
+}
+
+function saveUptimeData(data: Record<string, UptimeStore>): void {
+  fs.writeFileSync(getUptimePath(), JSON.stringify(data, null, 2));
+}
+
+function getStoreUrls(): { name: string; url: string }[] {
+  const projectsDir = path.join(ROOT, 'src', 'projects');
+  if (!fs.existsSync(projectsDir)) return [];
+
+  const stores: { name: string; url: string }[] = [];
+  const configDir = path.join(ROOT, 'config');
+
+  for (const file of fs.readdirSync(configDir)) {
+    if (!file.endsWith('.config.ts') || file === 'index.ts') continue;
+    const content = fs.readFileSync(path.join(configDir, file), 'utf-8');
+    const urlMatch = content.match(/baseUrl.*?['"]([^'"]+)['"]/);
+    const nameMatch = content.match(/name:\s*['"]([^'"]+)['"]/);
+    if (urlMatch && nameMatch) {
+      stores.push({ name: nameMatch[1], url: urlMatch[1] });
+    }
+  }
+  return stores;
+}
+
+async function pingStore(url: string): Promise<UptimePing> {
+  const start = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: { 'User-Agent': 'UptimeMonitor/1.0' },
+    });
+    clearTimeout(timeout);
+    const responseTime = Date.now() - start;
+    return {
+      timestamp: new Date().toISOString(),
+      status: response.status,
+      responseTime,
+      ok: response.status >= 200 && response.status < 400,
+    };
+  } catch (e: any) {
+    return {
+      timestamp: new Date().toISOString(),
+      status: 0,
+      responseTime: Date.now() - start,
+      ok: false,
+    };
+  }
+}
+
+async function runUptimeCheck(): Promise<void> {
+  const stores = getStoreUrls();
+  const data = loadUptimeData();
+
+  for (const store of stores) {
+    const ping = await pingStore(store.url);
+
+    if (!data[store.name]) {
+      data[store.name] = {
+        name: store.name,
+        url: store.url,
+        current: 'unknown',
+        lastCheck: null,
+        lastStatus: 0,
+        lastResponseTime: 0,
+        uptime24h: 100,
+        history: [],
+      };
+    }
+
+    const entry = data[store.name];
+    entry.url = store.url;
+    entry.current = ping.ok ? 'up' : 'down';
+    entry.lastCheck = ping.timestamp;
+    entry.lastStatus = ping.status;
+    entry.lastResponseTime = ping.responseTime;
+    entry.history.unshift(ping);
+    entry.history = entry.history.slice(0, UPTIME_HISTORY_MAX);
+
+    // Calculate 24h uptime percentage
+    const okCount = entry.history.filter(h => h.ok).length;
+    entry.uptime24h = entry.history.length > 0 ? Math.round((okCount / entry.history.length) * 1000) / 10 : 100;
+  }
+
+  saveUptimeData(data);
+
+  // Notify connected WebSocket clients
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'uptime:update', data }));
+    }
+  });
+}
+
+// API endpoint for uptime data
+app.get('/api/uptime', (_req, res) => {
+  res.json(loadUptimeData());
+});
+
+// Start uptime monitoring
+let uptimeTimer: ReturnType<typeof setInterval> | null = null;
+function startUptimeMonitoring() {
+  console.log('  📡 Uptime monitoring started (every 5 min)');
+  runUptimeCheck(); // First check immediately
+  uptimeTimer = setInterval(runUptimeCheck, UPTIME_INTERVAL);
+}
+
 // --- Start ---
 cleanupOldReports();
+startUptimeMonitoring();
 
 server.on('error', (err: any) => {
   if (err.code === 'EADDRINUSE') {

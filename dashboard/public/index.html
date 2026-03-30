@@ -1049,6 +1049,7 @@
         Headed
         <div class="toggle-switch" id="headed-switch"></div>
       </label>
+      <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="showUptime()">Uptime</button>
       <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">Odswiez</button>
     </div>
   </div>
@@ -1182,6 +1183,10 @@
           updateRunStatus(status);
           currentRunId = null;
           if (msg.project) loadLastResults(msg.project);
+        }
+
+        if (msg.type === 'uptime:update') {
+          handleUptimeUpdate(msg.data);
         }
       };
 
@@ -1814,6 +1819,125 @@
         </div>`;
 
       main.innerHTML = html;
+    }
+
+    // --- Uptime ---
+    async function showUptime() {
+      activeProject = null;
+      activeArea = null;
+      renderSidebar();
+
+      const res = await fetch('/api/uptime');
+      const data = await res.json();
+      const stores = Object.values(data);
+
+      const main = document.getElementById('main-content');
+      let html = `
+        <div class="main-header">
+          <div>
+            <h2>Uptime Monitoring</h2>
+            <div class="subtitle">${stores.length} sklepow monitorowanych &bull; ping co 5 minut</div>
+          </div>
+        </div>`;
+
+      if (stores.length === 0) {
+        html += '<div class="card"><div class="card-body" style="padding:24px; color:var(--text-muted);">Brak danych. Dashboard zbiera dane co 5 minut.</div></div>';
+        main.innerHTML = html;
+        return;
+      }
+
+      // Summary cards
+      const upCount = stores.filter(s => s.current === 'up').length;
+      const downCount = stores.filter(s => s.current === 'down').length;
+      const avgResponse = stores.length > 0 ? Math.round(stores.reduce((s, st) => s + (st.lastResponseTime || 0), 0) / stores.length) : 0;
+
+      html += `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--green)">${upCount}</div>
+            <div class="stat-label">Online</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:${downCount > 0 ? 'var(--red)' : 'var(--text-muted)'}">${downCount}</div>
+            <div class="stat-label">Offline</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${avgResponse}ms</div>
+            <div class="stat-label">Avg Response</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stores.length}</div>
+            <div class="stat-label">Monitorowane</div>
+          </div>
+        </div>`;
+
+      // Store table
+      html += `
+        <div class="card">
+          <div class="card-header"><h3>Status sklepow</h3></div>
+          <div class="card-body">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted);">Status</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted);">Sklep</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted);">URL</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted);">Response</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted);">HTTP</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted);">Uptime 24h</th>
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted);">Ostatni check</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+      // Sort: down first, then by name
+      stores.sort((a, b) => {
+        if (a.current === 'down' && b.current !== 'down') return -1;
+        if (a.current !== 'down' && b.current === 'down') return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      for (const store of stores) {
+        const statusDot = store.current === 'up' ? '&#9679;' : (store.current === 'down' ? '&#9679;' : '&#9675;');
+        const statusColor = store.current === 'up' ? 'var(--green)' : (store.current === 'down' ? 'var(--red)' : 'var(--text-dim)');
+        const uptimeColor = store.uptime24h >= 99 ? 'var(--green)' : (store.uptime24h >= 95 ? 'var(--yellow)' : 'var(--red)');
+        const lastCheck = store.lastCheck ? new Date(store.lastCheck).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
+        const responseColor = store.lastResponseTime < 1000 ? 'var(--green)' : (store.lastResponseTime < 3000 ? 'var(--yellow)' : 'var(--red)');
+
+        // Mini sparkline from history (last 24 pings = 2h)
+        const recent = (store.history || []).slice(0, 24);
+        const sparkline = recent.map(h => h.ok ? '<span style="color:var(--green)">&#9612;</span>' : '<span style="color:var(--red)">&#9612;</span>').join('');
+
+        html += `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:10px 16px; font-size:16px; color:${statusColor};">${statusDot}</td>
+                  <td style="padding:10px 8px; font-size:13px; font-weight:600;">${store.name}</td>
+                  <td style="padding:10px 8px; font-size:11px; color:var(--text-muted);"><a href="${store.url}" target="_blank" style="color:var(--text-muted); text-decoration:none;">${store.url}</a></td>
+                  <td style="padding:10px 8px; font-size:13px; color:${responseColor}; font-weight:600;">${store.lastResponseTime}ms</td>
+                  <td style="padding:10px 8px; font-size:13px; color:var(--text-muted);">${store.lastStatus || '-'}</td>
+                  <td style="padding:10px 8px; font-size:13px; color:${uptimeColor}; font-weight:600;">${store.uptime24h}%</td>
+                  <td style="padding:10px 16px; font-size:12px; color:var(--text-muted);">${lastCheck}</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td colspan="7" style="padding:2px 16px 8px; font-size:8px; line-height:1;">${sparkline || '<span style="color:var(--text-dim)">Brak historii</span>'}</td>
+                </tr>`;
+      }
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+
+      main.innerHTML = html;
+    }
+
+    // Listen for uptime updates via WebSocket
+    function handleUptimeUpdate(data) {
+      // If uptime view is active, refresh it
+      if (!activeProject && document.querySelector('.main-header h2')?.textContent === 'Uptime Monitoring') {
+        showUptime();
+      }
     }
 
     // --- Notes ---
