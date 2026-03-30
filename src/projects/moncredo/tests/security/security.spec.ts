@@ -33,8 +33,7 @@ test.describe('Moncredo - Security Tests @security', () => {
     // @desc: Formularz logowania odrzuca SQL injection w polu email
     test('login form rejects SQL injection in email', async ({ page }) => {
       await page.goto(`${BASE}/customer/account/login/`, { waitUntil: 'load' });
-      // Dismiss cookie consent if present
-      }
+      // No cookie consent on Moncredo
       await page.locator('#email, input[name="login[username]"]').first().fill("admin' OR '1'='1");
       await page.locator('#pass, input[name="login[password]"]').first().fill("' OR '1'='1");
       await page.locator('button.action.login, #send2').first().click();
