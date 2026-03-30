@@ -1217,6 +1217,8 @@
       if (activeProject) {
         const updated = projects.find(p => p.name === activeProject.name);
         if (updated) showProject(updated);
+      } else {
+        showOverview();
       }
     }
 
@@ -1233,7 +1235,12 @@
     // --- Render: Sidebar ---
     function renderSidebar() {
       const sb = document.getElementById('sidebar');
-      let html = '<div class="sidebar-section"><div class="sidebar-section-title">Projekty</div>';
+      let html = '<div class="sidebar-section">'
+        + '<div class="sidebar-item ' + (!activeProject ? 'active' : '') + '" onclick="showOverview()" style="margin-bottom:8px; border-bottom:1px solid var(--border);">'
+        + '<span class="name" style="font-weight:700;">Przeglad</span>'
+        + '<span class="badge" style="background:var(--accent);">' + projects.length + '</span>'
+        + '</div>'
+        + '<div class="sidebar-section-title">Projekty</div>';
 
       for (const project of projects) {
         const isActive = activeProject && activeProject.name === project.name;
@@ -1809,6 +1816,125 @@
                   </td>
                   <td style="padding:10px 8px; font-size:13px; color:var(--text-muted);">${duration}</td>
                   <td style="padding:10px 8px; font-size:13px; color:${healCount > 0 ? 'var(--orange)' : 'var(--text-muted)'};">${healCount > 0 ? healCount + ' healed' : '-'}</td>
+                </tr>`;
+      }
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+
+      main.innerHTML = html;
+    }
+
+    // --- Overview (landing page) ---
+    async function showOverview() {
+      activeProject = null;
+      activeArea = null;
+      renderSidebar();
+
+      const main = document.getElementById('main-content');
+
+      // Get uptime data
+      let uptimeData = {};
+      try { const r = await fetch('/api/uptime'); uptimeData = await r.json(); } catch {}
+
+      const totalProjects = projects.length;
+      const totalTests = projects.reduce((s, p) => s + p.totalTests, 0);
+      const upStores = Object.values(uptimeData).filter((s) => s.current === 'up').length;
+      const downStores = Object.values(uptimeData).filter((s) => s.current === 'down').length;
+
+      let html = `
+        <div class="main-header">
+          <div>
+            <h2>Przeglad wszystkich projektow</h2>
+            <div class="subtitle">${totalProjects} projektow &bull; ${totalTests} testow (E2E + API)</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">${totalProjects}</div>
+            <div class="stat-label">Projektow</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalTests}</div>
+            <div class="stat-label">Testow E2E+API</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--green)">${upStores}</div>
+            <div class="stat-label">Online</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:${downStores > 0 ? 'var(--red)' : 'var(--text-muted)'}">${downStores}</div>
+            <div class="stat-label">Offline</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>Wyniki per projekt</h3></div>
+          <div class="card-body">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:2px solid var(--border2); text-align:left;">
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:700;">Projekt</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:700;">Testy</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:700;">Ostatni run</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:700;">Uptime</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:700;">Response</th>
+                  <th style="padding:12px 8px; font-size:12px; color:var(--text-muted); font-weight:700;">Obszary</th>
+                  <th style="padding:12px 16px; font-size:12px; color:var(--text-muted); font-weight:700;"></th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+      for (const project of projects) {
+        const summary = projectSummaries[project.name];
+        const lastRun = summary?.lastRun;
+        const uptime = uptimeData[project.name];
+
+        // Last run bar
+        let runHtml = '<span style="color:var(--text-dim)">-</span>';
+        if (lastRun) {
+          const total = lastRun.passed + lastRun.failed + lastRun.skipped;
+          const passP = total > 0 ? Math.round(lastRun.passed / total * 100) : 0;
+          const color = lastRun.failed > 0 ? 'var(--red)' : 'var(--green)';
+          runHtml = '<span style="color:var(--green); font-weight:600;">' + lastRun.passed + '</span>'
+            + '<span style="color:var(--text-dim)">P</span> '
+            + '<span style="color:var(--red); font-weight:600;">' + lastRun.failed + '</span>'
+            + '<span style="color:var(--text-dim)">F</span> '
+            + '<span style="color:var(--yellow); font-weight:600;">' + lastRun.skipped + '</span>'
+            + '<span style="color:var(--text-dim)">S</span>';
+        }
+
+        // Uptime
+        let uptimeHtml = '<span style="color:var(--text-dim)">-</span>';
+        let responseHtml = '<span style="color:var(--text-dim)">-</span>';
+        if (uptime) {
+          const uptimeColor = uptime.uptime24h >= 99 ? 'var(--green)' : (uptime.uptime24h >= 95 ? 'var(--yellow)' : 'var(--red)');
+          const statusDot = uptime.current === 'up' ? '<span style="color:var(--green)">&#9679;</span>' : '<span style="color:var(--red)">&#9679;</span>';
+          uptimeHtml = statusDot + ' <span style="color:' + uptimeColor + '; font-weight:600;">' + uptime.uptime24h + '%</span>';
+          const respColor = uptime.lastResponseTime < 1000 ? 'var(--green)' : (uptime.lastResponseTime < 3000 ? 'var(--yellow)' : 'var(--red)');
+          responseHtml = '<span style="color:' + respColor + '">' + uptime.lastResponseTime + 'ms</span>';
+        }
+
+        // Area badges
+        const areaNames = project.areas.filter(a => !['smoke','security','seo','a11y','performance','links'].includes(a.name)).map(a => a.name);
+        const areaBadges = areaNames.slice(0, 6).map(a => {
+          const pl = AREA_NAMES_PL[a] || a;
+          return '<span style="background:var(--bg-elevated); padding:2px 6px; border-radius:3px; font-size:10px; color:var(--text-muted); margin-right:3px;">' + pl + '</span>';
+        }).join('');
+
+        html += `
+                <tr style="border-bottom:1px solid var(--border); cursor:pointer;" onclick="showProject(findProject('${project.name}'))" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background='transparent'">
+                  <td style="padding:12px 16px; font-size:13px; font-weight:600;">${project.displayName}</td>
+                  <td style="padding:12px 8px; font-size:13px;"><span style="color:var(--accent); font-weight:600;">${project.totalTests}</span></td>
+                  <td style="padding:12px 8px; font-size:12px;">${runHtml}</td>
+                  <td style="padding:12px 8px; font-size:12px;">${uptimeHtml}</td>
+                  <td style="padding:12px 8px; font-size:12px;">${responseHtml}</td>
+                  <td style="padding:12px 8px; font-size:11px;">${areaBadges}</td>
+                  <td style="padding:12px 16px; text-align:right;"><span style="color:var(--text-dim);">&#8250;</span></td>
                 </tr>`;
       }
 
