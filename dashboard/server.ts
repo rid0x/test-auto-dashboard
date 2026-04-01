@@ -2326,6 +2326,14 @@ async function runUptimeCheck(): Promise<void> {
     entry.uptime24h = entry.history.length > 0 ? Math.round((okCount / entry.history.length) * 1000) / 10 : 100;
   }
 
+  // Auto-cleanup: remove stores that no longer have a project
+  const storeNames = new Set(stores.map(s => s.name));
+  for (const name of Object.keys(data)) {
+    if (!storeNames.has(name)) {
+      delete data[name];
+    }
+  }
+
   saveUptimeData(data);
 
   // Notify connected WebSocket clients
