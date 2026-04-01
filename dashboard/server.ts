@@ -171,6 +171,11 @@ function parseTestDetails(body: string): TestDetails {
   for (const m of body.matchAll(/waitForResponse\s*\(\s*(?:resp|response|r)\s*=>[^)]*?\.includes\s*\(\s*['"]([^'"]+?)['"]/g)) assSet.add(`czeka na API: ${m[1]}`);
   for (const m of body.matchAll(/status\s*\(\s*\)[^.]*\.toBe\s*\(\s*(\d+)/g)) assSet.add(`HTTP ${m[1]}`);
   if (body.includes('skipIfRecaptcha')) assSet.add('skip jesli reCAPTCHA');
+  // Visual regression
+  for (const m of body.matchAll(/toHaveScreenshot\s*\(\s*'([^']*)'/g)) assSet.add(`screenshot: ${m[1]}`);
+  if (body.includes('toHaveScreenshot')) { if (!actSet.has('screenshot')) actSet.add('screenshot porownanie'); }
+  if (body.includes('networkidle')) actSet.add('czeka na zaladowanie');
+  if (body.includes('maxDiffPixelRatio')) assSet.add('pixel diff < 2%');
   // Page Object verifications
   for (const m of body.matchAll(/await\s+(\w+)\.(verify\w+|check\w+|assert\w+|expect\w+|validate\w+|should\w+)\s*\(/g)) {
     if (!['page','expect','test','console'].includes(m[1])) assSet.add(`${m[1]}.${m[2]}()`);
