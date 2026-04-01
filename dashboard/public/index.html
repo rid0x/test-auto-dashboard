@@ -2310,31 +2310,19 @@
 
     function handleUptimeUpdate(data) {
       if (!uptimeBaselineSet) {
-        // First update = baseline, no alerts yet
+        // First update = silent baseline — just save state, no alerts
         for (const [name, store] of Object.entries(data)) {
           previousUptimeState[name] = store.current;
         }
         uptimeBaselineSet = true;
-        // But if anything is already down on first load, still alert once
-        const downStores = Object.entries(data).filter(([,s]) => s.current === 'down');
-        for (const [name, store] of downStores) {
-          playAlertSound();
-          showUptimeAlert(name, store.url);
-        }
-        // Refresh view
         if (!activeProject && document.querySelector('.main-header h2')?.textContent === 'Uptime Monitoring') showUptime();
         return;
       }
 
-      // Check for new downtimes (UP → DOWN)
+      // Check for new downtimes: only alert on UP → DOWN transition
       for (const [name, store] of Object.entries(data)) {
         const prev = previousUptimeState[name];
         if (prev === 'up' && store.current === 'down') {
-          playAlertSound();
-          showUptimeAlert(name, store.url);
-        }
-        // New store appearing as down
-        if (prev === undefined && store.current === 'down') {
           playAlertSound();
           showUptimeAlert(name, store.url);
         }
