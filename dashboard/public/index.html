@@ -2569,23 +2569,31 @@
     async function saveApiKey() {
       const claudeKey = document.getElementById('settings-api-key').value.trim();
       const geminiKey = document.getElementById('settings-gemini-key').value.trim();
-      const provider = document.querySelector('input[name="ai-provider"]:checked')?.value || 'gemini';
+      let provider = document.querySelector('input[name="ai-provider"]:checked')?.value || 'gemini';
 
       if (!claudeKey && !geminiKey) return showToast('Podaj przynajmniej jeden klucz API', 'warning');
+      // Auto-switch provider if selected one has no key
+      if (provider === 'claude' && !claudeKey && geminiKey) provider = 'gemini';
+      if (provider === 'gemini' && !geminiKey && claudeKey) provider = 'claude';
+
+      const body = {};
+      if (claudeKey) body.apiKey = claudeKey;
+      if (geminiKey) body.geminiKey = geminiKey;
+      body.provider = provider;
 
       const res = await fetch('/api/settings/ai-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: claudeKey || undefined, geminiKey: geminiKey || undefined, provider }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         const data = await res.json();
         aiKeyConfigured = true;
         closeModal('settings-modal');
-        showToast('Zapisano! Dostawca: ' + (data.provider === 'gemini' ? 'Gemini' : 'Claude'), 'success');
+        showToast('Zapisano! Dostawca: ' + (data.provider === 'gemini' ? 'Gemini (darmowy)' : 'Claude'), 'success');
       } else {
         const err = await res.json();
-        showToast('Blad: ' + err.error, 'error');
+        showToast('Blad zapisu: ' + (err.error || 'Nieznany blad'), 'error');
       }
     }
 
