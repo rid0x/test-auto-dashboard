@@ -1556,6 +1556,7 @@
             <button class="btn" onclick="smartRunArea('${project.name}', 'seo')" title="Testy SEO — meta tagi, sitemap, robots.txt, struktura naglowkow">SEO</button>
             <button class="btn" onclick="smartRunArea('${project.name}', 'a11y')" title="Testy dostepnosci — czy strona dziala dla osob z niepelnosprawnosciami">Dostepnosc</button>
             <button class="btn" onclick="smartRunArea('${project.name}', 'links')" title="Sprawdzanie martwych linkow na stronie">Linki</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'visual')" title="Regresja wizualna — porownanie screenshotow z baseline">Visual</button>
             <button class="btn" onclick="showHistory('${project.name}')" title="Historia uruchomien testow">Historia</button>
             ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')" title="Notatki i obserwacje dotyczace projektu">Notatki</button>' : ''}
             <button class="btn" style="border-color:var(--violet); color:var(--violet);" onclick="launchCodegen('${project.name}')" title="Otwiera przegladarke do nagrywania interakcji i podgladu elementow strony">Nagrywarka</button>
@@ -2534,6 +2535,7 @@
       { value: 'seo', label: 'SEO', desc: 'Meta tagi, sitemap, robots.txt, canonical' },
       { value: 'a11y', label: 'Accessibility', desc: 'Dostepnosc: alt, labels, klawiatura' },
       { value: 'links', label: 'Broken Links', desc: 'Sprawdzanie martwych linkow na stronie' },
+      { value: 'visual', label: 'Visual Regression', desc: 'Porownanie screenshotow stron z baseline' },
     ];
 
     // --- Generic modal helpers ---
@@ -3409,6 +3411,7 @@
       seo: 'SEO (meta tagi, sitemap, robots.txt)',
       a11y: 'Accessibility (alt, labels, klawiatura)',
       links: 'Broken Links (martwe linki)',
+      visual: 'Visual Regression (porownanie screenshotow z baseline)',
     };
 
     async function smartRunArea(projectName, area) {

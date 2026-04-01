@@ -423,7 +423,7 @@ function validatePathSafety(filePath: string): boolean {
 // --- Helpers: Area & Page mappings ---
 
 const STANDARD_AREAS = ['login', 'registration', 'homepage', 'search', 'product-page', 'cart', 'category', 'checkout', 'footer'];
-const EXTRA_AREAS = ['security', 'seo', 'a11y', 'performance', 'links', 'smoke'];
+const EXTRA_AREAS = ['security', 'seo', 'a11y', 'performance', 'links', 'smoke', 'visual'];
 const ALL_AREAS = [...STANDARD_AREAS, 'api', ...EXTRA_AREAS];
 
 const AREA_TO_PAGE: Record<string, string> = {
@@ -437,7 +437,7 @@ const AREA_TO_TAG: Record<string, string> = {
   'search': '@search @e2e', 'product-page': '@product-page @e2e', 'cart': '@cart @e2e',
   'category': '@category @e2e', 'checkout': '@checkout @e2e', 'footer': '@footer @e2e',
   'api': '@api', 'security': '@security', 'seo': '@seo', 'a11y': '@a11y',
-  'performance': '@performance', 'links': '@links', 'smoke': '@smoke @e2e',
+  'performance': '@performance', 'links': '@links', 'smoke': '@smoke @e2e', 'visual': '@visual',
 };
 
 const CORE_PAGES = ['LoginPage', 'RegistrationPage', 'HomePage', 'SearchPage', 'ProductPage', 'CartPage', 'CategoryPage', 'CheckoutPage'];
@@ -686,9 +686,91 @@ function removeProjectFromTypeUnion(name: string): void {
   fs.writeFileSync(typesPath, content);
 }
 
+// --- Visual Regression Test Generator ---
+
+function generateVisualRegressionSpec(projectName: string): string {
+  const configVar = toConfigVarName(projectName);
+  const displayName = toPascalCase(projectName);
+
+  // Read cookie consent selector from config
+  let cookieSel = '';
+  try {
+    const configContent = fs.readFileSync(path.join(ROOT, 'config', `${projectName}.config.ts`), 'utf-8');
+    const match = configContent.match(/cookieConsentSelector.*?['"]([^'"]+)['"]/);
+    if (match) cookieSel = match[1];
+  } catch {}
+
+  const cookieDismiss = cookieSel
+    ? `    try { await page.click('${cookieSel}', { timeout: 3000 }); } catch {}\n    await page.waitForTimeout(500);`
+    : '    // Brak cookie consent popup';
+
+  const lines = [
+    `import { test, expect } from '@playwright/test';`,
+    `import { ${configVar} } from '../../../../../config/${projectName}.config';`,
+    ``,
+    `const config = ${configVar};`,
+    `const BASE = config.baseUrl;`,
+    ``,
+    `// Visual Regression Tests — porownanie screenshotow z baseline`,
+    `// Pierwszy run: npx playwright test --grep @visual --update-snapshots  (tworzy baseline)`,
+    `// Kolejne runy: npx playwright test --grep @visual  (porownuje z baseline)`,
+    `// maxDiffPixelRatio: 0.02 = tolerancja 2% pikseli (antyaliasing, fonty)`,
+    ``,
+    `test.describe('${displayName} - Visual Regression @visual', () => {`,
+    ``,
+    `  test.beforeEach(async ({ page }) => {`,
+    `    // Zamknij cookie popup`,
+    cookieDismiss,
+    `  });`,
+    ``,
+    `  test('homepage visual', async ({ page }) => {`,
+    `    await page.goto(BASE);`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await page.waitForTimeout(1000);`,
+    `    await expect(page).toHaveScreenshot('homepage.png', { fullPage: true, maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    ``,
+    `  test('login page visual', async ({ page }) => {`,
+    `    await page.goto(BASE + '/customer/account/login/');`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    ``,
+    `  test('category page visual', async ({ page }) => {`,
+    `    await page.goto(BASE + config.category.url);`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await expect(page).toHaveScreenshot('category.png', { maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    ``,
+    `  test('product page visual', async ({ page }) => {`,
+    `    await page.goto(BASE + config.product.url);`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await expect(page).toHaveScreenshot('product.png', { maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    ``,
+    `  test('search results visual', async ({ page }) => {`,
+    `    await page.goto(BASE + '/catalogsearch/result/?q=' + encodeURIComponent(config.search.validQuery));`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await expect(page).toHaveScreenshot('search-results.png', { maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    ``,
+    `  test('cart page visual', async ({ page }) => {`,
+    `    await page.goto(BASE + '/checkout/cart/');`,
+    `    await page.waitForLoadState('networkidle');`,
+    `    await expect(page).toHaveScreenshot('cart.png', { maxDiffPixelRatio: 0.02 });`,
+    `  });`,
+    `});`,
+    ``,
+  ];
+  return lines.join('\n');
+}
+
 // --- Skeleton Generation (from existing project templates) ---
 
 function generateSkeletonSpec(projectName: string, areaName: string): string | null {
+  // Visual regression has its own generator
+  if (areaName === 'visual') return generateVisualRegressionSpec(projectName);
+
   // Find an existing project that has this area — use it as template
   const projectsDir = path.join(ROOT, 'src', 'projects');
   const templateProjects = fs.readdirSync(projectsDir, { withFileTypes: true })
