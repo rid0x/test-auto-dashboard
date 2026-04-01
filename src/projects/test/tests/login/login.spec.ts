@@ -33,4 +33,24 @@ test('should display login header on login page', async ({ page, config }) => {
   });
 });
 
+
+// @desc: Podstawowy test przykładowy
+test('basic test', async ({ page }) => {
+  await test.step('Navigate to example page', async () => {
+    await page.goto('https://example.com');
+  });
+
+  await test.step('Click login button', async () => {
+    await page.click('button:text("Login")');
+  });
+
+  await test.step('Check page title', async () => {
+    await expect(page).toHaveTitle(/Dashboard/);
+  });
+
+  await test.step('Take screenshot', async () => {
+    await page.screenshot({ path: 'basic-test.png', fullPage: true });
+  });
+});
+
 });
