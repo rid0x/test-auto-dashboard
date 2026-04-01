@@ -83,6 +83,7 @@ export default defineConfig({
 });
 
 function getBaseUrl(project: string): string {
+  // Static map for known projects
   const urls: Record<string, string> = {
     getprice: process.env.GETPRICE_BASE_URL || 'https://getprice.pl',
     willsoor: process.env.WILLSOOR_BASE_URL || 'https://willsoor.pl',
@@ -92,5 +93,20 @@ function getBaseUrl(project: string): string {
     hulajnogimicro: process.env.HULAJNOGIMICRO_BASE_URL || 'https://hulajnogimicro.pl',
     bladeville: process.env.BLADEVILLE_BASE_URL || 'https://bladeville.pl',
   };
-  return urls[project] || 'https://localhost';
+  if (urls[project]) return urls[project];
+
+  // Dynamic: read baseUrl from config file for projects added via dashboard
+  try {
+    const fs = require('fs');
+    const configPath = `./config/${project}.config.ts`;
+    if (fs.existsSync(configPath)) {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      const match = content.match(/baseUrl.*?['"]([^'"]+)['"]/);
+      if (match) return match[1];
+    }
+  } catch {}
+
+  // Fallback: check env var {PROJECT}_BASE_URL
+  const envKey = project.toUpperCase().replace(/-/g, '_') + '_BASE_URL';
+  return process.env[envKey] || 'https://localhost';
 }

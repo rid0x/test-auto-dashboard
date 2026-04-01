@@ -12,6 +12,7 @@ import { distriparkConfig } from './distripark.config';
 import { elakiernikConfig } from './elakiernik.config';
 import { hulajnogimicroConfig } from './hulajnogimicro.config';
 import { bladevilleConfig } from './bladeville.config';
+import { testConfig } from './test.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
@@ -27,7 +28,7 @@ const projectConfigs: Record<ProjectName, ProjectConfig> = {
   elakiernik: elakiernikConfig,
   hulajnogimicro: hulajnogimicroConfig,
   bladeville: bladevilleConfig,
-};
+  'test': testConfig };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {
   const config = projectConfigs[name];
@@ -48,4 +49,4 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig, hulajnogimicroConfig, bladevilleConfig };
+export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig, hulajnogimicroConfig, bladevilleConfig, testConfig };

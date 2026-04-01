@@ -117,6 +117,10 @@
       display: grid;
       grid-template-columns: 228px 1fr;
       min-height: calc(100vh - 52px);
+      transition: margin-right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .layout.chat-shifted {
+      margin-right: 440px;
     }
 
     /* --- Sidebar --- */
@@ -1038,6 +1042,143 @@
     .detail-text { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
     .detail-empty { color: var(--text-dim); font-size: 11px; font-style: italic; }
     .warning-icon { cursor: help; margin-left: 6px; color: var(--yellow); font-size: 13px; }
+
+    /* --- Chat Panel — fixed overlay, does NOT affect main layout --- */
+    .chat-panel { position: fixed; top: 52px; right: 0; bottom: 0; width: 440px; background: rgba(8,7,22,0.99); border-left: 1px solid rgba(255,255,255,0.05); flex-direction: column; overflow: hidden; z-index: 50; display: flex; transform: translateX(100%); opacity: 0; transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease; pointer-events: none; }
+    .chat-panel.visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+    .chat-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .chat-header-title { font-size: 12px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .chat-header-context { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { padding: 12px 16px; border-radius: 8px; font-size: 12px; line-height: 1.7; max-width: 95%; word-wrap: break-word; }
+    .chat-msg.user { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); align-self: flex-end; color: var(--text); }
+    .chat-msg.assistant { background: transparent; border: none; align-self: flex-start; color: var(--text-muted); padding: 8px 4px; }
+    .chat-msg.system { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); align-self: center; color: var(--text-dim); font-size: 11px; text-align: center; max-width: 100%; }
+    .chat-msg.status-pass { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); align-self: center; color: var(--green); font-weight: 600; font-size: 11px; }
+    .chat-msg.status-fail { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); align-self: center; color: var(--red); font-weight: 600; font-size: 11px; }
+    .chat-msg .msg-text p { margin: 0 0 6px; }
+    .chat-msg .msg-text p:last-child { margin: 0; }
+    .chat-code-block { background: rgba(6,8,16,0.9); border: 1px solid var(--border); border-radius: 6px; margin: 8px 0; overflow: hidden; }
+    .chat-code-header { padding: 6px 12px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--text-dim); }
+    .chat-code-body { padding: 10px 12px; font-family: var(--font); font-size: 11px; line-height: 1.6; color: var(--text); white-space: pre-wrap; overflow-x: auto; max-height: 300px; overflow-y: auto; }
+    /* Syntax highlighting */
+    .sh-kw { color: #c678dd; } /* keywords: const, let, async, await, import, test */
+    .sh-fn { color: #61afef; } /* functions: expect, describe, step */
+    .sh-str { color: #98c379; } /* strings */
+    .sh-cmt { color: #5c6370; font-style: italic; } /* comments */
+    .sh-num { color: #d19a66; } /* numbers */
+    .sh-op { color: #56b6c2; } /* operators: =>, ===, !== */
+    .sh-tag { color: #e06c75; } /* tags: @login, @e2e */
+    .chat-code-actions { padding: 6px 12px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+    .chat-typing { display: flex; gap: 4px; align-items: center; padding: 8px 14px; align-self: flex-start; }
+    .chat-typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); animation: typing-bounce 1.2s infinite; }
+    .chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing-bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+    .chat-input-area { padding: 12px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; align-items: flex-end; }
+    .chat-input { flex: 1; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: var(--font); font-size: 12px; resize: none; outline: none; max-height: 120px; min-height: 38px; line-height: 1.5; }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--text-dim); font-size: 11px; }
+    .chat-send-btn { padding: 10px 16px; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.4); border-radius: 6px; color: var(--accent); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
+    .chat-send-btn:hover { background: rgba(249,115,22,0.22); }
+    .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* --- Toast notifications --- */
+    .toast-container { position: fixed; top: 60px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast { pointer-events: auto; padding: 12px 20px; border-radius: var(--radius); font-size: 12px; font-family: var(--font); font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.5); animation: toast-in 0.3s ease, toast-out 0.3s ease 4.7s forwards; max-width: 400px; }
+    .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: var(--green); }
+    .toast.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: var(--red); }
+    .toast.warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); color: var(--yellow); }
+    .toast.info { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: var(--blue); }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+    /* --- CRUD: Wizard Modal --- */
+    .wizard-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 300; padding: 30px; overflow-y: auto; }
+    .wizard-modal.visible { display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; }
+    .wizard-box { background: var(--bg-card); border: 1px solid var(--border2); border-radius: var(--radius); padding: 0; max-width: 640px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-height: 80vh; display: flex; flex-direction: column; }
+    .wizard-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .wizard-header h3 { font-size: 15px; font-weight: 700; }
+    .wizard-header .close-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 18px; padding: 4px 8px; }
+    .wizard-header .close-btn:hover { color: var(--text); }
+    .wizard-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    .wizard-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+
+    /* Steps indicator */
+    .wizard-steps { display: flex; gap: 6px; align-items: center; margin-bottom: 20px; }
+    .wizard-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background 0.2s; }
+    .wizard-step-dot.active { background: var(--accent); box-shadow: 0 0 8px rgba(249,115,22,0.5); }
+    .wizard-step-dot.done { background: var(--green); }
+    .wizard-step-label { font-size: 11px; color: var(--text-dim); margin-left: 8px; }
+
+    /* Form elements */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-input { width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; outline: none; transition: border-color 0.15s; }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text-dim); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-textarea { width: 100%; min-height: 80px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; resize: vertical; outline: none; }
+    .form-textarea:focus { border-color: var(--accent); }
+
+    /* Checkboxes grid */
+    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .form-check { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color 0.15s; }
+    .form-check:hover { border-color: var(--accent); }
+    .form-check input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+    .form-check label { font-size: 12px; color: var(--text); cursor: pointer; flex: 1; }
+    .form-check .check-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+    /* Radio buttons */
+    .radio-group { display: flex; gap: 10px; }
+    .form-radio { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; flex: 1; transition: border-color 0.15s; }
+    .form-radio:hover { border-color: var(--accent); }
+    .form-radio.selected { border-color: var(--accent); background: var(--accent-dim); }
+    .form-radio input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+    .form-radio label { font-size: 12px; cursor: pointer; }
+
+    /* Code editor modal — panel, shrinks when chat is open */
+    .editor-modal { display: none; position: fixed; top: 52px; left: 228px; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 45; transition: right 0.2s; }
+    .editor-modal.with-chat { right: 440px; }
+    .editor-modal.visible { display: flex; flex-direction: column; }
+    .editor-header { padding: 10px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px; }
+    .editor-header .file-path { font-size: 12px; color: var(--accent); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .editor-header .editor-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .editor-body { flex: 1; padding: 0; position: relative; overflow: hidden; min-height: 0; }
+    /* Overlay technique: highlighted pre behind transparent textarea */
+    .editor-highlight { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; margin: 0; background: rgba(6,8,16,0.95); font-family: var(--font); font-size: 12px; line-height: 1.7; tab-size: 2; white-space: pre-wrap; word-wrap: break-word; color: var(--text); overflow-y: auto; pointer-events: none; border: none; }
+    .editor-textarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; background: transparent; border: none; color: transparent; caret-color: var(--text); font-family: var(--font); font-size: 12px; line-height: 1.7; resize: none; outline: none; tab-size: 2; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; z-index: 1; }
+    .editor-textarea::selection { background: rgba(249,115,22,0.3); }
+    .editor-footer { padding: 10px 20px; background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    /* Error paste area in editor */
+    .editor-error-panel { display: none; padding: 12px 20px; background: rgba(239,68,68,0.05); border-top: 1px solid rgba(239,68,68,0.2); flex-shrink: 0; }
+    .editor-error-panel.visible { display: block; }
+    .editor-error-textarea { width: 100%; min-height: 60px; max-height: 120px; padding: 8px 10px; background: var(--bg); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-sm); color: var(--red); font-family: var(--font); font-size: 11px; resize: vertical; outline: none; }
+    .editor-error-textarea::placeholder { color: rgba(239,68,68,0.4); }
+
+    /* Add-card (dashed + icon) */
+    .add-card { border: 2px dashed var(--border2) !important; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: transparent !important; box-shadow: none !important; }
+    .add-card:hover { border-color: var(--accent) !important; background: rgba(249,115,22,0.05) !important; }
+    .add-card .add-icon { font-size: 28px; color: var(--text-dim); transition: color 0.2s; }
+    .add-card:hover .add-icon { color: var(--accent); }
+
+    /* Icon buttons */
+    .btn-icon { background: none; border: 1px solid transparent; color: var(--text-dim); cursor: pointer; padding: 3px 6px; border-radius: 4px; font-size: 12px; transition: color 0.15s, border-color 0.15s, background 0.15s; font-family: var(--font); }
+    .btn-icon:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.05); }
+    .btn-icon.danger:hover { color: var(--red); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+
+    /* Spinner */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* AI badge */
+    .ai-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 3px; font-size: 9px; font-weight: 700; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: #d4a5ff; letter-spacing: 0.06em; }
+
+    /* Preview code block */
+    .code-preview { background: rgba(6,8,16,0.9); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; font-family: var(--font); font-size: 12px; line-height: 1.7; color: var(--text); white-space: pre-wrap; overflow-x: auto; max-height: 400px; overflow-y: auto; }
+
+    /* Section divider */
+    .section-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
   </style>
 </head>
 <body>
@@ -1063,12 +1204,14 @@
         Headed
         <div class="toggle-switch" id="headed-switch"></div>
       </label>
-      <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="showUptime()">Uptime</button>
+      <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="showUptime()" title="Monitoring dostepnosci sklepow — czy strony sa online">Uptime</button>
+      <button class="btn" onclick="toggleChat()" id="chat-toggle-btn" style="border-color:var(--violet); color:var(--violet);"><span class="ai-badge" style="margin-right:4px;">AI</span> Chat</button>
+      <button class="btn" onclick="openSettings()" title="Ustawienia" style="font-size:14px;">&#9881;</button>
       <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">Odswiez</button>
     </div>
   </div>
 
-  <div class="layout">
+  <div class="layout" id="layout">
     <nav class="sidebar" id="sidebar">
       <!-- Dynamically populated -->
     </nav>
@@ -1112,6 +1255,36 @@
           </div>
           <div class="terminal-body" id="terminal-output">Gotowy do uruchomienia testów...\n</div>
         </div>
+      </div>
+    </div>
+
+    <!-- AI Chat Panel -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-header">
+        <div>
+          <div class="chat-header-title"><span class="ai-badge">AI</span> Asystent testowy</div>
+          <div class="chat-header-context" id="chat-context">Wybierz projekt i obszar</div>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="btn-icon" onclick="clearChat()" title="Nowa rozmowa" style="font-size:13px;">&#8634;</button>
+          <button class="btn-icon" onclick="toggleChat()" title="Zamknij">&times;</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-msg system">
+          Witaj! Opisz jaki test chcesz stworzyc albo kliknij gotowa propozycje ponizej.
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+            <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy strona glowna laduje sie poprawnie')" style="font-size:10px;">Strona glowna</button>
+            <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy formularz logowania wyswietla sie poprawnie i mozna sie zalogowac')" style="font-size:10px;">Logowanie</button>
+            <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy wyszukiwarka znajduje produkty')" style="font-size:10px;">Wyszukiwarka</button>
+            <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy mozna dodac produkt do koszyka')" style="font-size:10px;">Koszyk</button>
+            <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy strona jest bezpieczna')" style="font-size:10px;">Bezpieczenstwo</button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" placeholder="Co chcesz sprawdzic?" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">Wyslij</button>
       </div>
     </div>
   </div>
@@ -1199,6 +1372,18 @@
           if (msg.project) loadLastResults(msg.project);
         }
 
+        if (msg.type === 'tryTest:complete') {
+          handleTryTestComplete(msg);
+        }
+
+        // Chat messages
+        if (msg.type === 'chat:delta') handleChatDelta(msg.token);
+        if (msg.type === 'chat:complete') handleChatComplete(msg.fullMessage);
+        if (msg.type === 'chat:testResult') handleChatTestResult(msg);
+        if (msg.type === 'chat:autoRunStart') handleChatAutoRunStart();
+        if (msg.type === 'chat:error') handleChatError(msg.error);
+        if (msg.type === 'chat:status') addChatMsg('system', msg.message, 'system');
+
         if (msg.type === 'uptime:update') {
           handleUptimeUpdate(msg.data);
         }
@@ -1253,7 +1438,10 @@
         + '<div class="sidebar-item ' + (!activeProject ? 'active' : '') + '" onclick="showOverview()" style="margin-bottom:8px; border-bottom:1px solid var(--border);">'
         + '<span class="name" style="font-weight:700;">Przeglad</span>'
         + '</div>'
-        + '<div class="sidebar-section-title">Projekty</div>';
+        + '<div class="sidebar-section-title" style="display:flex; justify-content:space-between; align-items:center;">'
+        + 'Projekty'
+        + '<button class="btn-icon" onclick="event.stopPropagation(); openAddProject()" title="Dodaj nowy projekt" style="font-size:14px; font-weight:700; color:var(--accent);">+</button>'
+        + '</div>';
 
       for (const project of projects) {
         const isActive = activeProject && activeProject.name === project.name;
@@ -1287,88 +1475,19 @@
             <div class="subtitle">${project.totalTests} testów w ${project.areas.length} obszarach</div>
           </div>
           <div class="btn-group">
-            <span class="btn-tooltip">
-              <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')">Uruchom wszystkie</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Wszystkie testy</div>
-                E2E + API, wszystkie obszary<br>
-                Login, rejestracja, search, kategoria,<br>
-                produkt, koszyk, checkout, footer, API<br>
-                <span class="tt-count">~${project.totalTests} testow</span> | ~15 min
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="runTests('${project.name}', 'smoke')">Smoke</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Smoke Tests — szybki health check</div>
-                Krytyczna sciezka zakupowa:<br>
-                Homepage → Login → Search → Kategoria<br>
-                → Karta produktu → Dodaj do koszyka<br>
-                → Koszyk → Przejdz do checkout<br>
-                <span class="tt-count">~12 testow</span> | ~2-3 min
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" onclick="runTests('${project.name}', 'e2e')">E2E</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Testy E2E (przegladarkowe)</div>
-                Pelne testy interfejsu uzytkownika:<br>
-                Formularze, nawigacja, koszyk, checkout,<br>
-                filtry, sortowanie, breadcrumbs, footer<br>
-                <span class="tt-count">~${project.areas.filter(a => a.name !== 'api').reduce((s,a) => s + a.testCount, 0)} testow</span> | ~12 min
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" onclick="runTests('${project.name}', 'api')">API</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Testy API (REST + GraphQL)</div>
-                Bez przegladarki — HTTP requests:<br>
-                Store config, search, guest cart,<br>
-                customer auth, GraphQL products<br>
-                <span class="tt-count">~${project.areas.find(a => a.name === 'api')?.testCount || 9} testow</span> | ~10 sec
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="runTests('${project.name}', 'security')">Security</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Testy bezpieczenstwa</div>
-                SQL Injection, XSS, Security Headers,<br>
-                CSRF tokens, Exposed paths (.env, .git),<br>
-                API auth, Cookie flags<br>
-                <span class="tt-count">~21 testow</span> | ~30 sec
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" style="border-color:var(--blue); color:var(--blue);" onclick="runTests('${project.name}', 'seo')">SEO</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Testy SEO</div>
-                Meta title/description, canonical URL,<br>
-                robots.txt, sitemap.xml, H1 structure,<br>
-                JSON-LD, Open Graph, image alt, 404<br>
-                <span class="tt-count">~15 testow</span> | ~1 min
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" style="border-color:var(--yellow); color:var(--yellow);" onclick="runTests('${project.name}', 'a11y')">A11y</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Testy dostepnosci (Accessibility)</div>
-                Image alt, form labels, skip-to-content,<br>
-                keyboard navigation, focus outline,<br>
-                semantic HTML, lang attr, kontrast<br>
-                <span class="tt-count">~10 testow</span> | ~1 min
-              </span>
-            </span>
-            <span class="btn-tooltip">
-              <button class="btn" onclick="runTests('${project.name}', 'links')">Links</button>
-              <span class="tooltip-content">
-                <div class="tt-title">Martwe linki (Broken Links)</div>
-                Nawigacja, footer, breadcrumbs,<br>
-                linki produktow w kategorii, strona 404<br>
-                <span class="tt-count">~5 testow</span> | ~1 min
-              </span>
-            </span>
-            <button class="btn" onclick="showHistory('${project.name}')">Historia</button>
-            ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')">Notatki</button>' : ''}
+            <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')" title="Uruchom wszystkie testy w projekcie">Uruchom wszystkie</button>
+            <button class="btn" onclick="runTests('${project.name}', 'smoke')" title="Szybki test kluczowych funkcji: strona glowna, logowanie, koszyk">Smoke</button>
+            <button class="btn" onclick="runTests('${project.name}', 'e2e')" title="Pelne testy przegladarkowe — symulacja dzialania uzytkownika">E2E</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'api')" title="Testy backendu — sprawdzanie odpowiedzi serwera">API</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'security')" title="Testy bezpieczenstwa — SQL injection, XSS, naglowki">Security</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'seo')" title="Testy SEO — meta tagi, sitemap, robots.txt, struktura naglowkow">SEO</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'a11y')" title="Testy dostepnosci — czy strona dziala dla osob z niepelnosprawnosciami">Dostepnosc</button>
+            <button class="btn" onclick="smartRunArea('${project.name}', 'links')" title="Sprawdzanie martwych linkow na stronie">Linki</button>
+            <button class="btn" onclick="showHistory('${project.name}')" title="Historia uruchomien testow">Historia</button>
+            ${projectSummaries[project.name]?.hasNotes ? '<button class="btn" onclick="showNotes(\'' + project.name + '\')" title="Notatki i obserwacje dotyczace projektu">Notatki</button>' : ''}
+            <button class="btn" style="border-color:var(--violet); color:var(--violet);" onclick="launchCodegen('${project.name}')" title="Otwiera przegladarke do nagrywania interakcji i podgladu elementow strony">Nagrywarka</button>
+            <button class="btn" onclick="launchInspector('${project.name}')" title="Uruchamia test krok po kroku z podgladem przegladarki">Debugger</button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteProject('${project.name}')" title="Usun projekt i wszystkie jego testy">&minus;</button>
           </div>
         </div>`;
 
@@ -1437,6 +1556,12 @@
           </div>`;
       }
 
+      // Add area card ("+")
+      html += `
+          <div class="area-card add-card" onclick="openAddArea('${project.name}')">
+            <span class="add-icon">+</span>
+          </div>`;
+
       html += `</div>`;
       main.innerHTML = html;
     }
@@ -1462,6 +1587,8 @@
             <button class="btn btn-primary" onclick="runTests('${project.name}', '${area.name}')">
               Uruchom obszar
             </button>
+            <button class="btn" style="border-color:var(--violet); color:var(--violet);" onclick="launchCodegen('${project.name}')">Codegen</button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteArea('${project.name}', '${area.name}')" title="Usun obszar">&minus;</button>
             <button class="btn" onclick="showProject(findProject('${project.name}'))">
               Wstecz
             </button>
@@ -1471,7 +1598,11 @@
         <div class="card">
           <div class="card-header">
             <h3>Testy (${area.testCount})</h3>
-            <span style="font-size:12px; color:var(--text-muted)">${area.specFile}</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-sm btn-primary" onclick="openChatForArea('${project.name}', '${area.name}')">+ Dodaj test (AI Chat)</button>
+              <button class="btn btn-sm" onclick="openCodeEditor('${project.name}', '${area.name}')">Edytuj plik</button>
+              <span style="font-size:11px; color:var(--text-dim)">${area.specFile}</span>
+            </div>
           </div>
           <div class="card-body">
             <table class="test-table">
@@ -1505,30 +1636,30 @@
           }
 
           if (d.navigations.length > 0) {
-            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-nav">nawigacja</span><span class="detail-codes">${d.navigations.map(n => '<code>' + escapeHtml(n) + '</code>').join('')}</span></div>`;
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-nav">strony</span><span class="detail-codes">${d.navigations.map(n => '<code>' + escapeHtml(n) + '</code>').join('')}</span></div>`;
           }
 
           if (d.selectors.length > 0) {
             const shown = d.selectors.slice(0, 6);
             const more = d.selectors.length > 6 ? '<span class="detail-more">+' + (d.selectors.length - 6) + ' więcej</span>' : '';
-            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-loc">lokator</span><span class="detail-codes">${shown.map(s => '<code>' + escapeHtml(s) + '</code>').join('')}${more}</span></div>`;
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-loc">elementy</span><span class="detail-codes">${shown.map(s => '<code>' + escapeHtml(s) + '</code>').join('')}${more}</span></div>`;
           }
 
           if (d.actions.length > 0) {
-            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-act">akcja</span><span class="detail-text">${d.actions.map(a => escapeHtml(a)).join(', ')}</span></div>`;
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-act">interakcje</span><span class="detail-text">${d.actions.map(a => escapeHtml(a)).join(', ')}</span></div>`;
           }
 
           if (d.assertions.length > 0) {
             const shownA = d.assertions.slice(0, 5);
             const moreA = d.assertions.length > 5 ? ', <span class="detail-more">+' + (d.assertions.length - 5) + ' więcej</span>' : '';
-            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-chk">sprawdza</span><span class="detail-text">${shownA.map(a => escapeHtml(a)).join(', ')}${moreA}</span></div>`;
+            detailsHtml += `<div class="detail-line"><span class="detail-tag tag-chk">weryfikuje</span><span class="detail-text">${shownA.map(a => escapeHtml(a)).join(', ')}${moreA}</span></div>`;
           }
 
           detailsHtml += '</div>';
         } else {
           detailsHtml = t.description
             ? `<div class="td-details"><div class="detail-summary">${escapeHtml(t.description)}</div></div>`
-            : '<span class="detail-empty">fixture / page-object</span>';
+            : '<span class="detail-empty">Brak szczegolow</span>';
         }
 
         html += `
@@ -1537,10 +1668,11 @@
                   <td class="col-name">${escapeHtml(t.name)}${warningIcon}</td>
                   <td class="col-details">${detailsHtml}</td>
                   <td class="col-line">:${t.line}</td>
-                  <td class="col-action">
-                    <button class="btn btn-sm" onclick="event.stopPropagation(); runTests('${project.name}', '${area.name}', '${escapeAttr(t.name)}')">
-                      Uruchom
-                    </button>
+                  <td class="col-action" style="white-space:nowrap;">
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); runTests('${project.name}', '${area.name}', '${escapeAttr(t.name)}')">Run</button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); openCodeEditorAtLine('${project.name}', '${area.name}', ${t.line})" title="Edytuj kod testu">&#9998;</button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); launchInspector('${project.name}', '${area.name}', '${escapeAttr(t.name)}')" title="Uruchom krok po kroku z podgladem">&#128270;</button>
+                    <button class="btn-icon danger" onclick="event.stopPropagation(); confirmDeleteTest('${project.name}', '${area.name}', '${escapeAttr(t.name)}', ${t.line})" title="Usun ten test">&minus;</button>
                   </td>
                 </tr>`;
       });
@@ -1630,7 +1762,7 @@
 
     function runTests(project, area, testName) {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        alert('WebSocket nie polaczony. Odswierz strone.');
+        alert('Polaczenie utracone. Odswiez strone.');
         return;
       }
 
@@ -2112,6 +2244,1280 @@
         .replace(/\n/g, '<br>');
     }
 
+    // --- Toast notifications ---
+    function showToast(message, type = 'info') {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 5000);
+    }
+
+    // --- CRUD State ---
+    let addProjectStep = 1;
+    let addProjectData = {};
+    let addTestContext = {}; // { project, area }
+    let addAreaContext = {}; // { project }
+    let editorContext = {}; // { filePath, project, area }
+    let previewContext = {}; // { specFile, project, area, description }
+    let aiKeyConfigured = false;
+
+    const ADD_PROJECT_STEPS = 5;
+    const AREA_OPTIONS = [
+      { value: 'login', label: 'Logowanie', desc: 'Formularz logowania, bledne dane, walidacja' },
+      { value: 'registration', label: 'Rejestracja', desc: 'Zakladanie nowego konta klienta' },
+      { value: 'homepage', label: 'Strona glowna', desc: 'Logo, nawigacja, slider, elementy strony' },
+      { value: 'search', label: 'Wyszukiwarka', desc: 'Szukanie produktow, autosuggest, brak wynikow' },
+      { value: 'product-page', label: 'Karta produktu', desc: 'Cena, zdjecia, dodaj do koszyka, opcje' },
+      { value: 'cart', label: 'Koszyk', desc: 'Produkty w koszyku, usuwanie, zmiana ilosci' },
+      { value: 'category', label: 'Kategoria', desc: 'Lista produktow, filtry, sortowanie' },
+      { value: 'checkout', label: 'Checkout', desc: 'Proces skladania zamowienia, formularz' },
+      { value: 'footer', label: 'Stopka', desc: 'Linki, newsletter, social media' },
+      { value: 'api', label: 'API', desc: 'REST i GraphQL endpointy sklepu' },
+      { value: 'security', label: 'Security', desc: 'SQL injection, XSS, naglowki, CSRF' },
+      { value: 'seo', label: 'SEO', desc: 'Meta tagi, sitemap, robots.txt, canonical' },
+      { value: 'a11y', label: 'Accessibility', desc: 'Dostepnosc: alt, labels, klawiatura' },
+      { value: 'links', label: 'Broken Links', desc: 'Sprawdzanie martwych linkow na stronie' },
+    ];
+
+    // --- Generic modal helpers ---
+    function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+    function openModal(id) { document.getElementById(id).classList.add('visible'); }
+    function togglePasswordVisibility(inputId) {
+      const inp = document.getElementById(inputId);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    function selectRadio(el, name, value) {
+      document.querySelectorAll(`[name="${name}"]`).forEach(r => r.closest('.form-radio').classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input').checked = true;
+      // Toggle AI prompt visibility for add-area (only show for 'ai', not 'skeleton' or 'empty')
+      if (name === 'add-area-mode') {
+        document.getElementById('add-area-ai-prompt-group').style.display = value === 'ai' ? 'block' : 'none';
+      }
+    }
+
+    // --- Settings ---
+    async function openSettings() {
+      const res = await fetch('/api/ai/status');
+      const data = await res.json();
+      aiKeyConfigured = data.configured;
+      const dot = document.getElementById('ai-status-dot');
+      const txt = document.getElementById('ai-status-text');
+      dot.style.background = data.configured ? 'var(--green)' : 'var(--red)';
+      txt.textContent = data.configured ? 'Klucz skonfigurowany' : 'Brak klucza';
+      txt.style.color = data.configured ? 'var(--green)' : 'var(--red)';
+      openModal('settings-modal');
+    }
+    async function saveApiKey() {
+      const key = document.getElementById('settings-api-key').value.trim();
+      if (!key) return alert('Podaj API key');
+      const res = await fetch('/api/settings/ai-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: key }) });
+      if (res.ok) {
+        aiKeyConfigured = true;
+        closeModal('settings-modal');
+        alert('API key zapisany!');
+      } else {
+        const err = await res.json();
+        alert('Blad: ' + err.error);
+      }
+    }
+
+    // --- Add Project Wizard ---
+    function openAddProject() {
+      addProjectStep = 1;
+      addProjectData = { areas: ['login','registration','homepage','search','product-page','cart','category','checkout','footer','api','security','seo','a11y','links'] };
+      renderAddProjectStep();
+      openModal('add-project-modal');
+    }
+
+    function renderAddProjectStep() {
+      const body = document.getElementById('add-project-body');
+      const stepsEl = document.getElementById('add-project-steps');
+      const backBtn = document.getElementById('ap-btn-back');
+      const nextBtn = document.getElementById('ap-btn-next');
+
+      // Steps dots
+      let dotsHtml = '';
+      for (let i = 1; i <= ADD_PROJECT_STEPS; i++) {
+        const cls = i === addProjectStep ? 'active' : (i < addProjectStep ? 'done' : '');
+        dotsHtml += `<span class="wizard-step-dot ${cls}"></span>`;
+      }
+      const stepLabels = ['Podstawowe', 'Dane logowania', 'Wyszukiwarka / Produkt', 'Funkcje', 'Obszary testowe'];
+      dotsHtml += `<span class="wizard-step-label">${addProjectStep}/${ADD_PROJECT_STEPS} — ${stepLabels[addProjectStep-1]}</span>`;
+      stepsEl.innerHTML = dotsHtml;
+
+      backBtn.style.display = addProjectStep > 1 ? 'inline-flex' : 'none';
+      nextBtn.textContent = addProjectStep === ADD_PROJECT_STEPS ? 'Utworz projekt' : 'Dalej';
+
+      const d = addProjectData;
+      let html = '';
+
+      if (addProjectStep === 1) {
+        html = `
+          <div class="form-group">
+            <label class="form-label">Nazwa projektu</label>
+            <input type="text" class="form-input" id="ap-name" value="${d.name||''}" placeholder="np. moj-sklep">
+            <div style="font-size:10px; color:var(--text-dim); margin-top:4px;">Krotka nazwa bez spacji — male litery, cyfry i myslniki. Np. "moj-sklep", "butik-anna"</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Adres sklepu (URL)</label>
+            <input type="text" class="form-input" id="ap-baseUrl" value="${d.baseUrl||''}" placeholder="https://moj-sklep.pl">
+            <div style="font-size:10px; color:var(--text-dim); margin-top:4px;">Glowny adres strony sklepu. Jesli nie wiesz — skopiuj z przegladarki.</div>
+          </div>
+        `;
+      } else if (addProjectStep === 2) {
+        html = `
+          <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; padding:8px 12px; background:rgba(59,130,246,0.06); border-radius:var(--radius-sm); border:1px solid rgba(59,130,246,0.15);">Dane logowania sluza do testowania logowania i rejestracji. Mozesz zostawic puste — testy ktore ich wymagaja beda pominiete.</div>
+          <div class="section-title">Dane logowania do sklepu</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Email konta testowego</label><input type="text" class="form-input" id="ap-valid-email" value="${d.validEmail||''}" placeholder="np. tester@mojsklep.pl"></div>
+            <div class="form-group"><label class="form-label">Haslo</label><input type="password" class="form-input" id="ap-valid-password" value="${d.validPassword||''}" placeholder="haslo do konta"></div>
+          </div>
+          <div class="section-title">Bledne dane (do testow negatywnych)</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Uzywane do sprawdzenia czy sklep poprawnie obsluguje bledne logowanie. Nie zmieniaj jesli nie wiesz.</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Email</label><input type="text" class="form-input" id="ap-invalid-email" value="${d.invalidEmail||'invalid@example.pl'}"></div>
+            <div class="form-group"><label class="form-label">Haslo</label><input type="text" class="form-input" id="ap-invalid-password" value="${d.invalidPassword||'WrongPass123!'}"></div>
+          </div>
+          <div class="section-title">Dane do rejestracji testowej</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Imie i nazwisko uzywane przy teście rejestracji nowego konta. Mozesz zostawic domyslne.</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Imie</label><input type="text" class="form-input" id="ap-firstName" value="${d.firstName||'Aurora'}"></div>
+            <div class="form-group"><label class="form-label">Nazwisko</label><input type="text" class="form-input" id="ap-lastName" value="${d.lastName||'Bot'}"></div>
+          </div>
+        `;
+      } else if (addProjectStep === 3) {
+        html = `
+          <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; padding:8px 12px; background:rgba(59,130,246,0.06); border-radius:var(--radius-sm); border:1px solid rgba(59,130,246,0.15);">Te dane sluza do testowania wyszukiwarki, karty produktu i kategorii. Wejdz na sklep, znajdz przykladowy produkt i kategorie, skopiuj ich URL-e.</div>
+          <div class="section-title">Wyszukiwarka</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Slowo ktore cos znajdzie</label>
+              <input type="text" class="form-input" id="ap-searchValid" value="${d.searchValid||''}" placeholder="np. buty, krem, koszulka">
+              <div style="font-size:10px; color:var(--text-dim); margin-top:3px;">Wpisz slowo ktore w wyszukiwarce sklepu zwraca wyniki</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Slowo bez wynikow</label>
+              <input type="text" class="form-input" id="ap-searchInvalid" value="${d.searchInvalid||'qwertyasdfgh99999'}" disabled style="opacity:0.5;">
+              <div style="font-size:10px; color:var(--text-dim); margin-top:3px;">Automatyczne — nie zmieniaj</div>
+            </div>
+          </div>
+          <div class="section-title">Karta produktu</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Wejdz na sklep, znajdz jakis prosty produkt (nie konfigurowalny) i skopiuj jego URL ze sciezka.</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Sciezka URL produktu</label>
+              <input type="text" class="form-input" id="ap-productUrl" value="${d.productUrl||''}" placeholder="np. /buty/nike-air-max-90">
+              <div style="font-size:10px; color:var(--text-dim); margin-top:3px;">Tylko sciezka po domenie, np. /buty/nike-air-max-90</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nazwa produktu</label>
+              <input type="text" class="form-input" id="ap-productName" value="${d.productName||''}" placeholder="np. Nike Air Max 90">
+            </div>
+          </div>
+          <div class="section-title">Kategoria</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Wybierz kategorie z min. kilkoma produktami.</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Sciezka URL kategorii</label>
+              <input type="text" class="form-input" id="ap-categoryUrl" value="${d.categoryUrl||''}" placeholder="np. /buty">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nazwa kategorii</label>
+              <input type="text" class="form-input" id="ap-categoryName" value="${d.categoryName||''}" placeholder="np. Buty">
+            </div>
+          </div>
+        `;
+      } else if (addProjectStep === 4) {
+        html = `
+          <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; padding:8px 12px; background:rgba(59,130,246,0.06); border-radius:var(--radius-sm); border:1px solid rgba(59,130,246,0.15);">Jesli nie wiesz — zostaw odznaczone. Mozna to zmienic pozniej.</div>
+          <div class="section-title">reCAPTCHA (ochrona antyspamowa)</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Zaznacz jesli widzisz "Nie jestem robotem" na danej stronie. Testy z reCAPTCHA beda automatycznie pomijane.</div>
+          <div class="checkbox-grid">
+            <div class="form-check"><input type="checkbox" id="ap-recaptchaLogin" ${d.recaptchaLogin?'checked':''}><label for="ap-recaptchaLogin">Strona logowania</label></div>
+            <div class="form-check"><input type="checkbox" id="ap-recaptchaRegistration" ${d.recaptchaRegistration?'checked':''}><label for="ap-recaptchaRegistration">Strona rejestracji</label></div>
+            <div class="form-check"><input type="checkbox" id="ap-recaptchaCheckout" ${d.recaptchaCheckout?'checked':''}><label for="ap-recaptchaCheckout">Strona zamowienia</label></div>
+          </div>
+          <div class="section-title" style="margin-top:20px">Popup cookies</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Czy po wejsciu na strone pojawia sie popup z akceptacja ciasteczek?</div>
+          <div class="form-check" style="margin-bottom:12px"><input type="checkbox" id="ap-hasCookie" ${d.hasCookie?'checked':''}><label for="ap-hasCookie">Tak, sklep ma popup cookies</label></div>
+          <div class="form-group">
+            <label class="form-label">Tekst przycisku akceptacji</label>
+            <input type="text" class="form-input" id="ap-cookieSelector" value="${d.cookieSelector||''}" placeholder="np. Zaakceptuj wszystkie">
+            <div style="font-size:10px; color:var(--text-dim); margin-top:3px;">Wpisz dokladny tekst przycisku ktory zamyka popup cookies</div>
+          </div>
+        `;
+      } else if (addProjectStep === 5) {
+        html = `
+          <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; padding:8px 12px; background:rgba(59,130,246,0.06); border-radius:var(--radius-sm); border:1px solid rgba(59,130,246,0.15);">Zaznacz co chcesz testowac. Mozesz dodac wiecej obszarow pozniej. Zalecane minimum: Logowanie, Strona glowna, Wyszukiwarka.</div>
+          <div class="section-title">Wybierz obszary testowe</div>
+          <div class="checkbox-grid">
+            ${AREA_OPTIONS.map(a => `<div class="form-check"><input type="checkbox" id="ap-area-${a.value}" ${d.areas.includes(a.value)?'checked':''}><label for="ap-area-${a.value}"><strong>${a.label}</strong><div class="check-desc">${a.desc}</div></label></div>`).join('')}
+          </div>
+          <div class="section-title" style="margin-top:20px">Tryb generowania testow</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Testy mozna tez dodac pozniej z panelu AI Chat.</div>
+          <div class="radio-group" style="flex-direction:column; gap:8px;">
+            <div class="form-radio ${d.generateMode!=='ai'?'selected':''}" onclick="selectRadio(this, 'ap-genmode', 'empty')">
+              <input type="radio" name="ap-genmode" value="empty" ${d.generateMode!=='ai'?'checked':''}> <label>Puste szablony — dodasz testy pozniej z AI Chat</label>
+            </div>
+            <div class="form-radio ${d.generateMode==='ai'?'selected':''}" onclick="selectRadio(this, 'ap-genmode', 'ai')">
+              <input type="radio" name="ap-genmode" value="ai" ${d.generateMode==='ai'?'checked':''}> <label><span class="ai-badge">AI</span> Wygeneruj gotowe testy od razu</label>
+            </div>
+          </div>
+        `;
+      }
+      body.innerHTML = html;
+    }
+
+    function collectAddProjectData() {
+      const d = addProjectData;
+      if (addProjectStep === 1) {
+        d.name = (document.getElementById('ap-name')?.value || '').trim().toLowerCase();
+        d.baseUrl = (document.getElementById('ap-baseUrl')?.value || '').trim();
+      } else if (addProjectStep === 2) {
+        d.validEmail = document.getElementById('ap-valid-email')?.value || '';
+        d.validPassword = document.getElementById('ap-valid-password')?.value || '';
+        d.invalidEmail = document.getElementById('ap-invalid-email')?.value || '';
+        d.invalidPassword = document.getElementById('ap-invalid-password')?.value || '';
+        d.firstName = document.getElementById('ap-firstName')?.value || 'Aurora';
+        d.lastName = document.getElementById('ap-lastName')?.value || 'Bot';
+      } else if (addProjectStep === 3) {
+        d.searchValid = document.getElementById('ap-searchValid')?.value || '';
+        d.searchInvalid = document.getElementById('ap-searchInvalid')?.value || 'qwertyasdfgh99999';
+        d.productUrl = document.getElementById('ap-productUrl')?.value || '';
+        d.productName = document.getElementById('ap-productName')?.value || '';
+        d.categoryUrl = document.getElementById('ap-categoryUrl')?.value || '';
+        d.categoryName = document.getElementById('ap-categoryName')?.value || '';
+      } else if (addProjectStep === 4) {
+        d.recaptchaLogin = document.getElementById('ap-recaptchaLogin')?.checked || false;
+        d.recaptchaRegistration = document.getElementById('ap-recaptchaRegistration')?.checked || false;
+        d.recaptchaCheckout = document.getElementById('ap-recaptchaCheckout')?.checked || false;
+        d.hasCookie = document.getElementById('ap-hasCookie')?.checked || false;
+        let cookieVal = (document.getElementById('ap-cookieSelector')?.value || '').trim();
+        // Auto-prefix with "text=" if user just typed the button text
+        if (cookieVal && !cookieVal.startsWith('text=') && !cookieVal.startsWith('.') && !cookieVal.startsWith('#') && !cookieVal.startsWith('[')) {
+          cookieVal = 'text=' + cookieVal;
+        }
+        d.cookieSelector = cookieVal;
+      } else if (addProjectStep === 5) {
+        d.areas = AREA_OPTIONS.filter(a => document.getElementById('ap-area-' + a.value)?.checked).map(a => a.value);
+        d.generateMode = document.querySelector('input[name="ap-genmode"]:checked')?.value || 'empty';
+      }
+    }
+
+    function addProjectNext() {
+      collectAddProjectData();
+      if (addProjectStep === 1) {
+        if (!addProjectData.name) return alert('Podaj nazwe projektu');
+        if (!addProjectData.baseUrl) return alert('Podaj URL sklepu');
+        if (!/^[a-z0-9][a-z0-9-]*$/.test(addProjectData.name)) return alert('Nazwa: male litery, cyfry i myslniki');
+      }
+      if (addProjectStep < ADD_PROJECT_STEPS) {
+        addProjectStep++;
+        renderAddProjectStep();
+      } else {
+        submitAddProject();
+      }
+    }
+
+    function addProjectPrev() {
+      collectAddProjectData();
+      if (addProjectStep > 1) {
+        addProjectStep--;
+        renderAddProjectStep();
+      }
+    }
+
+    async function submitAddProject() {
+      const d = addProjectData;
+      const nextBtn = document.getElementById('ap-btn-next');
+      nextBtn.disabled = true;
+      nextBtn.innerHTML = '<span class="spinner"></span> Tworzenie...';
+
+      try {
+        const body = {
+          name: d.name,
+          baseUrl: d.baseUrl,
+          credentials: {
+            valid: { email: d.validEmail || '', password: d.validPassword || '' },
+            invalid: { email: d.invalidEmail || 'invalid@example.pl', password: d.invalidPassword || 'WrongPass123!' },
+          },
+          registration: { testEmail: `aurorabot-\${Date.now()}@auroracreation.com`, testPassword: 'AutoTest123!@#', firstName: d.firstName || 'Aurora', lastName: d.lastName || 'Bot' },
+          search: { validQuery: d.searchValid || 'test', invalidQuery: d.searchInvalid || 'qwertyasdfgh99999', expectedResultMinCount: 1 },
+          product: { url: d.productUrl || '/sample-product', name: d.productName || 'Sample Product' },
+          category: { url: d.categoryUrl || '/category', name: d.categoryName || 'Category', expectedMinProducts: 3 },
+          features: {
+            hasRecaptchaOnLogin: d.recaptchaLogin || false,
+            hasRecaptchaOnRegistration: d.recaptchaRegistration || false,
+            hasRecaptchaOnCheckout: d.recaptchaCheckout || false,
+            hasCookieConsent: d.hasCookie || false,
+            cookieConsentSelector: d.cookieSelector || '',
+          },
+          areas: d.areas,
+          generateMode: d.generateMode || 'empty',
+        };
+
+        const res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const result = await res.json();
+
+        if (!res.ok) {
+          alert('Blad: ' + result.error);
+          return;
+        }
+
+        closeModal('add-project-modal');
+        await loadProjects();
+        // Navigate to the new project
+        const newProj = projects.find(p => p.name === d.name);
+        if (newProj) showProject(newProj);
+        showToast('Projekt "' + d.name + '" utworzony z ' + (d.areas?.length || 0) + ' obszarami!', 'success');
+      } catch (err) {
+        showToast('Blad: ' + err.message, 'error');
+      } finally {
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Utworz projekt';
+      }
+    }
+
+    // --- Add Area ---
+    function openAddArea(projectName) {
+      addAreaContext = { project: projectName };
+      const project = findProject(projectName);
+      const existingAreas = project ? project.areas.map(a => a.name) : [];
+
+      // Populate select with areas not yet in project
+      const select = document.getElementById('add-area-select');
+      select.innerHTML = '<option value="">-- Wybierz --</option>';
+      for (const opt of AREA_OPTIONS) {
+        if (!existingAreas.includes(opt.value)) {
+          select.innerHTML += `<option value="${opt.value}">${opt.label}</option>`;
+        }
+      }
+      select.innerHTML += '<option value="__custom">Niestandardowy...</option>';
+
+      document.getElementById('add-area-custom-group').style.display = 'none';
+      document.getElementById('add-area-ai-prompt-group').style.display = 'none';
+      openModal('add-area-modal');
+    }
+
+    function onAreaSelectChange() {
+      const val = document.getElementById('add-area-select').value;
+      document.getElementById('add-area-custom-group').style.display = val === '__custom' ? 'block' : 'none';
+    }
+
+    async function submitAddArea() {
+      const selectVal = document.getElementById('add-area-select').value;
+      const areaName = selectVal === '__custom' ? document.getElementById('add-area-custom').value.trim().toLowerCase() : selectVal;
+      if (!areaName) return alert('Wybierz lub podaj nazwe obszaru');
+
+      const mode = document.querySelector('input[name="add-area-mode"]:checked')?.value || 'empty';
+      const btn = document.getElementById('add-area-submit-btn');
+      btn.disabled = true;
+
+      const statusMsgs = {
+        empty: ['Tworzenie pustego obszaru...', 'Gotowe!'],
+        skeleton: ['Tworzenie struktury...', 'Generowanie testow ze szkieletu...', 'Zapisywanie...', 'Gotowe!'],
+        ai: ['Tworzenie struktury...', 'AI generuje testy (moze potrwac ~30s)...', 'Zapisywanie...', 'Gotowe!'],
+      };
+      const msgs = statusMsgs[mode] || statusMsgs.empty;
+      let step = 0;
+
+      function updateStatus() {
+        const msg = msgs[Math.min(step, msgs.length - 1)];
+        btn.innerHTML = step < msgs.length - 1
+          ? '<span class="spinner"></span> ' + msg
+          : '&#10003; ' + msg;
+      }
+
+      try {
+        // Step 1: Create area directory + empty spec
+        step = 0; updateStatus();
+        const res = await fetch(`/api/projects/${addAreaContext.project}/areas`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ areaName }),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          showToast('Blad: ' + result.error, 'error');
+          return;
+        }
+
+        const specPath = areaName === 'api'
+          ? `src/projects/${addAreaContext.project}/api/api.spec.ts`
+          : `src/projects/${addAreaContext.project}/tests/${areaName}/${areaName}.spec.ts`;
+
+        // Step 2: Generate content (skeleton or AI)
+        step = 1; updateStatus();
+
+        if (mode === 'skeleton') {
+          const skelRes = await fetch('/api/ai/generate-skeleton', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ project: addAreaContext.project, area: areaName }),
+          });
+          if (skelRes.ok) {
+            step = 2; updateStatus();
+            const skelData = await skelRes.json();
+            await fetch('/api/files', {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: specPath, content: skelData.proposedCode }),
+            });
+          } else {
+            const err = await skelRes.json();
+            showToast('Szkielet: ' + err.error + ' — obszar utworzony jako pusty', 'warning');
+          }
+        }
+
+        if (mode === 'ai') {
+          const aiRes = await fetch('/api/ai/generate-area', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ project: addAreaContext.project, area: areaName }),
+          });
+          if (aiRes.ok) {
+            step = 2; updateStatus();
+            const aiData = await aiRes.json();
+            await fetch('/api/files', {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: specPath, content: aiData.proposedCode }),
+            });
+          } else {
+            const err = await aiRes.json();
+            showToast('AI: ' + err.error + ' — obszar utworzony jako pusty', 'warning');
+          }
+        }
+
+        // Done!
+        step = msgs.length - 1; updateStatus();
+        await new Promise(r => setTimeout(r, 600));
+
+        closeModal('add-area-modal');
+        await loadProjects();
+        const updatedProj = projects.find(p => p.name === addAreaContext.project);
+        if (updatedProj) showProject(updatedProj);
+
+        const testCount = updatedProj?.areas.find(a => a.name === areaName)?.testCount || 0;
+        showToast(`Obszar "${areaName}" utworzony z ${testCount} testami`, 'success');
+      } catch (err) {
+        showToast('Blad: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Dodaj obszar';
+      }
+    }
+
+    // --- Add Test ---
+    function openAddTest(project, area) {
+      addTestContext = { project, area };
+      document.getElementById('add-test-description').value = '';
+      openModal('add-test-modal');
+    }
+
+    async function generateTestAI() {
+      const description = document.getElementById('add-test-description').value.trim();
+      if (!description) return alert('Opisz co chcesz przetestowac');
+
+      const btn = document.getElementById('gen-test-ai-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> AI generuje...';
+
+      try {
+        const res = await fetch(`/api/projects/${addTestContext.project}/areas/${addTestContext.area}/tests`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description, generateMode: 'ai' }),
+        });
+        const data = await res.json();
+        if (!res.ok) return alert('Blad: ' + data.error);
+
+        previewContext = { specFile: data.specFile, project: addTestContext.project, area: addTestContext.area, description };
+        document.getElementById('preview-file').textContent = data.specFile;
+        document.getElementById('preview-code').value = data.proposedCode;
+
+        closeModal('add-test-modal');
+        openModal('test-preview-modal');
+      } catch (err) {
+        showToast('Blad: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="ai-badge" style="margin-right:4px">AI</span> Generuj test';
+      }
+    }
+
+    async function submitEmptyTest() {
+      const description = document.getElementById('add-test-description').value.trim() || 'new test';
+
+      try {
+        const res = await fetch(`/api/projects/${addTestContext.project}/areas/${addTestContext.area}/tests`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description, generateMode: 'empty' }),
+        });
+        const data = await res.json();
+        if (!res.ok) return alert('Blad: ' + data.error);
+
+        previewContext = { specFile: data.specFile, project: addTestContext.project, area: addTestContext.area, description };
+        document.getElementById('preview-file').textContent = data.specFile;
+        document.getElementById('preview-code').value = data.proposedCode;
+
+        closeModal('add-test-modal');
+        openModal('test-preview-modal');
+      } catch (err) {
+        alert('Blad: ' + err.message);
+      }
+    }
+
+    async function regeneratePreview() {
+      if (!previewContext.description) return;
+      const btn = document.querySelector('#test-preview-modal .wizard-footer button:nth-child(1)');
+      try {
+        const res = await fetch('/api/ai/generate-test', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project: previewContext.project, area: previewContext.area, description: previewContext.description }),
+        });
+        const data = await res.json();
+        if (res.ok) document.getElementById('preview-code').value = data.proposedCode;
+        else alert('Blad: ' + data.error);
+      } catch (err) { alert('Blad: ' + err.message); }
+    }
+
+    // --- Try test before saving ---
+    let tryTestPending = false;
+
+    function tryTestBeforeSave() {
+      const code = document.getElementById('preview-code').value;
+      if (!code.trim()) return showToast('Brak kodu testu', 'warning');
+      if (!ws || ws.readyState !== WebSocket.OPEN) return showToast('WebSocket nie polaczony', 'error');
+
+      const btn = document.getElementById('preview-try-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Testowanie...';
+      tryTestPending = true;
+
+      // Show "running" status immediately in the result area
+      const resultEl = document.getElementById('preview-test-result');
+      resultEl.style.display = 'block';
+      resultEl.style.background = 'rgba(59,130,246,0.1)';
+      resultEl.style.border = '1px solid rgba(59,130,246,0.3)';
+      resultEl.style.color = 'var(--blue)';
+      resultEl.innerHTML = '<span class="spinner" style="border-top-color:var(--blue); margin-right:8px; vertical-align:middle;"></span> Test uruchomiony — wynik pojawi sie za chwile. Sprawdz terminal na dole.';
+
+      // Safety: auto-unlock after 90s if no response
+      if (window._tryTestTimeout) clearTimeout(window._tryTestTimeout);
+      window._tryTestTimeout = setTimeout(() => {
+        if (tryTestPending) {
+          tryTestPending = false;
+          const btn2 = document.getElementById('preview-try-btn');
+          btn2.disabled = false;
+          btn2.innerHTML = 'Przetestuj';
+          const r = document.getElementById('preview-test-result');
+          r.style.background = 'rgba(239,68,68,0.1)';
+          r.style.border = '1px solid rgba(239,68,68,0.3)';
+          r.style.color = 'var(--red)';
+          r.innerHTML = '&#10060; Timeout — brak odpowiedzi po 90s. Sprawdz terminal lub sprobuj ponownie.';
+          showToast('Test timeout — brak odpowiedzi', 'error');
+        }
+      }, 90000);
+
+      ws.send(JSON.stringify({
+        type: 'tryTest',
+        project: previewContext.project,
+        area: previewContext.area,
+        code,
+        specFile: previewContext.specFile,
+        headed: headedMode,
+      }));
+    }
+
+    function rejectPreviewTest() {
+      tryTestPending = false;
+      closeModal('test-preview-modal');
+    }
+
+    async function handleTryTestComplete(msg) {
+      tryTestPending = false;
+      if (window._tryTestTimeout) clearTimeout(window._tryTestTimeout);
+      const btn = document.getElementById('preview-try-btn');
+      const resultEl = document.getElementById('preview-test-result');
+      resultEl.style.display = 'block';
+
+      if (msg.passed) {
+        btn.disabled = false;
+        btn.innerHTML = 'Przetestuj';
+        resultEl.style.background = 'rgba(16,185,129,0.1)';
+        resultEl.style.border = '1px solid rgba(16,185,129,0.3)';
+        resultEl.style.color = 'var(--green)';
+        resultEl.innerHTML = '&#10003; TEST PRZESZEDL — mozesz zatwierdzic';
+        showToast('Test przeszedl! Mozesz zatwierdzic.', 'success');
+      } else {
+        // Show fail info
+        resultEl.style.background = 'rgba(239,68,68,0.1)';
+        resultEl.style.border = '1px solid rgba(239,68,68,0.3)';
+        resultEl.style.color = 'var(--red)';
+        resultEl.innerHTML = '<span class="spinner" style="border-top-color:var(--red); margin-right:8px;"></span> Test nie przeszedl — AI szuka rozwiazania...';
+        btn.innerHTML = '<span class="spinner"></span> AI naprawia...';
+        showToast('Test nie przeszedl — AI analizuje blad...', 'warning');
+
+        // Auto-fix: send code + error output to AI
+        try {
+          const currentCode = document.getElementById('preview-code').value;
+          const res = await fetch('/api/ai/fix-locators', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              project: previewContext.project,
+              area: previewContext.area,
+              description: 'Test nie przeszedl. Bledy z terminala:\n' + (msg.errorOutput || 'brak szczegolów'),
+              fileContent: currentCode,
+            }),
+          });
+          const data = await res.json();
+
+          if (res.ok && data.proposedCode) {
+            document.getElementById('preview-code').value = data.proposedCode;
+            resultEl.innerHTML = '&#10060; Test nie przeszedl — <span style="color:var(--yellow)">AI zaproponowal poprawke powyzej</span>. Kliknij "Przetestuj" ponownie.';
+            showToast('AI zaproponowal poprawiony kod — przetestuj ponownie', 'info');
+          } else {
+            resultEl.innerHTML = '&#10060; Test nie przeszedl — AI nie zdolal naprawic automatycznie. Popraw recznie lub regeneruj.';
+            if (data.error) showToast('AI: ' + data.error, 'error');
+          }
+        } catch (err) {
+          resultEl.innerHTML = '&#10060; Test nie przeszedl — popraw kod recznie, regeneruj, lub sprawdz terminal na dole.';
+          showToast('Blad AI: ' + err.message, 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = 'Przetestuj';
+      }
+    }
+
+    async function approveTest() {
+      const code = document.getElementById('preview-code').value;
+      if (!code.trim()) return showToast('Brak kodu testu', 'warning');
+
+      try {
+        const res = await fetch(`/api/projects/${previewContext.project}/areas/${previewContext.area}/tests/confirm`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, specFile: previewContext.specFile }),
+        });
+        const data = await res.json();
+        if (!res.ok) return showToast('Blad: ' + data.error, 'error');
+
+        closeModal('test-preview-modal');
+        showToast('Test dodany do ' + previewContext.specFile, 'success');
+        await loadProjects();
+        const proj = projects.find(p => p.name === previewContext.project);
+        if (proj) showArea(proj, previewContext.area);
+      } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+    }
+
+    // --- Code Editor ---
+    async function openCodeEditor(project, area) {
+      const specPath = area === 'api'
+        ? `src/projects/${project}/api/api.spec.ts`
+        : `src/projects/${project}/tests/${area}/${area}.spec.ts`;
+
+      try {
+        const res = await fetch('/api/files?path=' + encodeURIComponent(specPath));
+        const data = await res.json();
+        if (!res.ok) return showToast('Blad: ' + data.error, 'error');
+
+        editorContext = { filePath: specPath, project, area };
+        document.getElementById('editor-file-path').textContent = specPath;
+        document.getElementById('editor-content').value = data.content;
+        document.getElementById('editor-status').textContent = 'Gotowy — uzyj AI Chat po prawej zeby naprawic bledy';
+        document.getElementById('code-editor-modal').classList.add('with-chat');
+        openModal('code-editor-modal');
+        updateEditorHighlight();
+
+        // Auto-open chat with editor context
+        openChatForArea(project, area);
+      } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+    }
+
+    async function openCodeEditorAtLine(project, area, line) {
+      await openCodeEditor(project, area);
+      // Scroll to approximate line
+      const textarea = document.getElementById('editor-content');
+      const lines = textarea.value.split('\n');
+      const charPos = lines.slice(0, line - 1).join('\n').length;
+      textarea.setSelectionRange(charPos, charPos);
+      textarea.focus();
+      const lineHeight = 20;
+      textarea.scrollTop = (line - 5) * lineHeight;
+    }
+
+    function closeCodeEditor() {
+      document.getElementById('code-editor-modal').classList.remove('with-chat');
+      closeModal('code-editor-modal');
+    }
+
+    // Sync editor textarea → highlight overlay
+    function updateEditorHighlight() {
+      const textarea = document.getElementById('editor-content');
+      const highlight = document.getElementById('editor-highlight');
+      if (!textarea || !highlight) return;
+      // Add trailing newline so highlight matches textarea height
+      highlight.innerHTML = highlightTS(textarea.value) + '\n';
+    }
+
+    // Sync scroll between textarea and highlight
+    document.addEventListener('scroll', (e) => {
+      if (e.target.id === 'editor-content') {
+        const highlight = document.getElementById('editor-highlight');
+        if (highlight) {
+          highlight.scrollTop = e.target.scrollTop;
+          highlight.scrollLeft = e.target.scrollLeft;
+        }
+      }
+    }, true);
+
+    async function saveCodeEditor() {
+      const content = document.getElementById('editor-content').value;
+      try {
+        const res = await fetch('/api/files', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: editorContext.filePath, content }),
+        });
+        const data = await res.json();
+        if (!res.ok) return alert('Blad: ' + data.error);
+
+        document.getElementById('editor-status').textContent = 'Zapisano!';
+        document.getElementById('editor-status').style.color = 'var(--green)';
+        setTimeout(() => {
+          document.getElementById('editor-status').textContent = 'Gotowy';
+          document.getElementById('editor-status').style.color = '';
+        }, 2000);
+
+        // Reload project view
+        await loadProjects();
+      } catch (err) { alert('Blad: ' + err.message); }
+    }
+
+    function launchCodegenFromEditor() {
+      fetch('/api/codegen', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project: editorContext.project }),
+      }).then(() => {
+        document.getElementById('editor-status').textContent = 'Codegen uruchomiony!';
+        document.getElementById('editor-status').style.color = 'var(--violet)';
+      }).catch(err => alert('Blad: ' + err.message));
+    }
+
+    // --- Fix Locators AI ---
+    function openFixLocatorsAI() {
+      document.getElementById('fix-locators-description').value = '';
+      openModal('fix-locators-modal');
+    }
+
+    async function submitFixLocators() {
+      const description = document.getElementById('fix-locators-description').value.trim();
+      if (!description) return showToast('Opisz problem', 'warning');
+
+      const btn = document.getElementById('fix-locators-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> AI naprawia...';
+
+      try {
+        const fileContent = document.getElementById('editor-content').value;
+        const res = await fetch('/api/ai/fix-locators', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project: editorContext.project, area: editorContext.area, description, fileContent }),
+        });
+        const data = await res.json();
+        if (!res.ok) return showToast('Blad: ' + data.error, 'error');
+
+        document.getElementById('editor-content').value = data.proposedCode;
+        document.getElementById('editor-status').textContent = 'AI zaproponowal zmiany — sprawdz i zapisz';
+        document.getElementById('editor-status').style.color = 'var(--yellow)';
+        closeModal('fix-locators-modal');
+      } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="ai-badge" style="margin-right:4px">AI</span> Napraw';
+      }
+    }
+
+    // --- Delete ---
+    function confirmDeleteProject(name) {
+      document.getElementById('delete-title').textContent = 'Usunac projekt?';
+      document.getElementById('delete-details').innerHTML = `<strong>Projekt:</strong> ${name}<br><br>Zostaną usunięte: config, page objecty, testy i wszystkie pliki projektu.<br><span style="color:var(--red)">Ta operacja jest nieodwracalna!</span>`;
+      const btn = document.getElementById('delete-confirm-btn');
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Usuwanie...';
+        try {
+          const res = await fetch('/api/projects/' + name, { method: 'DELETE' });
+          if (!res.ok) { const d = await res.json(); showToast('Blad: ' + d.error, 'error'); return; }
+          closeModal('delete-modal');
+          activeProject = null;
+          await loadProjects();
+          showOverview();
+          showToast('Projekt "' + name + '" usuniety', 'success');
+        } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Usun'; }
+      };
+      openModal('delete-modal');
+    }
+
+    function confirmDeleteArea(project, area) {
+      document.getElementById('delete-title').textContent = 'Usunac obszar?';
+      document.getElementById('delete-details').innerHTML = `<strong>Projekt:</strong> ${project}<br><strong>Obszar:</strong> ${area}<br><br>Wszystkie testy w tym obszarze zostaną usunięte.`;
+      const btn = document.getElementById('delete-confirm-btn');
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Usuwanie...';
+        try {
+          const res = await fetch(`/api/projects/${project}/areas/${area}`, { method: 'DELETE' });
+          if (!res.ok) { const d = await res.json(); showToast('Blad: ' + d.error, 'error'); return; }
+          closeModal('delete-modal');
+          await loadProjects();
+          const proj = projects.find(p => p.name === project);
+          if (proj) showProject(proj);
+          showToast('Obszar "' + area + '" usuniety', 'success');
+        } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Usun'; }
+      };
+      openModal('delete-modal');
+    }
+
+    function confirmDeleteTest(project, area, testName, line) {
+      document.getElementById('delete-title').textContent = 'Usunac test?';
+      document.getElementById('delete-details').innerHTML = `<strong>Test:</strong> ${escapeHtml(testName)}<br><strong>Linia:</strong> ${line}`;
+      const btn = document.getElementById('delete-confirm-btn');
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Usuwanie...';
+        try {
+          const res = await fetch(`/api/projects/${project}/areas/${area}/tests`, {
+            method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ testName, line }),
+          });
+          if (!res.ok) { const d = await res.json(); showToast('Blad: ' + d.error, 'error'); return; }
+          closeModal('delete-modal');
+          await loadProjects();
+          const proj = projects.find(p => p.name === project);
+          if (proj) showArea(proj, area);
+          showToast('Test usuniety', 'success');
+        } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Usun'; }
+      };
+      openModal('delete-modal');
+    }
+
+    // --- Smart Run (auto-create area if missing) ---
+
+    const SMART_AREA_LABELS = {
+      api: 'API (REST + GraphQL)',
+      security: 'Security (SQL Injection, XSS, Headers, CSRF)',
+      seo: 'SEO (meta tagi, sitemap, robots.txt)',
+      a11y: 'Accessibility (alt, labels, klawiatura)',
+      links: 'Broken Links (martwe linki)',
+    };
+
+    async function smartRunArea(projectName, area) {
+      const project = findProject(projectName);
+      if (!project) return;
+
+      const hasArea = project.areas.some(a => a.name === area);
+      const hasTests = project.areas.find(a => a.name === area)?.testCount > 0;
+
+      if (hasArea && hasTests) {
+        // Area exists with tests — just run
+        runTests(projectName, area);
+        return;
+      }
+
+      // Area missing or empty — offer to create from skeleton
+      const label = SMART_AREA_LABELS[area] || area;
+      document.getElementById('delete-title').textContent = 'Brak testow ' + area;
+      document.getElementById('delete-details').innerHTML =
+        '<strong>' + label + '</strong><br><br>' +
+        (hasArea ? 'Obszar istnieje ale nie ma testow.' : 'Ten obszar nie istnieje jeszcze w projekcie.') +
+        '<br><br>Czy chcesz <strong>wygenerowac testy ze szkieletu</strong> na podstawie istniejacych projektow?' +
+        '<br><span style="color:var(--text-dim); font-size:11px;">Testy zostana skopiowane z innego projektu i dostosowane do tego.</span>';
+
+      const btn = document.getElementById('delete-confirm-btn');
+      btn.textContent = 'Tak, wygeneruj';
+      btn.className = 'btn btn-primary';
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Generowanie...';
+
+        try {
+          // Create area if missing
+          if (!hasArea) {
+            const createRes = await fetch('/api/projects/' + projectName + '/areas', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ areaName: area }),
+            });
+            if (!createRes.ok) {
+              const err = await createRes.json();
+              showToast('Blad tworzenia obszaru: ' + err.error, 'error');
+              return;
+            }
+          }
+
+          // Generate skeleton
+          btn.innerHTML = '<span class="spinner"></span> Kopiowanie testow...';
+          const skelRes = await fetch('/api/ai/generate-skeleton', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ project: projectName, area }),
+          });
+
+          if (skelRes.ok) {
+            const skelData = await skelRes.json();
+            const specPath = area === 'api'
+              ? 'src/projects/' + projectName + '/api/api.spec.ts'
+              : 'src/projects/' + projectName + '/tests/' + area + '/' + area + '.spec.ts';
+
+            await fetch('/api/files', {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: specPath, content: skelData.proposedCode }),
+            });
+          }
+
+          closeModal('delete-modal');
+          await loadProjects();
+          const updated = projects.find(p => p.name === projectName);
+          if (updated) showProject(updated);
+
+          const testCount = updated?.areas.find(a => a.name === area)?.testCount || 0;
+          showToast('Wygenerowano ' + testCount + ' testow ' + area + '!', 'success');
+
+          // Auto-run after generation
+          if (testCount > 0) {
+            setTimeout(() => runTests(projectName, area), 500);
+          }
+        } catch (err) {
+          showToast('Blad: ' + err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Tak, wygeneruj';
+          btn.className = 'btn btn-danger';
+        }
+      };
+      openModal('delete-modal');
+    }
+
+    // --- Codegen / Inspector ---
+    function launchCodegen(project, url) {
+      fetch('/api/codegen', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project, url }),
+      }).then(r => r.json()).then(data => {
+        appendTerminal(`\n🎭 Codegen uruchomiony: ${data.url}\n`, 'line-info');
+      }).catch(err => alert('Blad: ' + err.message));
+    }
+
+    function launchInspector(project, area, testName) {
+      fetch('/api/inspector', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project, area, testName }),
+      }).then(() => {
+        appendTerminal(`\n🔍 Inspector uruchomiony: ${project}/${area || 'all'}\n`, 'line-info');
+      }).catch(err => alert('Blad: ' + err.message));
+    }
+
+    // --- Chat Panel ---
+    let chatOpen = false;
+    let chatStreaming = false;
+    let chatCurrentMsg = null; // DOM element being streamed into
+    let chatLastCode = ''; // last code block from AI
+    let chatProject = '';
+    let chatArea = '';
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chat-panel').classList.toggle('visible', chatOpen);
+      document.getElementById('layout').classList.toggle('chat-shifted', chatOpen);
+      if (chatOpen && activeProject) {
+        chatProject = activeProject.name;
+        chatArea = activeArea?.name || '';
+        document.getElementById('chat-context').textContent = `Projekt: ${chatProject}` + (chatArea ? ` / Obszar: ${chatArea}` : '');
+      }
+      if (chatOpen) document.getElementById('chat-input').focus();
+    }
+
+    function openChatForArea(project, area) {
+      chatProject = project;
+      chatArea = area;
+      if (!chatOpen) {
+        chatOpen = true;
+        document.getElementById('chat-panel').classList.add('visible');
+        document.getElementById('layout').classList.add('chat-shifted');
+      }
+      document.getElementById('chat-context').textContent = `Projekt: ${project} / Obszar: ${area}`;
+      document.getElementById('chat-input').focus();
+    }
+
+    function clearChat() {
+      document.getElementById('chat-messages').innerHTML = `<div class="chat-msg system">
+        Nowa rozmowa. Opisz jaki test chcesz stworzyc albo kliknij gotowa propozycje.
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+          <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy strona glowna laduje sie poprawnie')" style="font-size:10px;">Strona glowna</button>
+          <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy formularz logowania wyswietla sie poprawnie')" style="font-size:10px;">Logowanie</button>
+          <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy wyszukiwarka znajduje produkty')" style="font-size:10px;">Wyszukiwarka</button>
+          <button class="btn btn-sm" onclick="chatQuickAction('Sprawdz czy mozna dodac produkt do koszyka')" style="font-size:10px;">Koszyk</button>
+        </div>
+      </div>`;
+      chatLastCode = '';
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'chat:reset' }));
+      }
+    }
+
+    function chatQuickAction(text) {
+      document.getElementById('chat-input').value = text;
+      sendChat();
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message || chatStreaming) return;
+      if (!chatProject && activeProject) chatProject = activeProject.name;
+      if (!chatProject) return showToast('Wybierz projekt w sidebarze', 'warning');
+
+      // Render user message
+      addChatMsg('user', message);
+      input.value = '';
+      input.style.height = '38px';
+
+      // Send via WebSocket
+      ws.send(JSON.stringify({
+        type: 'chat:send',
+        message,
+        project: chatProject,
+        area: chatArea || (activeArea?.name) || '',
+      }));
+
+      // Start streaming state
+      chatStreaming = true;
+      document.getElementById('chat-send-btn').disabled = true;
+      // Add typing indicator
+      const typingEl = document.createElement('div');
+      typingEl.className = 'chat-typing';
+      typingEl.id = 'chat-typing';
+      typingEl.innerHTML = '<span class="chat-typing-dot"></span><span class="chat-typing-dot"></span><span class="chat-typing-dot"></span>';
+      document.getElementById('chat-messages').appendChild(typingEl);
+      scrollChat();
+    }
+
+    function addChatMsg(role, content, extraClass) {
+      const container = document.getElementById('chat-messages');
+      const el = document.createElement('div');
+      el.className = 'chat-msg ' + (extraClass || role);
+
+      if (role === 'assistant') {
+        el.innerHTML = '<div class="msg-text">' + renderChatContent(content) + '</div>';
+      } else {
+        el.textContent = content;
+      }
+
+      container.appendChild(el);
+      scrollChat();
+      return el;
+    }
+
+    function renderChatContent(text) {
+      // Split by code blocks
+      const parts = text.split(/(```(?:typescript|ts)?\n[\s\S]*?```)/g);
+      let html = '';
+      for (const part of parts) {
+        const codeMatch = part.match(/```(?:typescript|ts)?\n([\s\S]*?)```/);
+        if (codeMatch) {
+          const code = codeMatch[1].trim();
+          chatLastCode = code;
+          const codeId = 'chat-code-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
+          html += `<div class="chat-code-block">
+            <div class="chat-code-header"><span>typescript</span></div>
+            <div class="chat-code-body" id="${codeId}">${highlightTS(code)}</div>
+            <div class="chat-code-actions">
+              <button class="btn btn-sm" onclick="saveChatTest('${codeId}')" style="color:var(--green); border-color:rgba(16,185,129,0.3);">Zapisz</button>
+              <button class="btn btn-sm" onclick="copyChatCode('${codeId}')">Kopiuj</button>
+              <button class="btn btn-sm" onclick="applyChatCodeToEditor('${codeId}')">Do edytora</button>
+            </div>
+          </div>`;
+        } else if (part.trim()) {
+          // Simple markdown-ish rendering
+          const escaped = escapeHtml(part.trim())
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:1px 4px;border-radius:3px;font-size:11px;">$1</code>')
+            .replace(/\n/g, '<br>');
+          html += `<p>${escaped}</p>`;
+        }
+      }
+      return html || '<p>' + escapeHtml(text) + '</p>';
+    }
+
+    function scrollChat() {
+      const el = document.getElementById('chat-messages');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    // Handle streaming tokens
+    function handleChatDelta(token) {
+      // Remove typing indicator
+      const typing = document.getElementById('chat-typing');
+      if (typing) typing.remove();
+
+      if (!chatCurrentMsg) {
+        chatCurrentMsg = document.createElement('div');
+        chatCurrentMsg.className = 'chat-msg assistant';
+        chatCurrentMsg._rawText = '';
+        document.getElementById('chat-messages').appendChild(chatCurrentMsg);
+      }
+      chatCurrentMsg._rawText += token;
+      chatCurrentMsg.innerHTML = '<div class="msg-text">' + renderChatContent(chatCurrentMsg._rawText) + '</div>';
+      scrollChat();
+    }
+
+    function handleChatComplete(fullMessage) {
+      chatStreaming = false;
+      chatCurrentMsg = null;
+      document.getElementById('chat-send-btn').disabled = false;
+      const typing = document.getElementById('chat-typing');
+      if (typing) typing.remove();
+    }
+
+    function handleChatTestResult(msg) {
+      if (msg.passed) {
+        addChatMsg('system', '✅ TEST PRZESZEDL', 'status-pass');
+        // Show screenshots if available
+        if (msg.screenshots && msg.screenshots.length > 0) {
+          const container = document.getElementById('chat-messages');
+          const wrapper = document.createElement('div');
+          wrapper.className = 'chat-msg assistant';
+          wrapper.style.maxWidth = '100%';
+          let html = '<div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Screenshot z testu:</div>';
+          for (const src of msg.screenshots) {
+            html += `<a href="${src}" target="_blank" style="display:block; margin-bottom:6px;"><img src="${src}" style="max-width:100%; max-height:250px; border-radius:6px; border:1px solid var(--border); cursor:zoom-in;" title="Kliknij aby powiekszyc"></a>`;
+          }
+          wrapper.innerHTML = html;
+          container.appendChild(wrapper);
+          scrollChat();
+        }
+      } else {
+        addChatMsg('system', '❌ Test nie przeszedl — AI szuka rozwiazania...', 'status-fail');
+        // Show fail screenshots too
+        if (msg.screenshots && msg.screenshots.length > 0) {
+          const container = document.getElementById('chat-messages');
+          const wrapper = document.createElement('div');
+          wrapper.className = 'chat-msg assistant';
+          wrapper.style.maxWidth = '100%';
+          let html = '<div style="font-size:10px; color:var(--text-dim); margin-bottom:8px;">Screenshot z testu:</div>';
+          for (const src of msg.screenshots) {
+            html += `<a href="${src}" target="_blank" style="display:block; margin-bottom:6px;"><img src="${src}" style="max-width:100%; max-height:200px; border-radius:6px; border:1px solid rgba(239,68,68,0.3); cursor:zoom-in;"></a>`;
+          }
+          wrapper.innerHTML = html;
+          container.appendChild(wrapper);
+          scrollChat();
+        }
+      }
+    }
+
+    function handleChatAutoRunStart() {
+      addChatMsg('system', '🚀 Uruchamiam test automatycznie...', 'system');
+    }
+
+    function handleChatError(error) {
+      chatStreaming = false;
+      chatCurrentMsg = null;
+      document.getElementById('chat-send-btn').disabled = false;
+      const typing = document.getElementById('chat-typing');
+      if (typing) typing.remove();
+      addChatMsg('system', '❌ Blad: ' + error, 'status-fail');
+    }
+
+    // Save code from chat to project
+    async function saveChatTest(codeId) {
+      const codeEl = document.getElementById(codeId);
+      if (!codeEl) return;
+      const code = codeEl.textContent;
+      if (!chatProject || !chatArea) return showToast('Ustaw projekt i obszar', 'warning');
+
+      const specFile = chatArea === 'api'
+        ? `src/projects/${chatProject}/api/api.spec.ts`
+        : `src/projects/${chatProject}/tests/${chatArea}/${chatArea}.spec.ts`;
+
+      try {
+        const res = await fetch(`/api/projects/${chatProject}/areas/${chatArea}/tests/confirm`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, specFile }),
+        });
+        const data = await res.json();
+        if (!res.ok) return showToast('Blad: ' + data.error, 'error');
+
+        showToast('Test zapisany do ' + specFile, 'success');
+        addChatMsg('system', '💾 Test zapisany do projektu!', 'system');
+        await loadProjects();
+        if (activeProject?.name === chatProject && chatArea) {
+          const proj = projects.find(p => p.name === chatProject);
+          if (proj) showArea(proj, chatArea);
+        }
+      } catch (err) { showToast('Blad: ' + err.message, 'error'); }
+    }
+
+    function copyChatCode(codeId) {
+      const codeEl = document.getElementById(codeId);
+      if (codeEl) {
+        // textContent strips HTML tags, gives plain code
+        navigator.clipboard.writeText(codeEl.textContent);
+        showToast('Skopiowano do schowka', 'info');
+      }
+    }
+
+    // Apply to editor content when chat suggests a fix
+    function applyChatCodeToEditor(codeId) {
+      const codeEl = document.getElementById(codeId);
+      if (codeEl && document.getElementById('code-editor-modal').classList.contains('visible')) {
+        document.getElementById('editor-content').value = codeEl.textContent;
+        updateEditorHighlight();
+        document.getElementById('editor-status').textContent = 'Kod z AI wstawiony — sprawdz i kliknij Zapisz';
+        document.getElementById('editor-status').style.color = 'var(--yellow)';
+        showToast('Kod wstawiony do edytora', 'info');
+      }
+    }
+
+    // --- Syntax highlighting (simple TypeScript) ---
+    function highlightTS(code) {
+      let html = escapeHtml(code);
+      // Order matters — comments first to prevent inner highlighting
+      // Line comments
+      html = html.replace(/(\/\/.*)/g, '<span class="sh-cmt">$1</span>');
+      // Strings (single and double quotes, template literals)
+      html = html.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="sh-str">$1</span>');
+      html = html.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="sh-str">$1</span>');
+      html = html.replace(/(`(?:[^`\\]|\\.)*`)/g, '<span class="sh-str">$1</span>');
+      // Tags (@login, @e2e, @desc, etc.)
+      html = html.replace(/(@\w+)/g, '<span class="sh-tag">$1</span>');
+      // Keywords
+      html = html.replace(/\b(import|from|export|const|let|var|async|await|function|return|if|else|for|of|in|new|try|catch|throw|test|expect|describe|beforeEach|afterAll|beforeAll)\b/g, '<span class="sh-kw">$1</span>');
+      // Numbers
+      html = html.replace(/\b(\d+)\b/g, '<span class="sh-num">$1</span>');
+      // Arrows and operators
+      html = html.replace(/(=&gt;|===|!==)/g, '<span class="sh-op">$1</span>');
+      // Method calls (word followed by parenthesis)
+      html = html.replace(/\.(\w+)\s*\(/g, '.<span class="sh-fn">$1</span>(');
+      return html;
+    }
+
+    // Auto-resize chat input + editor highlight sync
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'chat-input') {
+        e.target.style.height = '38px';
+        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+      }
+      if (e.target.id === 'editor-content') {
+        updateEditorHighlight();
+      }
+    });
+
     // --- Init ---
     connectWS();
     loadProjects();
@@ -2135,5 +3541,192 @@
     </div>
   </div>
 </div>
+
+<!-- Settings Modal -->
+<div class="wizard-modal" id="settings-modal" onclick="if(event.target===this)closeModal('settings-modal')">
+  <div class="wizard-box" style="max-width:440px">
+    <div class="wizard-header">
+      <h3>Ustawienia</h3>
+      <button class="close-btn" onclick="closeModal('settings-modal')">&times;</button>
+    </div>
+    <div class="wizard-body">
+      <div class="form-group">
+        <label class="form-label">Anthropic API Key</label>
+        <div style="display:flex; gap:8px;">
+          <input type="password" class="form-input" id="settings-api-key" placeholder="sk-ant-api03-...">
+          <button class="btn btn-sm" onclick="togglePasswordVisibility('settings-api-key')">Pokaz</button>
+        </div>
+        <div style="margin-top:8px; font-size:11px;">
+          Status: <span id="ai-status-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 4px;"></span>
+          <span id="ai-status-text"></span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn" onclick="closeModal('settings-modal')">Anuluj</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Project Modal (Wizard) -->
+<div class="wizard-modal" id="add-project-modal" onclick="if(event.target===this)closeModal('add-project-modal')">
+  <div class="wizard-box">
+    <div class="wizard-header">
+      <h3>Nowy projekt</h3>
+      <button class="close-btn" onclick="closeModal('add-project-modal')">&times;</button>
+    </div>
+    <div class="wizard-body" id="add-project-body">
+      <!-- Steps rendered by JS -->
+    </div>
+    <div class="wizard-footer">
+      <div>
+        <span class="wizard-steps" id="add-project-steps"></span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="ap-btn-back" onclick="addProjectPrev()" style="display:none">Wstecz</button>
+        <button class="btn btn-primary" id="ap-btn-next" onclick="addProjectNext()">Dalej</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Area Modal -->
+<div class="wizard-modal" id="add-area-modal" onclick="if(event.target===this)closeModal('add-area-modal')">
+  <div class="wizard-box" style="max-width:480px">
+    <div class="wizard-header">
+      <h3>Dodaj obszar testowy</h3>
+      <button class="close-btn" onclick="closeModal('add-area-modal')">&times;</button>
+    </div>
+    <div class="wizard-body">
+      <div class="form-group">
+        <label class="form-label">Obszar</label>
+        <select class="form-input" id="add-area-select" onchange="onAreaSelectChange()">
+          <option value="">-- Wybierz --</option>
+        </select>
+      </div>
+      <div class="form-group" id="add-area-custom-group" style="display:none">
+        <label class="form-label">Nazwa niestandardowa</label>
+        <input type="text" class="form-input" id="add-area-custom" placeholder="np. wishlist">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tryb generowania</label>
+        <div class="radio-group" style="flex-direction:column; gap:8px;">
+          <div class="form-radio selected" onclick="selectRadio(this, 'add-area-mode', 'empty')">
+            <input type="radio" name="add-area-mode" value="empty" checked> <label>Pusty szablon</label>
+            <span style="font-size:10px; color:var(--text-dim); margin-left:auto;">Tylko test.describe, bez testów</span>
+          </div>
+          <div class="form-radio" onclick="selectRadio(this, 'add-area-mode', 'skeleton')">
+            <input type="radio" name="add-area-mode" value="skeleton"> <label>Szkielet z wzorcow</label>
+            <span style="font-size:10px; color:var(--text-dim); margin-left:auto;">Gotowe testy na bazie istniejacych projektow</span>
+          </div>
+          <div class="form-radio" onclick="selectRadio(this, 'add-area-mode', 'ai')">
+            <input type="radio" name="add-area-mode" value="ai"> <label><span class="ai-badge">AI</span> Generuj z AI</label>
+            <span style="font-size:10px; color:var(--text-dim); margin-left:auto;">Claude wygeneruje testy na podstawie opisu</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" id="add-area-ai-prompt-group" style="display:none">
+        <label class="form-label">Opisz co chcesz przetestowac (opcjonalnie)</label>
+        <textarea class="form-textarea" id="add-area-ai-prompt" placeholder="np. Dodawanie produktow do listy zyczen, sprawdzanie czy lista jest zapisywana..."></textarea>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn" onclick="closeModal('add-area-modal')">Anuluj</button>
+      <button class="btn btn-primary" id="add-area-submit-btn" onclick="submitAddArea()">Dodaj obszar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Test Modal -->
+<div class="wizard-modal" id="add-test-modal" onclick="if(event.target===this)closeModal('add-test-modal')">
+  <div class="wizard-box" style="max-width:520px">
+    <div class="wizard-header">
+      <h3>Dodaj test</h3>
+      <button class="close-btn" onclick="closeModal('add-test-modal')">&times;</button>
+    </div>
+    <div class="wizard-body">
+      <div class="form-group">
+        <label class="form-label">Opisz co chcesz przetestowac</label>
+        <textarea class="form-textarea" id="add-test-description" rows="4" placeholder="np. Sprawdz czy wyszukiwanie produktu 'buty' zwraca wyniki i czy mozna kliknac w pierwszy produkt..."></textarea>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn" onclick="closeModal('add-test-modal')">Anuluj</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" onclick="submitEmptyTest()">Pusty test</button>
+        <button class="btn btn-primary" onclick="generateTestAI()" id="gen-test-ai-btn"><span class="ai-badge" style="margin-right:4px">AI</span> Generuj test</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Preview Modal -->
+<div class="wizard-modal" id="test-preview-modal" onclick="if(event.target===this)closeModal('test-preview-modal')">
+  <div class="wizard-box" style="max-width:720px">
+    <div class="wizard-header">
+      <h3>Podglad wygenerowanego testu</h3>
+      <button class="close-btn" onclick="closeModal('test-preview-modal')">&times;</button>
+    </div>
+    <div class="wizard-body">
+      <div style="font-size:11px; color:var(--text-dim); margin-bottom:12px;">
+        Plik: <span id="preview-file" style="color:var(--accent)"></span>
+      </div>
+      <textarea class="form-textarea" id="preview-code" style="min-height:260px; font-family:var(--font); font-size:12px; line-height:1.7; tab-size:2;"></textarea>
+      <div id="preview-test-result" style="display:none; margin-top:12px; padding:10px 14px; border-radius:var(--radius); font-size:12px; font-weight:600;">
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn btn-danger" onclick="rejectPreviewTest()">Odrzuc</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" onclick="regeneratePreview()" style="border-color:var(--yellow); color:var(--yellow);">Regeneruj</button>
+        <button class="btn" onclick="tryTestBeforeSave()" id="preview-try-btn" style="border-color:var(--blue); color:var(--blue);">Przetestuj</button>
+        <button class="btn btn-success" onclick="approveTest()" id="preview-approve-btn">Zatwierdz i zapisz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Code Editor Modal — panel, opens chat alongside -->
+<div class="editor-modal" id="code-editor-modal">
+  <div class="editor-header">
+    <span class="file-path" id="editor-file-path"></span>
+    <div class="editor-actions">
+      <button class="btn btn-sm" onclick="launchCodegenFromEditor()" style="border-color:var(--violet); color:var(--violet);">Codegen</button>
+      <button class="btn btn-sm" onclick="closeCodeEditor()" style="color:var(--text-dim);">&times; Zamknij</button>
+    </div>
+  </div>
+  <div class="editor-body">
+    <pre class="editor-highlight" id="editor-highlight"></pre>
+    <textarea class="editor-textarea" id="editor-content" spellcheck="false"></textarea>
+  </div>
+  <div class="editor-footer">
+    <div style="font-size:11px; color:var(--text-dim);" id="editor-status">Gotowy — uzyj AI Chat po prawej zeby naprawic bledy</div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn" onclick="closeCodeEditor()">Anuluj</button>
+      <button class="btn btn-primary" onclick="saveCodeEditor()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fix Locators — now handled through AI Chat -->
+
+<!-- Delete Confirm Modal -->
+<div class="wizard-modal" id="delete-modal" onclick="if(event.target===this)closeModal('delete-modal')">
+  <div class="wizard-box" style="max-width:420px">
+    <div class="wizard-header">
+      <h3 id="delete-title">Potwierdzenie usuwania</h3>
+      <button class="close-btn" onclick="closeModal('delete-modal')">&times;</button>
+    </div>
+    <div class="wizard-body">
+      <div id="delete-details" style="font-size:12px; color:var(--text-muted); line-height:1.6;"></div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn" onclick="closeModal('delete-modal')">Anuluj</button>
+      <button class="btn btn-danger" id="delete-confirm-btn">Usun</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
