@@ -3710,7 +3710,21 @@
       document.getElementById('chat-send-btn').disabled = false;
       const typing = document.getElementById('chat-typing');
       if (typing) typing.remove();
-      addChatMsg('system', '❌ Blad: ' + error, 'status-fail');
+
+      // Friendly error messages
+      let msg = error;
+      if (error.includes('429') || error.includes('quota') || error.includes('RESOURCE_EXHAUSTED')) {
+        msg = 'Limit API wyczerpany — poczekaj minute i sprobuj ponownie';
+      } else if (error.includes('401') || error.includes('403') || error.includes('API key')) {
+        msg = 'Nieprawidlowy klucz API — sprawdz ustawienia (kolko zebate)';
+      } else if (error.includes('credit balance')) {
+        msg = 'Brak kredytow na koncie API — doloduj lub przelacz na Gemini (darmowy)';
+      } else if (error.includes('timeout') || error.includes('abort')) {
+        msg = 'Timeout — AI nie odpowiedzial w 90s. Sprobuj krotsza wiadomosc.';
+      } else if (msg.length > 100) {
+        msg = msg.substring(0, 100) + '...';
+      }
+      addChatMsg('system', '❌ ' + msg, 'status-fail');
     }
 
     // Save code from chat to project
