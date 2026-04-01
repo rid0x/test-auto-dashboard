@@ -2319,10 +2319,11 @@
         return;
       }
 
-      // Check for new downtimes: only alert on UP → DOWN transition
+      // Check for downtimes: UP→DOWN or new store appearing as DOWN
       for (const [name, store] of Object.entries(data)) {
         const prev = previousUptimeState[name];
-        if (prev === 'up' && store.current === 'down') {
+        if (store.current === 'down' && prev !== 'down') {
+          // prev === 'up' (was up, now down) OR prev === undefined (new store, appeared as down)
           playAlertSound();
           showUptimeAlert(name, store.url);
         }
