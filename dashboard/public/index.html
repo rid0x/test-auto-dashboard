@@ -1177,18 +1177,18 @@
     .form-radio label { font-size: 12px; cursor: pointer; }
 
     /* Code editor modal — panel, shrinks when chat is open */
-    .editor-modal { display: none; position: fixed; top: 52px; left: 228px; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 45; transition: right 0.2s; }
+    .editor-modal { display: none; position: fixed; top: 52px; left: 228px; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 40; transition: right 0.2s; }
     .editor-modal.with-chat { right: 440px; }
     .editor-modal.visible { display: flex; flex-direction: column; }
-    .editor-header { padding: 10px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px; }
+    .editor-header { padding: 10px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px; position: relative; z-index: 5; }
     .editor-header .file-path { font-size: 12px; color: var(--accent); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .editor-header .editor-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-    .editor-body { flex: 1; padding: 0; position: relative; overflow: hidden; min-height: 0; }
+    .editor-body { flex: 1; padding: 0; position: relative; overflow: hidden; min-height: 0; z-index: 1; }
     /* Overlay technique: highlighted pre behind transparent textarea */
     .editor-highlight { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; margin: 0; background: rgba(6,8,16,0.95); font-family: var(--font); font-size: 12px; line-height: 1.7; tab-size: 2; white-space: pre-wrap; word-wrap: break-word; color: var(--text); overflow-y: auto; pointer-events: none; border: none; }
     .editor-textarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; background: transparent; border: none; color: transparent; caret-color: var(--text); font-family: var(--font); font-size: 12px; line-height: 1.7; resize: none; outline: none; tab-size: 2; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; z-index: 1; }
     .editor-textarea::selection { background: rgba(249,115,22,0.3); }
-    .editor-footer { padding: 10px 20px; background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .editor-footer { padding: 10px 20px; background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; position: relative; z-index: 5; }
     /* Error paste area in editor */
     .editor-error-panel { display: none; padding: 12px 20px; background: rgba(239,68,68,0.05); border-top: 1px solid rgba(239,68,68,0.2); flex-shrink: 0; }
     .editor-error-panel.visible { display: block; }
@@ -3161,13 +3161,17 @@
         editorContext = { filePath: specPath, project, area };
         document.getElementById('editor-file-path').textContent = specPath;
         document.getElementById('editor-content').value = data.content;
-        document.getElementById('editor-status').textContent = 'Gotowy — uzyj AI Chat po prawej zeby naprawic bledy';
+        document.getElementById('editor-status').textContent = 'Plik spec — nowe testy z AI Chat dodadza sie na koncu pliku';
+        document.getElementById('editor-status').style.color = '';
         document.getElementById('code-editor-modal').classList.add('with-chat');
         openModal('code-editor-modal');
         updateEditorHighlight();
 
-        // Auto-open chat with editor context
-        openChatForArea(project, area);
+        // Scroll to bottom to show where new tests will go
+        const ta = document.getElementById('editor-content');
+        ta.scrollTop = ta.scrollHeight;
+        const hl = document.getElementById('editor-highlight');
+        if (hl) hl.scrollTop = ta.scrollTop;
       } catch (err) { showToast('Blad: ' + err.message, 'error'); }
     }
 
@@ -3184,8 +3188,12 @@
     }
 
     function closeCodeEditor() {
-      document.getElementById('code-editor-modal').classList.remove('with-chat');
-      closeModal('code-editor-modal');
+      const modal = document.getElementById('code-editor-modal');
+      modal.classList.remove('with-chat');
+      modal.classList.remove('visible');
+      modal.style.display = 'none';
+      // Reset display after transition
+      setTimeout(() => { modal.style.display = ''; }, 50);
     }
 
     // Sync editor textarea → highlight overlay
