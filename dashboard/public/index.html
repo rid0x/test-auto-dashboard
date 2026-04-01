@@ -1085,16 +1085,49 @@
     .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* --- Terminal idle animation --- */
-    .terminal-idle { display: flex; align-items: center; justify-content: center; padding: 16px 0; color: var(--text-dim); user-select: none; }
-    .terminal-idle-art { font-size: 11px; line-height: 1.4; letter-spacing: 0.05em; }
-    .terminal-idle .zzz { display: inline-block; animation: zzz-float 2s ease-in-out infinite; color: var(--text-dim); }
-    .terminal-idle .zzz:nth-child(2) { animation-delay: 0.4s; font-size: 10px; }
-    .terminal-idle .zzz:nth-child(3) { animation-delay: 0.8s; font-size: 9px; opacity: 0.5; }
-    @keyframes zzz-float { 0%,100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(-6px); opacity: 1; } }
-    .terminal-idle .qa-guy { color: var(--accent); }
-    .terminal-idle .qa-shirt { color: var(--violet); }
-    .terminal-idle .qa-coffee { animation: coffee-steam 2.5s ease-in-out infinite; }
-    @keyframes coffee-steam { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+    .terminal-idle { display: flex; align-items: center; justify-content: center; padding: 20px 0; color: var(--text-dim); user-select: none; }
+    .terminal-idle-scene { position: relative; width: 360px; height: 120px; }
+
+    /* Desk */
+    .idle-desk { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 50px; border: 1px solid rgba(255,255,255,0.08); border-top: 2px solid rgba(255,255,255,0.12); border-radius: 2px 2px 0 0; background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%); }
+
+    /* Monitor */
+    .idle-monitor { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 100px; height: 58px; border: 2px solid rgba(255,255,255,0.12); border-radius: 4px; background: rgba(6,8,16,0.8); overflow: hidden; }
+    .idle-monitor::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 30px; height: 8px; background: rgba(255,255,255,0.08); border-radius: 0 0 2px 2px; }
+    .idle-screen-line { height: 3px; margin: 6px 8px; border-radius: 1px; animation: screen-pulse 3s ease-in-out infinite; }
+    .idle-screen-line:nth-child(1) { width: 60%; background: var(--accent); opacity: 0.3; animation-delay: 0s; }
+    .idle-screen-line:nth-child(2) { width: 80%; background: var(--green); opacity: 0.2; animation-delay: 0.5s; }
+    .idle-screen-line:nth-child(3) { width: 45%; background: var(--violet); opacity: 0.25; animation-delay: 1s; }
+    .idle-screen-line:nth-child(4) { width: 70%; background: var(--blue); opacity: 0.2; animation-delay: 1.5s; }
+    .idle-screen-line:nth-child(5) { width: 55%; background: var(--accent); opacity: 0.15; animation-delay: 2s; }
+    @keyframes screen-pulse { 0%,100% { opacity: 0.15; } 50% { opacity: 0.4; } }
+
+    /* Person */
+    .idle-person { position: absolute; bottom: 48px; left: calc(50% + 70px); }
+    .idle-head { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); margin: 0 auto; animation: head-nod 4s ease-in-out infinite; }
+    @keyframes head-nod { 0%,100% { transform: rotate(0deg); } 30%,70% { transform: rotate(8deg) translateY(2px); } }
+    .idle-body { width: 20px; height: 16px; margin: 2px auto 0; border-radius: 4px 4px 0 0; background: var(--violet); opacity: 0.8; display: flex; align-items: center; justify-content: center; font-size: 6px; font-weight: 900; color: rgba(255,255,255,0.7); letter-spacing: -0.5px; }
+
+    /* Coffee */
+    .idle-coffee { position: absolute; bottom: 50px; left: calc(50% - 80px); font-size: 16px; }
+    .idle-steam { position: absolute; bottom: 18px; left: 4px; display: flex; gap: 3px; }
+    .idle-steam span { display: block; width: 2px; background: rgba(255,255,255,0.15); border-radius: 1px; animation: steam-rise 2s ease-out infinite; }
+    .idle-steam span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .idle-steam span:nth-child(2) { height: 12px; animation-delay: 0.6s; }
+    .idle-steam span:nth-child(3) { height: 6px; animation-delay: 1.2s; }
+    @keyframes steam-rise { 0% { transform: translateY(0) scaleY(1); opacity: 0.4; } 100% { transform: translateY(-12px) scaleY(0.5); opacity: 0; } }
+
+    /* ZZZ */
+    .idle-zzz { position: absolute; top: 2px; left: calc(50% + 90px); display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .idle-zzz span { font-family: var(--font); font-weight: 700; color: var(--text-dim); animation: zzz-drift 3s ease-in-out infinite; }
+    .idle-zzz span:nth-child(1) { font-size: 14px; opacity: 0.5; animation-delay: 0s; }
+    .idle-zzz span:nth-child(2) { font-size: 11px; opacity: 0.35; animation-delay: 0.8s; margin-left: 8px; }
+    .idle-zzz span:nth-child(3) { font-size: 8px; opacity: 0.2; animation-delay: 1.6s; margin-left: 16px; }
+    @keyframes zzz-drift { 0% { transform: translate(0,0); opacity: 0; } 20% { opacity: 0.5; } 100% { transform: translate(10px,-14px); opacity: 0; } }
+
+    /* Message */
+    .idle-msg { position: absolute; bottom: 4px; right: 0; font-family: var(--font); font-size: 10px; color: var(--text-dim); line-height: 1.6; text-align: right; }
+    .idle-msg .idle-hint { color: rgba(249,115,22,0.4); }
 
     /* --- Toast notifications --- */
     .toast-container { position: fixed; top: 60px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
@@ -1267,17 +1300,14 @@
               <span class="stat" id="prog-heal-stat" style="display:none"><span class="dot-h">&#9679;</span> <span id="prog-healed">0</span> healed</span>
             </div>
           </div>
-          <div class="terminal-body" id="terminal-output"><div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-art"><span class="qa-coffee" style="position:relative; left:68px;">~</span>
-<span style="color:var(--text-dim)">                    </span><span class="zzz">z</span><span class="zzz">Z</span><span class="zzz">z</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">    O</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">   /|\ </span><span style="color:var(--text-dim); font-size:10px;">  ☕</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-shirt">  [QA] </span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">   / \</span>
-<span style="color:var(--text-dim)">     ___________</span>
-<span style="color:var(--text-dim)">     |  _    _ |</span>   <span style="color:var(--text-dim); font-size:10px;">Czekam na testy...</span>
-<span style="color:var(--text-dim)">     | |_|  |_||</span>   <span style="color:var(--text-dim); font-size:10px;">Kliknij "Uruchom" albo uzyj AI Chat</span>
-<span style="color:var(--text-dim)">     |_________|</span>
-</div></div></div>
+          <div class="terminal-body" id="terminal-output"><div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-scene">
+            <div class="idle-desk"></div>
+            <div class="idle-monitor"><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div></div>
+            <div class="idle-person"><div class="idle-head"></div><div class="idle-body">QA</div></div>
+            <div class="idle-coffee">☕<div class="idle-steam"><span></span><span></span><span></span></div></div>
+            <div class="idle-zzz"><span>Z</span><span>z</span><span>z</span></div>
+            <div class="idle-msg">Czekam na testy...<br><span class="idle-hint">Kliknij "Uruchom" albo uzyj AI Chat</span></div>
+          </div></div></div>
         </div>
       </div>
     </div>
@@ -1769,17 +1799,14 @@
     }
 
     function getIdleQA() {
-      return `<div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-art"><span class="qa-coffee" style="position:relative; left:68px;">~</span>
-<span style="color:var(--text-dim)">                    </span><span class="zzz">z</span><span class="zzz">Z</span><span class="zzz">z</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">    O</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">   /|\\ </span><span style="color:var(--text-dim); font-size:10px;">  ☕</span>
-<span style="color:var(--text-dim)">        </span><span class="qa-shirt">  [QA] </span>
-<span style="color:var(--text-dim)">        </span><span class="qa-guy">   / \\\\</span>
-<span style="color:var(--text-dim)">     ___________</span>
-<span style="color:var(--text-dim)">     |  _    _ |</span>   <span style="color:var(--text-dim); font-size:10px;">Czekam na testy...</span>
-<span style="color:var(--text-dim)">     | |_|  |_||</span>   <span style="color:var(--text-dim); font-size:10px;">Kliknij "Uruchom" albo uzyj AI Chat</span>
-<span style="color:var(--text-dim)">     |_________|</span>
-</div></div>`;
+      return `<div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-scene">
+        <div class="idle-desk"></div>
+        <div class="idle-monitor"><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div><div class="idle-screen-line"></div></div>
+        <div class="idle-person"><div class="idle-head"></div><div class="idle-body">QA</div></div>
+        <div class="idle-coffee">☕<div class="idle-steam"><span></span><span></span><span></span></div></div>
+        <div class="idle-zzz"><span>Z</span><span>z</span><span>z</span></div>
+        <div class="idle-msg">Czekam na testy...<br><span class="idle-hint">Kliknij "Uruchom" albo uzyj AI Chat</span></div>
+      </div></div>`;
     }
 
     function updateRunStatus(status) {
