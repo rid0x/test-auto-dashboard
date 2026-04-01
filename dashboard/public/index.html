@@ -3436,6 +3436,10 @@
         document.getElementById('layout').classList.add('chat-shifted');
       }
       document.getElementById('chat-context').textContent = `Projekt: ${project} / Obszar: ${area}`;
+
+      // Also open editor with the spec file so user sees code alongside chat
+      openCodeEditor(project, area);
+
       document.getElementById('chat-input').focus();
     }
 
@@ -3640,6 +3644,26 @@
         showToast('Test zapisany do ' + specFile, 'success');
         addChatMsg('system', '💾 Test zapisany do projektu!', 'system');
         await loadProjects();
+
+        // Refresh editor if open — show updated file with new test
+        if (document.getElementById('code-editor-modal').classList.contains('visible') && editorContext.project === chatProject && editorContext.area === chatArea) {
+          try {
+            const fileRes = await fetch('/api/files?path=' + encodeURIComponent(specFile));
+            const fileData = await fileRes.json();
+            if (fileRes.ok) {
+              document.getElementById('editor-content').value = fileData.content;
+              updateEditorHighlight();
+              document.getElementById('editor-status').textContent = 'Test dodany — plik zaktualizowany';
+              document.getElementById('editor-status').style.color = 'var(--green)';
+              // Scroll editor to bottom to show new test
+              const ta = document.getElementById('editor-content');
+              ta.scrollTop = ta.scrollHeight;
+              const hl = document.getElementById('editor-highlight');
+              if (hl) hl.scrollTop = ta.scrollTop;
+            }
+          } catch {}
+        }
+
         if (activeProject?.name === chatProject && chatArea) {
           const proj = projects.find(p => p.name === chatProject);
           if (proj) showArea(proj, chatArea);
