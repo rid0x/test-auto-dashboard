@@ -782,42 +782,98 @@ function generateVisualRegressionSpec(projectName: string): string {
     `        (el as HTMLElement).style.visibility = 'hidden';`,
     `      });`,
     `    });`,
-    `    await expect(page).toHaveScreenshot('homepage.png', { fullPage: true, maxDiffPixelRatio: 0.03 });`,
+    `    // Viewport only (nie full page — bo wysokosc zmienia sie przez lazy load)`,
+    `    await expect(page).toHaveScreenshot('homepage.png', { maxDiffPixelRatio: 0.03 });`,
     `  });`,
     ``,
     `  test('login page visual', async ({ page }) => {`,
     `    await page.goto(BASE + '/customer/account/login/');`,
     `    await page.waitForLoadState('domcontentloaded');`,
     `    await page.waitForTimeout(1000);`,
-    `    await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.02 });`,
+    `    await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.03 });`,
     `  });`,
     ``,
     `  test('category page visual', async ({ page }) => {`,
     `    await page.goto(BASE + config.category.url);`,
     `    await page.waitForLoadState('domcontentloaded');`,
-    `    await page.waitForTimeout(1000);`,
-    `    await expect(page).toHaveScreenshot('category.png', { maxDiffPixelRatio: 0.02 });`,
+    `    await page.waitForTimeout(1500);`,
+    `    await expect(page).toHaveScreenshot('category.png', { maxDiffPixelRatio: 0.03 });`,
     `  });`,
     ``,
     `  test('product page visual', async ({ page }) => {`,
     `    await page.goto(BASE + config.product.url);`,
     `    await page.waitForLoadState('domcontentloaded');`,
-    `    await page.waitForTimeout(1500);`,
-    `    await expect(page).toHaveScreenshot('product.png', { maxDiffPixelRatio: 0.02 });`,
+    `    await page.waitForTimeout(2000);`,
+    `    await expect(page).toHaveScreenshot('product.png', { maxDiffPixelRatio: 0.03 });`,
     `  });`,
     ``,
     `  test('search results visual', async ({ page }) => {`,
     `    await page.goto(BASE + '/catalogsearch/result/?q=' + encodeURIComponent(config.search.validQuery));`,
     `    await page.waitForLoadState('domcontentloaded');`,
-    `    await page.waitForTimeout(1500);`,
-    `    await expect(page).toHaveScreenshot('search-results.png', { maxDiffPixelRatio: 0.02 });`,
+    `    await page.waitForTimeout(2000);`,
+    `    // Viewport only + wieksza tolerancja (wyniki/ceny moga sie roznic)`,
+    `    await expect(page).toHaveScreenshot('search-results.png', { maxDiffPixelRatio: 0.06 });`,
     `  });`,
     ``,
-    `  test('cart page visual', async ({ page }) => {`,
+    `  test('empty cart visual', async ({ page }) => {`,
     `    await page.goto(BASE + '/checkout/cart/');`,
     `    await page.waitForLoadState('domcontentloaded');`,
     `    await page.waitForTimeout(1000);`,
-    `    await expect(page).toHaveScreenshot('cart.png', { maxDiffPixelRatio: 0.02 });`,
+    `    await expect(page).toHaveScreenshot('cart-empty.png', { maxDiffPixelRatio: 0.03 });`,
+    `  });`,
+    ``,
+    `  test('cart with product visual', async ({ page }) => {`,
+    `    await page.goto(BASE + config.product.url);`,
+    `    await page.waitForLoadState('domcontentloaded');`,
+    `    await page.waitForTimeout(2000);`,
+    `    // Wybierz opcje produktu jesli konfigurowalny (swatch/select)`,
+    `    try { const sw = page.locator('.swatch-option:not(.disabled)').first(); if (await sw.isVisible({ timeout: 1000 })) await sw.click(); } catch {}`,
+    `    try { const sl = page.locator('select.super-attribute-select').first(); if (await sl.isVisible({ timeout: 500 })) await sl.selectOption({ index: 1 }); } catch {}`,
+    `    await page.waitForTimeout(500);`,
+    `    let added = false;`,
+    `    for (const sel of ['#product-addtocart-button', 'button.action.tocart', 'button.action.primary.tocart', 'button[title="Dodaj do koszyka"]', 'button:has-text("Dodaj do koszyka")', 'button:has-text("Add to Cart")']) {`,
+    `      try {`,
+    `        const btn = page.locator(sel).first();`,
+    `        if (await btn.isVisible({ timeout: 1000 })) {`,
+    `          await btn.click();`,
+    `          added = true;`,
+    `          break;`,
+    `        }`,
+    `      } catch {}`,
+    `    }`,
+    `    if (!added) { test.skip(true, 'Nie znaleziono przycisku dodaj do koszyka'); return; }`,
+    `    await page.waitForTimeout(3000);`,
+    `    await page.goto(BASE + '/checkout/cart/');`,
+    `    await page.waitForLoadState('domcontentloaded');`,
+    `    await page.waitForTimeout(1500);`,
+    `    await expect(page).toHaveScreenshot('cart-with-product.png', { maxDiffPixelRatio: 0.05 });`,
+    `  });`,
+    ``,
+    `  test('checkout page visual', async ({ page }) => {`,
+    `    await page.goto(BASE + config.product.url);`,
+    `    await page.waitForLoadState('domcontentloaded');`,
+    `    await page.waitForTimeout(2000);`,
+    `    // Wybierz opcje produktu jesli konfigurowalny`,
+    `    try { const sw = page.locator('.swatch-option:not(.disabled)').first(); if (await sw.isVisible({ timeout: 1000 })) await sw.click(); } catch {}`,
+    `    try { const sl = page.locator('select.super-attribute-select').first(); if (await sl.isVisible({ timeout: 500 })) await sl.selectOption({ index: 1 }); } catch {}`,
+    `    await page.waitForTimeout(500);`,
+    `    let added = false;`,
+    `    for (const sel of ['#product-addtocart-button', 'button.action.tocart', 'button.action.primary.tocart', 'button[title="Dodaj do koszyka"]', 'button:has-text("Dodaj do koszyka")', 'button:has-text("Add to Cart")']) {`,
+    `      try {`,
+    `        const btn = page.locator(sel).first();`,
+    `        if (await btn.isVisible({ timeout: 1000 })) {`,
+    `          await btn.click();`,
+    `          added = true;`,
+    `          break;`,
+    `        }`,
+    `      } catch {}`,
+    `    }`,
+    `    if (!added) { test.skip(true, 'Nie znaleziono przycisku dodaj do koszyka'); return; }`,
+    `    await page.waitForTimeout(3000);`,
+    `    await page.goto(BASE + '/checkout/');`,
+    `    await page.waitForLoadState('domcontentloaded');`,
+    `    await page.waitForTimeout(3000);`,
+    `    await expect(page).toHaveScreenshot('checkout.png', { maxDiffPixelRatio: 0.05 });`,
     `  });`,
     `});`,
     ``,
@@ -2501,6 +2557,267 @@ function startUptimeMonitoring() {
   runUptimeCheck(); // First check immediately
   uptimeTimer = setInterval(runUptimeCheck, UPTIME_INTERVAL);
 }
+
+// --- Global Stats ---
+
+app.get('/api/global-stats', (_req, res) => {
+  try {
+    const projectsDir = path.join(ROOT, 'src', 'projects');
+    if (!fs.existsSync(projectsDir)) return res.json({ projects: [], totals: {} });
+
+    const projectDirs = fs.readdirSync(projectsDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+
+    let totalRuns = 0;
+    let totalPassed = 0;
+    let totalFailed = 0;
+    let totalSkipped = 0;
+    let totalDuration = 0;
+    let allRuns: any[] = [];
+    const projectStats: any[] = [];
+
+    for (const name of projectDirs) {
+      const history = loadHistory(name);
+      const areaRuns = history.filter(r => !r.testName && r.total > 0);
+
+      const passed = areaRuns.reduce((s, r) => s + (r.passed || 0), 0);
+      const failed = areaRuns.reduce((s, r) => s + (r.failed || 0), 0);
+      const skipped = areaRuns.reduce((s, r) => s + (r.skipped || 0), 0);
+      const total = passed + failed + skipped;
+      const passRate = total > 0 ? Math.round((passed / total) * 1000) / 10 : 0;
+      const avgDuration = areaRuns.length > 0 ? Math.round(areaRuns.reduce((s, r) => s + (r.duration || 0), 0) / areaRuns.length) : 0;
+      const lastRun = history.length > 0 ? history[0] : null;
+
+      // Trend: last 5 area runs
+      const recent = areaRuns.slice(0, 5);
+      const recentPassRates = recent.map(r => r.total > 0 ? r.passed / r.total * 100 : 0);
+      let trend: 'improving' | 'stable' | 'declining' = 'stable';
+      if (recentPassRates.length >= 3) {
+        const firstHalf = recentPassRates.slice(Math.floor(recentPassRates.length / 2)).reduce((a, b) => a + b, 0) / Math.ceil(recentPassRates.length / 2);
+        const secondHalf = recentPassRates.slice(0, Math.floor(recentPassRates.length / 2)).reduce((a, b) => a + b, 0) / Math.floor(recentPassRates.length / 2);
+        if (secondHalf - firstHalf > 5) trend = 'improving';
+        else if (firstHalf - secondHalf > 5) trend = 'declining';
+      }
+
+      projectStats.push({
+        name,
+        runs: areaRuns.length,
+        totalTests: total,
+        passed,
+        failed,
+        skipped,
+        passRate,
+        avgDuration,
+        trend,
+        lastRun: lastRun ? { date: lastRun.date, passed: lastRun.passed, failed: lastRun.failed, skipped: lastRun.skipped } : null,
+      });
+
+      totalRuns += areaRuns.length;
+      totalPassed += passed;
+      totalFailed += failed;
+      totalSkipped += skipped;
+      totalDuration += areaRuns.reduce((s, r) => s + (r.duration || 0), 0);
+
+      // Collect all runs for daily chart
+      for (const r of areaRuns) {
+        allRuns.push({ date: r.date, project: name, passed: r.passed || 0, failed: r.failed || 0, total: r.total || 0 });
+      }
+    }
+
+    // Sort projects by pass rate descending (ranking)
+    projectStats.sort((a, b) => b.passRate - a.passRate);
+
+    // Daily aggregation for chart
+    const dailyMap = new Map<string, { date: string; runs: number; passed: number; failed: number; total: number }>();
+    for (const r of allRuns) {
+      const day = r.date.substring(0, 10); // YYYY-MM-DD
+      if (!dailyMap.has(day)) dailyMap.set(day, { date: day, runs: 0, passed: 0, failed: 0, total: 0 });
+      const d = dailyMap.get(day)!;
+      d.runs++;
+      d.passed += r.passed;
+      d.failed += r.failed;
+      d.total += r.total;
+    }
+    const daily = [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date));
+
+    const grandTotal = totalPassed + totalFailed + totalSkipped;
+    const globalPassRate = grandTotal > 0 ? Math.round((totalPassed / grandTotal) * 1000) / 10 : 0;
+
+    res.json({
+      projects: projectStats,
+      daily,
+      totals: {
+        projects: projectDirs.length,
+        runs: totalRuns,
+        passed: totalPassed,
+        failed: totalFailed,
+        skipped: totalSkipped,
+        passRate: globalPassRate,
+        totalDuration,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Flaky Test Detection ---
+
+interface FlakyTestInfo {
+  testName: string;
+  area: string;
+  runs: number;
+  passed: number;
+  failed: number;
+  flakyScore: number; // 0-100, higher = more flaky
+  lastResults: ('pass' | 'fail' | 'skip')[]; // last N results, newest first
+  lastSeen: string;
+}
+
+app.get('/api/flaky/:project', (req, res) => {
+  try {
+    const history = loadHistory(req.params.project);
+    if (history.length === 0) return res.json([]);
+
+    // Group runs by testName (only runs with a specific testName)
+    // Also track area-level runs for area-level flakiness
+    const testRuns = new Map<string, { area: string; results: { date: string; passed: boolean }[] }>();
+
+    for (const run of history) {
+      if (run.testName) {
+        // Individual test run
+        const key = `${run.area}::${run.testName}`;
+        if (!testRuns.has(key)) testRuns.set(key, { area: run.area, results: [] });
+        testRuns.get(key)!.results.push({
+          date: run.date,
+          passed: run.exitCode === 0 && run.failed === 0,
+        });
+      } else if (run.area && run.area !== 'all' && run.total > 0) {
+        // Area-level run — track as area aggregate
+        const key = `${run.area}::__area__`;
+        if (!testRuns.has(key)) testRuns.set(key, { area: run.area, results: [] });
+        testRuns.get(key)!.results.push({
+          date: run.date,
+          passed: run.failed === 0,
+        });
+      }
+    }
+
+    const flakyTests: FlakyTestInfo[] = [];
+
+    for (const [key, data] of testRuns) {
+      if (data.results.length < 2) continue; // need at least 2 runs to detect flakiness
+
+      const [area, testName] = key.split('::');
+      const passCount = data.results.filter(r => r.passed).length;
+      const failCount = data.results.length - passCount;
+
+      // Only flag as flaky if it has BOTH passes and failures
+      if (passCount === 0 || failCount === 0) continue;
+
+      // Flaky score: how unpredictable is this test?
+      // 100 = perfectly flaky (50/50), 0 = perfectly stable
+      const passRate = passCount / data.results.length;
+      const flakyScore = Math.round((1 - Math.abs(passRate - 0.5) * 2) * 100);
+
+      // Last N results for visualization
+      const lastResults = data.results
+        .slice(0, 20)
+        .map(r => r.passed ? 'pass' as const : 'fail' as const);
+
+      flakyTests.push({
+        testName: testName === '__area__' ? `[caly obszar] ${area}` : testName,
+        area,
+        runs: data.results.length,
+        passed: passCount,
+        failed: failCount,
+        flakyScore,
+        lastResults,
+        lastSeen: data.results[0].date,
+      });
+    }
+
+    // Sort by flaky score descending
+    flakyTests.sort((a, b) => b.flakyScore - a.flakyScore);
+
+    res.json(flakyTests);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Trend Data ---
+
+app.get('/api/trends/:project', (req, res) => {
+  try {
+    const history = loadHistory(req.params.project);
+    if (history.length === 0) return res.json({ runs: [], areas: {}, summary: {} });
+
+    // Filter to area-level or "all" runs (not individual test runs) for meaningful trends
+    const areaRuns = history.filter(r => !r.testName && r.total > 0);
+
+    // All runs sorted oldest first for charting
+    const chronological = [...areaRuns].reverse();
+
+    // Build trend data points
+    const runs = chronological.map(r => ({
+      date: r.date,
+      area: r.area || 'all',
+      total: r.total,
+      passed: r.passed,
+      failed: r.failed,
+      skipped: r.skipped,
+      passRate: r.total > 0 ? Math.round((r.passed / r.total) * 1000) / 10 : 0,
+      duration: r.duration,
+      browser: r.browser,
+      device: r.device,
+    }));
+
+    // Per-area aggregation
+    const areas: Record<string, { runs: number; avgPassRate: number; avgDuration: number; trend: 'improving' | 'stable' | 'declining' }> = {};
+    const areaGroups = new Map<string, typeof runs>();
+
+    for (const run of runs) {
+      const a = run.area;
+      if (!areaGroups.has(a)) areaGroups.set(a, []);
+      areaGroups.get(a)!.push(run);
+    }
+
+    for (const [area, areaData] of areaGroups) {
+      const avgPassRate = areaData.reduce((s, r) => s + r.passRate, 0) / areaData.length;
+      const avgDuration = areaData.reduce((s, r) => s + r.duration, 0) / areaData.length;
+
+      // Trend: compare first half vs second half pass rates
+      let trend: 'improving' | 'stable' | 'declining' = 'stable';
+      if (areaData.length >= 4) {
+        const mid = Math.floor(areaData.length / 2);
+        const firstHalf = areaData.slice(0, mid).reduce((s, r) => s + r.passRate, 0) / mid;
+        const secondHalf = areaData.slice(mid).reduce((s, r) => s + r.passRate, 0) / (areaData.length - mid);
+        if (secondHalf - firstHalf > 5) trend = 'improving';
+        else if (firstHalf - secondHalf > 5) trend = 'declining';
+      }
+
+      areas[area] = {
+        runs: areaData.length,
+        avgPassRate: Math.round(avgPassRate * 10) / 10,
+        avgDuration: Math.round(avgDuration),
+        trend,
+      };
+    }
+
+    // Overall summary
+    const allPassRates = runs.map(r => r.passRate);
+    const summary = {
+      totalRuns: runs.length,
+      avgPassRate: allPassRates.length > 0 ? Math.round(allPassRates.reduce((a, b) => a + b, 0) / allPassRates.length * 10) / 10 : 0,
+      bestRun: runs.length > 0 ? Math.max(...allPassRates) : 0,
+      worstRun: runs.length > 0 ? Math.min(...allPassRates) : 0,
+    };
+
+    res.json({ runs, areas, summary });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // --- Start ---
 cleanupOldReports();

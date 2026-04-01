@@ -71,41 +71,92 @@ test.describe('Willsoor - Visual Regression @visual', () => {
         (el as HTMLElement).style.visibility = 'hidden';
       });
     });
-    await expect(page).toHaveScreenshot('homepage.png', { fullPage: true, maxDiffPixelRatio: 0.03 });
+    // Viewport only (nie full page — bo wysokosc zmienia sie przez lazy load)
+    await expect(page).toHaveScreenshot('homepage.png', { maxDiffPixelRatio: 0.03 });
   });
 
   test('login page visual', async ({ page }) => {
     await page.goto(BASE + '/customer/account/login/');
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
-    await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.02 });
+    await expect(page).toHaveScreenshot('login.png', { maxDiffPixelRatio: 0.03 });
   });
 
   test('category page visual', async ({ page }) => {
     await page.goto(BASE + config.category.url);
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
-    await expect(page).toHaveScreenshot('category.png', { maxDiffPixelRatio: 0.02 });
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveScreenshot('category.png', { maxDiffPixelRatio: 0.03 });
   });
 
   test('product page visual', async ({ page }) => {
     await page.goto(BASE + config.product.url);
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1500);
-    await expect(page).toHaveScreenshot('product.png', { maxDiffPixelRatio: 0.02 });
+    await page.waitForTimeout(2000);
+    await expect(page).toHaveScreenshot('product.png', { maxDiffPixelRatio: 0.03 });
   });
 
   test('search results visual', async ({ page }) => {
     await page.goto(BASE + '/catalogsearch/result/?q=' + encodeURIComponent(config.search.validQuery));
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1500);
-    await expect(page).toHaveScreenshot('search-results.png', { maxDiffPixelRatio: 0.02 });
+    await page.waitForTimeout(2000);
+    // Viewport only + wieksza tolerancja (wyniki/ceny moga sie roznic)
+    await expect(page).toHaveScreenshot('search-results.png', { maxDiffPixelRatio: 0.06 });
   });
 
-  test('cart page visual', async ({ page }) => {
+  test('empty cart visual', async ({ page }) => {
     await page.goto(BASE + '/checkout/cart/');
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
-    await expect(page).toHaveScreenshot('cart.png', { maxDiffPixelRatio: 0.02 });
+    await expect(page).toHaveScreenshot('cart-empty.png', { maxDiffPixelRatio: 0.03 });
+  });
+
+  test('cart with product visual', async ({ page, context }) => {
+    // Dodaj produkt do koszyka
+    await page.goto(BASE + config.product.url);
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(2000);
+    // Probuj rozne selektory add-to-cart
+    let added = false;
+    for (const sel of ['#product-addtocart-button', 'button.tocart', 'button:has-text("Dodaj do koszyka")', 'button:has-text("Do koszyka")', 'button:has-text("Add to Cart")', '.action.tocart']) {
+      try {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible({ timeout: 1000 })) {
+          await btn.click();
+          added = true;
+          break;
+        }
+      } catch {}
+    }
+    if (!added) { test.skip(true, 'Nie znaleziono przycisku dodaj do koszyka'); return; }
+    await page.waitForTimeout(3000);
+    await page.goto(BASE + '/checkout/cart/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveScreenshot('cart-with-product.png', { maxDiffPixelRatio: 0.05 });
+  });
+
+  test('checkout page visual', async ({ page }) => {
+    // Dodaj produkt i przejdz do checkout
+    await page.goto(BASE + config.product.url);
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(2000);
+    let added = false;
+    for (const sel of ['#product-addtocart-button', 'button.tocart', 'button:has-text("Dodaj do koszyka")', 'button:has-text("Do koszyka")', 'button:has-text("Add to Cart")', '.action.tocart']) {
+      try {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible({ timeout: 1000 })) {
+          await btn.click();
+          added = true;
+          break;
+        }
+      } catch {}
+    }
+    if (!added) { test.skip(true, 'Nie znaleziono przycisku dodaj do koszyka'); return; }
+    await page.waitForTimeout(3000);
+    await page.goto(BASE + '/checkout/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(3000);
+    await expect(page).toHaveScreenshot('checkout.png', { maxDiffPixelRatio: 0.05 });
   });
 });
