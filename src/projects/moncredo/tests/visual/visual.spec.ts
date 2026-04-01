@@ -9,6 +9,8 @@ const BASE = config.baseUrl;
 // Kolejne runy: npx playwright test --grep @visual  (porownuje z baseline)
 // maxDiffPixelRatio: 0.02 = tolerancja 2% pikseli (antyaliasing, fonty)
 
+test.use({ animations: 'disabled' });
+
 test.describe('Moncredo - Visual Regression @visual', () => {
 
   test.beforeEach(async ({ page }) => {
@@ -16,6 +18,19 @@ test.describe('Moncredo - Visual Regression @visual', () => {
     // Brak cookie consent popup
     // Usun popupy marketingowe (Salesmanago, GetResponse, Doofinder, itp.)
     await page.waitForTimeout(2000);
+    // Zatrzymaj WSZYSTKIE animacje/slidery/carousele
+    await page.evaluate(() => {
+      const style = document.createElement('style');
+      style.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; animation-duration: 0s !important; transition-duration: 0s !important; animation-delay: 0s !important; scroll-behavior: auto !important; }';
+      document.head.appendChild(style);
+      // Zatrzymaj slidery (Swiper, Slick, Owl, itp.)
+      document.querySelectorAll('.swiper-wrapper, .slick-track, .owl-stage, [class*="carousel"], [class*="slider"], [class*="slideshow"]').forEach(el => {
+        (el as HTMLElement).style.transform = 'none';
+        (el as HTMLElement).style.animation = 'none';
+      });
+      // Zatrzymaj video/gif
+      document.querySelectorAll('video').forEach(v => v.pause());
+    });
     await page.evaluate(() => {
       // Usun typowe marketing popupy/overlaye
       const selectors = [
