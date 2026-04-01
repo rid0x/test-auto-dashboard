@@ -1862,9 +1862,16 @@ wss.on('connection', (ws: WebSocket) => {
 
     if (msg.type === 'stop') {
       const proc = activeProcesses.get(msg.runId);
-      if (proc) {
-        proc.kill('SIGTERM');
+      if (proc && proc.pid) {
+        // On Windows, SIGTERM doesn't kill child processes — use taskkill
+        try {
+          execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: 'ignore', timeout: 5000 });
+        } catch {
+          proc.kill('SIGTERM');
+        }
         activeProcesses.delete(msg.runId);
+        ws.send(JSON.stringify({ type: 'run:output', data: '\n⏹️ Testy zatrzymane przez uzytkownika\n' }));
+        ws.send(JSON.stringify({ type: 'run:complete', exitCode: -1, project: msg.project || '' }));
       }
     }
 
