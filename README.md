@@ -112,8 +112,10 @@ Kazdy sklep ma identyczny zestaw obszarow testowych:
 | **Playwright** | Framework testowy - multi-browser, auto-wait, selektory, screenshoty |
 | **TypeScript** | Typy, Page Object Pattern, konfiguracja |
 | **Express** | Backend dashboardu |
-| **WebSocket** | Real-time streaming wynikow testow do dashboardu |
-| **Allure** | Zaawansowane raporty z historiq |
+| **WebSocket** | Real-time streaming wynikow testow i AI chat |
+| **Anthropic Claude API** | AI generowanie testow (platny) |
+| **Google Gemini API** | AI generowanie testow (darmowy) |
+| **Allure** | Zaawansowane raporty z historia |
 | **Node.js** | Runtime |
 
 ---
@@ -144,13 +146,34 @@ Gdy selector #1 failuje, framework automatycznie probuje #2, #3, #4 i loguje hea
 
 Real-time dashboard na `localhost:3000`:
 
-- **Lista projektow** z liczba testow
-- **Obszary testowe** per projekt z podgladem testow
-- **Uruchamianie testow** z wyborem przegladarki (Chrome/Firefox/Safari) i urzadzenia (Desktop/Mobile)
-- **Live terminal** ze streamingiem wynikow przez WebSocket
-- **Historia runow** - klikalne wiersze otwieraja raport HTML
-- **Notatki** per projekt (co dziala, co nie, co wymaga naprawy)
-- **Archiwum raportow** - automatyczne archiwizowanie HTML raportow z timestampem
+### Zarzadzanie projektami
+- **Dodawanie nowych projektow** — wizard 5-krokowy (URL, credentials, obszary)
+- **CRUD na obszarach i testach** — przyciski +/- w interfejsie
+- **Smart Run** — klikasz np. "Security" a nie ma testow? Dashboard zaproponuje wygenerowanie ze szkieletu innego projektu
+- **Skeleton generation** — kopiowanie testow z istniejacych projektow i adaptacja do nowego
+
+### AI Chat Panel
+- **Interaktywny asystent AI** — panel czatu po prawej stronie dashboardu
+- **Generowanie testow z opisu** — piszesz "sprawdz czy strona logowania dziala", AI generuje test
+- **Auto-run** — po wygenerowaniu test automatycznie sie odpala
+- **Auto-fix** — jesli test failuje, AI analizuje blad i proponuje poprawke, potem ponownie odpala
+- **Streaming** — odpowiedzi AI w real-time, token po tokenie
+- **Syntax highlighting** — kolorowanie kodu TypeScript w chacie i edytorze
+- **Screenshoty** — podglad screenshotow z testu przed zatwierdzeniem
+- **Wybor AI** — Claude (platny, lepszy) lub Gemini (darmowy, szybki)
+
+### Edytor kodu
+- **Edytor z syntax highlighting** — overlay technique (textarea + kolorowany pre)
+- **Chat obok edytora** — edytujesz kod, AI pomaga po prawej
+- **Terminal na dole** — widzisz output testow jednoczesnie
+- **Codegen** — odpalanie Playwright nagrywarka z edytora
+
+### Monitoring i alerty
+- **Uptime monitoring** — ping sklepow co minute, historia 24h
+- **Alert dzwiekowy + popup** — gdy sklep padnie (po 2 kolejnych failach, bez false positive przy deploy)
+- **Lista projektow** z kolorowymi kropkami statusu (zielony/czerwony/zolty)
+- **Historia runow** — klikalne wiersze otwieraja raport HTML
+- **Archiwum raportow** — automatyczne archiwizowanie z timestampem
 
 ### Uruchomienie
 

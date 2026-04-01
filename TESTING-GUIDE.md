@@ -294,6 +294,38 @@ config/
 └── {project}.config.ts
 ```
 
+## Dodawanie testow z AI Chat (dashboard)
+
+Najszybszy sposob dodawania testow — z poziomu dashboardu:
+
+### Flow:
+1. `npm run dashboard` → otworz `http://localhost:3000`
+2. Kliknij projekt → obszar → **"+ Dodaj test (AI Chat)"**
+3. Otwiera sie edytor (lewo) + AI Chat (prawo) + terminal (dol)
+4. W chacie opisz test: "sprawdz czy strona logowania zwraca 200"
+5. AI generuje test → **automatycznie go odpala**
+6. Jesli FAIL → AI analizuje blad i proponuje fix → ponownie odpala
+7. Jesli PASS → widzisz screenshot → klikasz **"Zapisz"** → test w pliku
+
+### Quick actions w chacie:
+- "Strona glowna" — test czy laduje sie poprawnie
+- "Logowanie" — test formularza logowania
+- "Wyszukiwarka" — test czy znajduje produkty
+- "Koszyk" — test dodawania do koszyka
+- "Bezpieczenstwo" — test security headers
+
+### Smart Run (auto-generowanie brakujacych obszarow):
+Klikasz np. **"Security"** w projekcie ktory nie ma testow security?
+Dashboard zaproponuje wygenerowanie ze szkieletu innego projektu.
+Testy zostana skopiowane i dostosowane automatycznie.
+
+### Ustawienia AI:
+Kolko zebate w headerze → wybierz dostawce:
+- **Gemini** (darmowy) — klucz z aistudio.google.com
+- **Claude** (platny) — klucz z console.anthropic.com
+
+---
+
 ## Komendy
 
 ```bash
