@@ -2541,24 +2541,51 @@
       const res = await fetch('/api/ai/status');
       const data = await res.json();
       aiKeyConfigured = data.configured;
+
+      // Set provider radio
+      selectProvider(data.provider || 'gemini');
+
       const dot = document.getElementById('ai-status-dot');
       const txt = document.getElementById('ai-status-text');
-      dot.style.background = data.configured ? 'var(--green)' : 'var(--red)';
-      txt.textContent = data.configured ? 'Klucz skonfigurowany' : 'Brak klucza';
-      txt.style.color = data.configured ? 'var(--green)' : 'var(--red)';
+      if (data.configured) {
+        dot.style.background = 'var(--green)';
+        txt.style.color = 'var(--green)';
+        txt.textContent = 'Aktywny: ' + (data.provider === 'gemini' ? 'Gemini (darmowy)' : 'Claude') + (data.gemini && data.claude ? ' — oba klucze skonfigurowane' : '');
+      } else {
+        dot.style.background = 'var(--red)';
+        txt.style.color = 'var(--red)';
+        txt.textContent = 'Brak klucza — wpisz klucz Gemini (darmowy) lub Claude';
+      }
       openModal('settings-modal');
     }
+
+    function selectProvider(provider) {
+      document.getElementById('provider-gemini-radio').classList.toggle('selected', provider === 'gemini');
+      document.getElementById('provider-claude-radio').classList.toggle('selected', provider === 'claude');
+      document.getElementById('provider-gemini').checked = provider === 'gemini';
+      document.getElementById('provider-claude').checked = provider === 'claude';
+    }
+
     async function saveApiKey() {
-      const key = document.getElementById('settings-api-key').value.trim();
-      if (!key) return alert('Podaj API key');
-      const res = await fetch('/api/settings/ai-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: key }) });
+      const claudeKey = document.getElementById('settings-api-key').value.trim();
+      const geminiKey = document.getElementById('settings-gemini-key').value.trim();
+      const provider = document.querySelector('input[name="ai-provider"]:checked')?.value || 'gemini';
+
+      if (!claudeKey && !geminiKey) return showToast('Podaj przynajmniej jeden klucz API', 'warning');
+
+      const res = await fetch('/api/settings/ai-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: claudeKey || undefined, geminiKey: geminiKey || undefined, provider }),
+      });
       if (res.ok) {
+        const data = await res.json();
         aiKeyConfigured = true;
         closeModal('settings-modal');
-        alert('API key zapisany!');
+        showToast('Zapisano! Dostawca: ' + (data.provider === 'gemini' ? 'Gemini' : 'Claude'), 'success');
       } else {
         const err = await res.json();
-        alert('Blad: ' + err.error);
+        showToast('Blad: ' + err.error, 'error');
       }
     }
 
@@ -3808,22 +3835,53 @@
 
 <!-- Settings Modal -->
 <div class="wizard-modal" id="settings-modal" onclick="if(event.target===this)closeModal('settings-modal')">
-  <div class="wizard-box" style="max-width:440px">
+  <div class="wizard-box" style="max-width:480px">
     <div class="wizard-header">
-      <h3>Ustawienia</h3>
+      <h3>Ustawienia AI</h3>
       <button class="close-btn" onclick="closeModal('settings-modal')">&times;</button>
     </div>
     <div class="wizard-body">
       <div class="form-group">
-        <label class="form-label">Anthropic API Key</label>
+        <label class="form-label">Dostawca AI</label>
+        <div class="radio-group" style="flex-direction:column; gap:8px;">
+          <div class="form-radio" id="provider-gemini-radio" onclick="selectProvider('gemini')">
+            <input type="radio" name="ai-provider" value="gemini" id="provider-gemini">
+            <label style="flex:1;">
+              <strong>Gemini</strong> <span style="color:var(--green); font-size:10px;">(darmowy)</span>
+              <div style="font-size:10px; color:var(--text-dim);">Google Gemini 2.0 Flash — szybki, darmowy do 60 req/min</div>
+            </label>
+          </div>
+          <div class="form-radio" id="provider-claude-radio" onclick="selectProvider('claude')">
+            <input type="radio" name="ai-provider" value="claude" id="provider-claude">
+            <label style="flex:1;">
+              <strong>Claude</strong> <span style="color:var(--text-dim); font-size:10px;">(platny)</span>
+              <div style="font-size:10px; color:var(--text-dim);">Anthropic Claude Sonnet — lepszy na TypeScript, wymaga kredytow API</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:16px;">Klucze API</div>
+
+      <div class="form-group">
+        <label class="form-label">Gemini API Key <span style="color:var(--green); font-size:9px;">(darmowy z aistudio.google.com)</span></label>
+        <div style="display:flex; gap:8px;">
+          <input type="password" class="form-input" id="settings-gemini-key" placeholder="AIza...">
+          <button class="btn btn-sm" onclick="togglePasswordVisibility('settings-gemini-key')">Pokaz</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Claude API Key <span style="color:var(--text-dim); font-size:9px;">(z console.anthropic.com)</span></label>
         <div style="display:flex; gap:8px;">
           <input type="password" class="form-input" id="settings-api-key" placeholder="sk-ant-api03-...">
           <button class="btn btn-sm" onclick="togglePasswordVisibility('settings-api-key')">Pokaz</button>
         </div>
-        <div style="margin-top:8px; font-size:11px;">
-          Status: <span id="ai-status-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 4px;"></span>
-          <span id="ai-status-text"></span>
-        </div>
+      </div>
+
+      <div style="margin-top:12px; padding:10px 12px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:11px;">
+        <span id="ai-status-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;"></span>
+        <span id="ai-status-text"></span>
       </div>
     </div>
     <div class="wizard-footer">

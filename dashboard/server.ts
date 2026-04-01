@@ -733,7 +733,133 @@ function generateSkeletonSpec(projectName: string, areaName: string): string | n
   return null;
 }
 
-// --- AI Integration ---
+// --- AI Integration (Claude + Gemini) ---
+
+function getAIProvider(): 'claude' | 'gemini' {
+  // Prefer provider set in env, fallback to whichever key is available
+  if (process.env.AI_PROVIDER === 'gemini') return 'gemini';
+  if (process.env.AI_PROVIDER === 'claude') return 'claude';
+  if (process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return 'gemini';
+  return process.env.ANTHROPIC_API_KEY ? 'claude' : 'gemini';
+}
+
+// --- Gemini API ---
+
+async function callGeminiAPI(systemPrompt: string, userPrompt: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY nie skonfigurowany. Ustaw go w Ustawieniach.');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000);
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        generationConfig: { maxOutputTokens: 4096, temperature: 0.3 },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini API error ${response.status}: ${err}`);
+    }
+
+    const data = await response.json() as any;
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    text = text.replace(/^```(?:typescript|ts)?\n?/m, '').replace(/\n?```$/m, '');
+    return text;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function streamGeminiChat(
+  ws: WebSocket,
+  systemPrompt: string,
+  messages: ChatMessage[],
+): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY nie skonfigurowany — kliknij koło zębate w headerze');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+
+  try {
+    // Convert messages to Gemini format
+    const contents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents,
+        generationConfig: { maxOutputTokens: 4096, temperature: 0.3 },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini API ${response.status}: ${err}`);
+    }
+
+    let fullText = '';
+    const reader = response.body as any;
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    for await (const chunk of reader) {
+      buffer += decoder.decode(chunk, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              fullText += text;
+              ws.send(JSON.stringify({ type: 'chat:delta', token: text }));
+            }
+          } catch {}
+        }
+      }
+    }
+
+    ws.send(JSON.stringify({ type: 'chat:complete', fullMessage: fullText }));
+    return fullText;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// --- Universal AI call (routes to Claude or Gemini) ---
+
+async function callAI(systemPrompt: string, userPrompt: string): Promise<string> {
+  const provider = getAIProvider();
+  if (provider === 'gemini') return callGeminiAPI(systemPrompt, userPrompt);
+  return callAnthropicAPI(systemPrompt, userPrompt);
+}
+
+async function streamAIChat(ws: WebSocket, systemPrompt: string, messages: ChatMessage[]): Promise<string> {
+  const provider = getAIProvider();
+  if (provider === 'gemini') return streamGeminiChat(ws, systemPrompt, messages);
+  return streamAnthropicChat(ws, systemPrompt, messages);
+}
+
+// --- Claude API ---
 
 async function callAnthropicAPI(systemPrompt: string, userPrompt: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -1368,7 +1494,7 @@ app.post('/api/projects/:name/areas/:area/tests', async (req, res) => {
     if (generateMode === 'ai') {
       const { system, context } = buildTestGenerationContext(name, area);
       const userPrompt = `${context}\n\nUŻYTKOWNIK CHCE PRZETESTOWAĆ:\n${description}\n\nWygeneruj test() block w TypeScript. Użyj page objectów z fixture. Dodaj // @desc: komentarz. Dodaj screenshoty.`;
-      proposedCode = await callAnthropicAPI(system, userPrompt);
+      proposedCode = await callAI(system, userPrompt);
     } else {
       proposedCode = generateEmptyTestBlock(description || 'new test');
     }
@@ -1504,31 +1630,37 @@ app.put('/api/files', (req, res) => {
 // --- AI Endpoints ---
 
 app.get('/api/ai/status', (_req, res) => {
-  res.json({ configured: !!process.env.ANTHROPIC_API_KEY });
+  res.json({
+    provider: getAIProvider(),
+    claude: !!process.env.ANTHROPIC_API_KEY,
+    gemini: !!process.env.GEMINI_API_KEY,
+    configured: !!(process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY),
+  });
 });
 
 app.post('/api/settings/ai-key', (req, res) => {
   try {
-    const { apiKey } = req.body;
-    if (!apiKey) return res.status(400).json({ error: 'API key is required' });
-
+    const { apiKey, geminiKey, provider } = req.body;
     const envPath = path.join(ROOT, '.env');
-    let envContent = '';
-    if (fs.existsSync(envPath)) {
-      envContent = fs.readFileSync(envPath, 'utf-8');
-    }
+    let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
 
-    if (envContent.includes('ANTHROPIC_API_KEY=')) {
-      envContent = envContent.replace(/ANTHROPIC_API_KEY=.*/, `ANTHROPIC_API_KEY=${apiKey}`);
-    } else {
-      envContent += `\nANTHROPIC_API_KEY=${apiKey}\n`;
-    }
+    const setEnv = (key: string, val: string) => {
+      if (val === undefined) return;
+      if (envContent.includes(key + '=')) {
+        envContent = envContent.replace(new RegExp(key + '=.*'), `${key}=${val}`);
+      } else if (val) {
+        envContent += `\n${key}=${val}`;
+      }
+      process.env[key] = val;
+    };
+
+    if (apiKey !== undefined) setEnv('ANTHROPIC_API_KEY', apiKey);
+    if (geminiKey !== undefined) setEnv('GEMINI_API_KEY', geminiKey);
+    if (provider) setEnv('AI_PROVIDER', provider);
 
     fs.writeFileSync(envPath, envContent);
-    process.env.ANTHROPIC_API_KEY = apiKey;
-
-    console.log('  🔑 Anthropic API key updated');
-    res.json({ success: true });
+    console.log(`  🔑 AI settings updated (provider: ${getAIProvider()})`);
+    res.json({ success: true, provider: getAIProvider() });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -1542,7 +1674,7 @@ app.post('/api/ai/generate-test', async (req, res) => {
     const { system, context } = buildTestGenerationContext(project, area);
     const userPrompt = `${context}\n\nUŻYTKOWNIK CHCE PRZETESTOWAĆ:\n${description}\n\nWygeneruj test() block w TypeScript. Użyj page objectów z fixture. Dodaj // @desc: komentarz. Dodaj screenshoty.`;
 
-    const proposedCode = await callAnthropicAPI(system, userPrompt);
+    const proposedCode = await callAI(system, userPrompt);
     res.json({ proposedCode });
   } catch (err: any) {
     console.error('AI generate-test error:', err);
@@ -1563,7 +1695,7 @@ Zwróć CAŁY plik spec.ts — z importami, test.describe, i wszystkimi testami.
 Użyj fixture import: import { test, expect } from '../../fixture';
 Tag: ${AREA_TO_TAG[area] || '@' + area + ' @e2e'}`;
 
-    const proposedCode = await callAnthropicAPI(system, userPrompt);
+    const proposedCode = await callAI(system, userPrompt);
     res.json({ proposedCode });
   } catch (err: any) {
     console.error('AI generate-area error:', err);
@@ -1609,7 +1741,7 @@ NIE dodawaj nic extra — napraw TYLKO to co jest zepsute.`;
 
     const userPrompt = `KOD TESTOWY:\n${fileContent}\n\nBŁĘDY / PROBLEM:\n${description}\n\nNapraw kod.`;
 
-    const proposedCode = await callAnthropicAPI(fixSystem, userPrompt);
+    const proposedCode = await callAI(fixSystem, userPrompt);
     res.json({ proposedCode });
   } catch (err: any) {
     console.error('AI fix-locators error:', err);
@@ -1891,7 +2023,7 @@ wss.on('connection', (ws: WebSocket) => {
       const systemPrompt = buildChatSystemPrompt(project, area);
 
       try {
-        const fullResponse = await streamAnthropicChat(ws, systemPrompt, session.messages);
+        const fullResponse = await streamAIChat(ws, systemPrompt, session.messages);
         session.messages.push({ role: 'assistant', content: fullResponse });
 
         // Check for code blocks → auto-run
@@ -1909,7 +2041,7 @@ wss.on('connection', (ws: WebSocket) => {
               // Add result to conversation
               session.messages.push({ role: 'user', content: '[SYSTEM] Test PRZESZEDŁ pomyślnie.' });
               // AI responds to success
-              const successResponse = await streamAnthropicChat(ws, systemPrompt, session.messages);
+              const successResponse = await streamAIChat(ws, systemPrompt, session.messages);
               session.messages.push({ role: 'assistant', content: successResponse });
             } else {
               ws.send(JSON.stringify({ type: 'chat:testResult', passed: false, errorOutput: result.errorOutput, screenshots: result.screenshots }));
@@ -1919,7 +2051,7 @@ wss.on('connection', (ws: WebSocket) => {
                 content: `[SYSTEM] Test NIE PRZESZEDŁ. Błędy:\n${result.errorOutput}\n\nNapraw test. Zwróć poprawiony kod w bloku \`\`\`typescript.`
               });
               // AI auto-fixes
-              const fixResponse = await streamAnthropicChat(ws, systemPrompt, session.messages);
+              const fixResponse = await streamAIChat(ws, systemPrompt, session.messages);
               session.messages.push({ role: 'assistant', content: fixResponse });
 
               // Try auto-run the fix
@@ -1933,11 +2065,11 @@ wss.on('connection', (ws: WebSocket) => {
 
                   if (fixResult.passed) {
                     session.messages.push({ role: 'user', content: '[SYSTEM] Poprawiony test PRZESZEDŁ!' });
-                    const yayResponse = await streamAnthropicChat(ws, systemPrompt, session.messages);
+                    const yayResponse = await streamAIChat(ws, systemPrompt, session.messages);
                     session.messages.push({ role: 'assistant', content: yayResponse });
                   } else {
                     session.messages.push({ role: 'user', content: `[SYSTEM] Poprawiony test dalej nie przechodzi. Błędy:\n${fixResult.errorOutput}\n\nZaproponuj inny fix lub poproś usera o pomoc (codegen).` });
-                    const retryResponse = await streamAnthropicChat(ws, systemPrompt, session.messages);
+                    const retryResponse = await streamAIChat(ws, systemPrompt, session.messages);
                     session.messages.push({ role: 'assistant', content: retryResponse });
                   }
                 }
