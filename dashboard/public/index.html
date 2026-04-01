@@ -856,6 +856,7 @@
       font-family: var(--font);
       font-size: 11px;
       line-height: 1.7;
+      min-height: 180px;
       max-height: 500px;
       overflow-y: auto;
       white-space: pre-wrap;
@@ -1083,6 +1084,18 @@
     .chat-send-btn:hover { background: rgba(249,115,22,0.22); }
     .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* --- Terminal idle animation --- */
+    .terminal-idle { display: flex; align-items: center; justify-content: center; padding: 16px 0; color: var(--text-dim); user-select: none; }
+    .terminal-idle-art { font-size: 11px; line-height: 1.4; letter-spacing: 0.05em; }
+    .terminal-idle .zzz { display: inline-block; animation: zzz-float 2s ease-in-out infinite; color: var(--text-dim); }
+    .terminal-idle .zzz:nth-child(2) { animation-delay: 0.4s; font-size: 10px; }
+    .terminal-idle .zzz:nth-child(3) { animation-delay: 0.8s; font-size: 9px; opacity: 0.5; }
+    @keyframes zzz-float { 0%,100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(-6px); opacity: 1; } }
+    .terminal-idle .qa-guy { color: var(--accent); }
+    .terminal-idle .qa-shirt { color: var(--violet); }
+    .terminal-idle .qa-coffee { animation: coffee-steam 2.5s ease-in-out infinite; }
+    @keyframes coffee-steam { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+
     /* --- Toast notifications --- */
     .toast-container { position: fixed; top: 60px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast { pointer-events: auto; padding: 12px 20px; border-radius: var(--radius); font-size: 12px; font-family: var(--font); font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.5); animation: toast-in 0.3s ease, toast-out 0.3s ease 4.7s forwards; max-width: 400px; }
@@ -1254,7 +1267,17 @@
               <span class="stat" id="prog-heal-stat" style="display:none"><span class="dot-h">&#9679;</span> <span id="prog-healed">0</span> healed</span>
             </div>
           </div>
-          <div class="terminal-body" id="terminal-output">Gotowy do uruchomienia testów...\n</div>
+          <div class="terminal-body" id="terminal-output"><div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-art"><span class="qa-coffee" style="position:relative; left:68px;">~</span>
+<span style="color:var(--text-dim)">                    </span><span class="zzz">z</span><span class="zzz">Z</span><span class="zzz">z</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">    O</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">   /|\ </span><span style="color:var(--text-dim); font-size:10px;">  ☕</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-shirt">  [QA] </span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">   / \</span>
+<span style="color:var(--text-dim)">     ___________</span>
+<span style="color:var(--text-dim)">     |  _    _ |</span>   <span style="color:var(--text-dim); font-size:10px;">Czekam na testy...</span>
+<span style="color:var(--text-dim)">     | |_|  |_||</span>   <span style="color:var(--text-dim); font-size:10px;">Kliknij "Uruchom" albo uzyj AI Chat</span>
+<span style="color:var(--text-dim)">     |_________|</span>
+</div></div></div>
         </div>
       </div>
     </div>
@@ -1326,6 +1349,9 @@
         if (msg.type === 'run:start') {
           currentRunId = msg.runId;
           healCount = 0;
+          // Remove idle QA guy
+          const idle = document.getElementById('terminal-idle');
+          if (idle) idle.remove();
           appendTerminal(`\n> ${msg.command}\n\n`, 'line-info');
           updateRunStatus('running');
           showProgress(true);
@@ -1739,7 +1765,21 @@
 
     function clearTerminal() {
       const term = document.getElementById('terminal-output');
-      if (term) term.innerHTML = '';
+      if (term) term.innerHTML = getIdleQA();
+    }
+
+    function getIdleQA() {
+      return `<div class="terminal-idle" id="terminal-idle"><div class="terminal-idle-art"><span class="qa-coffee" style="position:relative; left:68px;">~</span>
+<span style="color:var(--text-dim)">                    </span><span class="zzz">z</span><span class="zzz">Z</span><span class="zzz">z</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">    O</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">   /|\\ </span><span style="color:var(--text-dim); font-size:10px;">  ☕</span>
+<span style="color:var(--text-dim)">        </span><span class="qa-shirt">  [QA] </span>
+<span style="color:var(--text-dim)">        </span><span class="qa-guy">   / \\\\</span>
+<span style="color:var(--text-dim)">     ___________</span>
+<span style="color:var(--text-dim)">     |  _    _ |</span>   <span style="color:var(--text-dim); font-size:10px;">Czekam na testy...</span>
+<span style="color:var(--text-dim)">     | |_|  |_||</span>   <span style="color:var(--text-dim); font-size:10px;">Kliknij "Uruchom" albo uzyj AI Chat</span>
+<span style="color:var(--text-dim)">     |_________|</span>
+</div></div>`;
     }
 
     function updateRunStatus(status) {
