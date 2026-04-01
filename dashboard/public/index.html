@@ -1545,7 +1545,7 @@
         <div class="main-header">
           <div>
             <h2>${project.displayName}</h2>
-            <div class="subtitle">${project.totalTests} testów w ${project.areas.length} obszarach</div>
+            <div class="subtitle">${pluralTests(project.totalTests)} w ${project.areas.length} obszarach</div>
           </div>
           <div class="btn-group">
             <button class="btn btn-primary" onclick="runTests('${project.name}', 'all')" title="Uruchom wszystkie testy w projekcie">Uruchom wszystkie</button>
@@ -1620,7 +1620,7 @@
         const plName = AREA_NAMES_PL[area.name] || area.displayName;
         html += `
           <div class="area-card" onclick="showArea(findProject('${project.name}'), '${area.name}')">
-            <div class="card-static-name">${plName}<div class="card-static-count">${area.testCount} testów</div></div>
+            <div class="card-static-name">${plName}<div class="card-static-count">${pluralTests(area.testCount)}</div></div>
             <div class="card-circles">
               <div class="card-circle"></div>
               <div class="card-circle card-circle--bottom"></div>
@@ -1628,7 +1628,7 @@
             </div>
             <div class="card-label">
               <div class="card-label-name">${plName}</div>
-              <div class="card-label-count">${area.testCount} testów</div>
+              <div class="card-label-count">${pluralTests(area.testCount)}</div>
             </div>
           </div>`;
       }
@@ -1658,7 +1658,7 @@
         <div class="main-header">
           <div>
             <h2>${plName}</h2>
-            <div class="subtitle">${project.displayName} &bull; ${area.testCount} testów &bull; ${area.specFile}</div>
+            <div class="subtitle">${project.displayName} &bull; ${pluralTests(area.testCount)} &bull; ${area.specFile}</div>
           </div>
           <div class="btn-group">
             <button class="btn btn-primary" onclick="runTests('${project.name}', '${area.name}')">
@@ -1908,6 +1908,16 @@
     });
 
     // --- Utils ---
+    // Polish declension: 1 test, 2 testy, 5 testów
+    function pluralTests(n) {
+      if (n === 1) return n + ' test';
+      const lastTwo = n % 100;
+      const lastOne = n % 10;
+      if (lastTwo >= 12 && lastTwo <= 14) return n + ' testów';
+      if (lastOne >= 2 && lastOne <= 4) return n + ' testy';
+      return n + ' testów';
+    }
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
@@ -2073,7 +2083,7 @@
         <div class="main-header">
           <div>
             <h2>Przeglad wszystkich projektow</h2>
-            <div class="subtitle">${totalProjects} projektow &bull; ${totalTests} testow (E2E + API)</div>
+            <div class="subtitle">${totalProjects} projektow &bull; ${pluralTests(totalTests)} (E2E + API)</div>
           </div>
         </div>
 
@@ -2977,7 +2987,7 @@
         if (updatedProj) showProject(updatedProj);
 
         const testCount = updatedProj?.areas.find(a => a.name === areaName)?.testCount || 0;
-        showToast(`Obszar "${areaName}" utworzony z ${testCount} testami`, 'success');
+        showToast(`Obszar "${areaName}" utworzony — ${pluralTests(testCount)}`, 'success');
       } catch (err) {
         showToast('Blad: ' + err.message, 'error');
       } finally {
@@ -3469,7 +3479,7 @@
           if (updated) showProject(updated);
 
           const testCount = updated?.areas.find(a => a.name === area)?.testCount || 0;
-          showToast('Wygenerowano ' + testCount + ' testow ' + area + '!', 'success');
+          showToast('Wygenerowano ' + pluralTests(testCount) + ' ' + area + '!', 'success');
 
           // Auto-run after generation
           if (testCount > 0) {
