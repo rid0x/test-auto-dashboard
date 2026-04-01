@@ -1158,7 +1158,15 @@ app.get('/api/summary', (_req, res) => {
 
 app.post('/api/projects', (req, res) => {
   try {
-    const { name, baseUrl, credentials, registration, search, product, category, features, areas, generateMode } = req.body;
+    const { name, baseUrl, credentials, registration, search, product, category, areas, generateMode } = req.body;
+    // Auto-prefix cookie consent selector with text= if needed
+    const features = req.body.features || {};
+    if (features.cookieConsentSelector) {
+      const sel = features.cookieConsentSelector.trim();
+      if (sel && !sel.startsWith('text=') && !sel.startsWith('.') && !sel.startsWith('#') && !sel.startsWith('[')) {
+        features.cookieConsentSelector = 'text=' + sel;
+      }
+    }
 
     // Validate
     const nameError = validateProjectName(name);
