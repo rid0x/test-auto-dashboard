@@ -2304,31 +2304,38 @@
     }
 
     // Listen for uptime updates via WebSocket
-    // Track previous uptime state to detect new downtimes
+    // Track uptime state — alert only after 2 consecutive failures (avoids deploy false positives)
     let previousUptimeState = {};
+    let uptimeDownCount = {}; // how many consecutive pings each store has been down
     let uptimeBaselineSet = false;
+    let uptimeAlerted = {}; // prevent repeat alerts
 
     function handleUptimeUpdate(data) {
       if (!uptimeBaselineSet) {
-        // First update = silent baseline — just save state, no alerts
         for (const [name, store] of Object.entries(data)) {
           previousUptimeState[name] = store.current;
+          uptimeDownCount[name] = 0;
         }
         uptimeBaselineSet = true;
         if (!activeProject && document.querySelector('.main-header h2')?.textContent === 'Uptime Monitoring') showUptime();
         return;
       }
 
-      // Check for downtimes: UP→DOWN or new store appearing as DOWN
       for (const [name, store] of Object.entries(data)) {
-        const prev = previousUptimeState[name];
-        if (store.current === 'down' && prev !== 'down') {
-          // prev === 'up' (was up, now down) OR prev === undefined (new store, appeared as down)
-          playAlertSound();
-          showUptimeAlert(name, store.url);
+        if (store.current === 'down') {
+          uptimeDownCount[name] = (uptimeDownCount[name] || 0) + 1;
+          // Alert after 2 consecutive failures (~2 minutes) and only once
+          if (uptimeDownCount[name] >= 2 && !uptimeAlerted[name]) {
+            uptimeAlerted[name] = true;
+            playAlertSound();
+            showUptimeAlert(name, store.url);
+          }
+        } else {
+          // Store is UP — reset counters
+          uptimeDownCount[name] = 0;
+          uptimeAlerted[name] = false;
         }
       }
-      // Save current state
       for (const [name, store] of Object.entries(data)) {
         previousUptimeState[name] = store.current;
       }
