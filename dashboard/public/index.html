@@ -2306,13 +2306,35 @@
     // Listen for uptime updates via WebSocket
     // Track previous uptime state to detect new downtimes
     let previousUptimeState = {};
+    let uptimeBaselineSet = false;
 
     function handleUptimeUpdate(data) {
-      // Check for new downtimes
+      if (!uptimeBaselineSet) {
+        // First update = baseline, no alerts yet
+        for (const [name, store] of Object.entries(data)) {
+          previousUptimeState[name] = store.current;
+        }
+        uptimeBaselineSet = true;
+        // But if anything is already down on first load, still alert once
+        const downStores = Object.entries(data).filter(([,s]) => s.current === 'down');
+        for (const [name, store] of downStores) {
+          playAlertSound();
+          showUptimeAlert(name, store.url);
+        }
+        // Refresh view
+        if (!activeProject && document.querySelector('.main-header h2')?.textContent === 'Uptime Monitoring') showUptime();
+        return;
+      }
+
+      // Check for new downtimes (UP → DOWN)
       for (const [name, store] of Object.entries(data)) {
         const prev = previousUptimeState[name];
         if (prev === 'up' && store.current === 'down') {
-          // Store just went DOWN — alert!
+          playAlertSound();
+          showUptimeAlert(name, store.url);
+        }
+        // New store appearing as down
+        if (prev === undefined && store.current === 'down') {
           playAlertSound();
           showUptimeAlert(name, store.url);
         }
