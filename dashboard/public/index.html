@@ -1084,22 +1084,42 @@
     .chat-send-btn:hover { background: rgba(249,115,22,0.22); }
     .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* --- Terminal idle — retro QA tester waiting --- */
-    .terminal-idle { text-align: center; padding: 24px 16px 16px; position: relative; overflow: hidden; }
-    .idle-char { font-size: 28px; display: inline-block; animation: idle-dance 2.2s ease-in-out infinite; margin-bottom: 12px; line-height: 1; filter: drop-shadow(0 0 10px rgba(249,115,22,0.25)); }
-    @keyframes idle-dance { 0%,100% { transform: rotate(-8deg) translateY(0); } 20% { transform: rotate(8deg) translateY(-6px); } 45% { transform: rotate(-5deg) translateY(-2px); } 70% { transform: rotate(7deg) translateY(-8px); } 85% { transform: rotate(-3deg) translateY(-3px); } }
+    /* --- Terminal idle — Newton's Cradle + floating stars --- */
+    .terminal-idle { text-align: center; padding: 16px 16px 12px; position: relative; overflow: hidden; }
+
+    /* Newton's Cradle */
+    .idle-cradle { position: relative; width: 160px; height: 100px; margin: 0 auto 14px; border-top: 3px solid rgba(249,115,22,0.4); border-radius: 2px; }
+    .idle-cradle::before, .idle-cradle::after { content: ''; position: absolute; top: -3px; width: 3px; height: 10px; background: rgba(249,115,22,0.4); border-radius: 0 0 2px 2px; }
+    .idle-cradle::before { left: 0; }
+    .idle-cradle::after { right: 0; }
+    .idle-ball { position: absolute; bottom: 0; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(168,85,247,0.6), rgba(168,85,247,0.2)); border: 1px solid rgba(168,85,247,0.4); box-shadow: 0 0 12px rgba(168,85,247,0.15), inset 0 -2px 4px rgba(0,0,0,0.3); transform-origin: 50% -230%; }
+    .idle-ball::before { content: ''; position: absolute; width: 1px; height: 70px; background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.06)); left: 50%; top: -70px; transform: translateX(-50%); }
+    .idle-ball:nth-child(1) { left: 22px; }
+    .idle-ball:nth-child(2) { left: 48px; }
+    .idle-ball:nth-child(3) { left: 74px; }
+    .idle-ball:nth-child(4) { left: 100px; }
+    .idle-ball:nth-child(5) { left: 126px; }
+    .idle-ball.first { animation: cradle-left 0.9s alternate ease-in infinite; }
+    .idle-ball.last { animation: cradle-right 0.9s alternate ease-out infinite; }
+    .idle-ball.first { background: radial-gradient(circle at 35% 35%, rgba(249,115,22,0.7), rgba(249,115,22,0.25)); border-color: rgba(249,115,22,0.5); box-shadow: 0 0 14px rgba(249,115,22,0.2), inset 0 -2px 4px rgba(0,0,0,0.3); }
+    .idle-ball.last { background: radial-gradient(circle at 35% 35%, rgba(249,115,22,0.7), rgba(249,115,22,0.25)); border-color: rgba(249,115,22,0.5); box-shadow: 0 0 14px rgba(249,115,22,0.2), inset 0 -2px 4px rgba(0,0,0,0.3); }
+    @keyframes cradle-left { 0% { transform: rotate(30deg); } 50%,100% { transform: rotate(0deg); } }
+    @keyframes cradle-right { 0%,50% { transform: rotate(0deg); } 100% { transform: rotate(-30deg); } }
+
+    /* Text */
     .idle-title { font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; animation: idle-fadein 0.5s ease both; }
     .idle-sub { font-family: var(--font); font-size: 10px; color: rgba(255,255,255,0.15); animation: idle-fadein 0.8s ease both; }
     .idle-sub span { color: rgba(249,115,22,0.4); }
     @keyframes idle-fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
     /* Floating stars */
     .idle-star { position: absolute; opacity: 0; animation: idle-float 3.5s ease-in-out infinite; pointer-events: none; font-size: 11px; }
-    .idle-star.s1 { left: 15%; top: 55%; color: var(--accent); animation-delay: 0s; }
-    .idle-star.s2 { left: 30%; top: 62%; color: var(--violet); animation-delay: 0.8s; font-size: 9px; }
-    .idle-star.s3 { left: 55%; top: 58%; color: var(--green); animation-delay: 1.6s; }
-    .idle-star.s4 { left: 72%; top: 65%; color: var(--yellow); animation-delay: 2.4s; font-size: 8px; }
-    .idle-star.s5 { left: 45%; top: 70%; color: var(--blue); animation-delay: 3.1s; font-size: 9px; }
-    .idle-star.s6 { left: 85%; top: 52%; color: var(--accent); animation-delay: 1.2s; font-size: 10px; }
+    .idle-star.s1 { left: 8%; top: 50%; color: var(--accent); animation-delay: 0s; }
+    .idle-star.s2 { left: 20%; top: 65%; color: var(--violet); animation-delay: 0.8s; font-size: 9px; }
+    .idle-star.s3 { left: 78%; top: 55%; color: var(--green); animation-delay: 1.6s; }
+    .idle-star.s4 { left: 88%; top: 62%; color: var(--yellow); animation-delay: 2.4s; font-size: 8px; }
+    .idle-star.s5 { left: 35%; top: 72%; color: var(--blue); animation-delay: 3.1s; font-size: 9px; }
+    .idle-star.s6 { left: 65%; top: 68%; color: var(--accent); animation-delay: 1.2s; font-size: 10px; }
     @keyframes idle-float { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 0.8; } 80% { opacity: 0.3; } 100% { opacity: 0; transform: translateY(-36px) scale(1.1); } }
 
     /* --- Toast notifications --- */
@@ -1275,7 +1295,13 @@
           </div>
           <div class="terminal-body" id="terminal-output"><div class="terminal-idle" id="terminal-idle">
             <span class="idle-star s1">✦</span><span class="idle-star s2">⚡</span><span class="idle-star s3">✦</span><span class="idle-star s4">◆</span><span class="idle-star s5">✧</span><span class="idle-star s6">⚡</span>
-            <div class="idle-char">☕</div>
+            <div class="idle-cradle">
+              <div class="idle-ball first"></div>
+              <div class="idle-ball"></div>
+              <div class="idle-ball"></div>
+              <div class="idle-ball"></div>
+              <div class="idle-ball last"></div>
+            </div>
             <div class="idle-title">Czekam na testy...</div>
             <div class="idle-sub">Kliknij <span>Uruchom</span> albo uzyj <span>AI Chat</span></div>
           </div></div>
@@ -1772,7 +1798,13 @@
     function getIdleQA() {
       return `<div class="terminal-idle" id="terminal-idle">
         <span class="idle-star s1">✦</span><span class="idle-star s2">⚡</span><span class="idle-star s3">✦</span><span class="idle-star s4">◆</span><span class="idle-star s5">✧</span><span class="idle-star s6">⚡</span>
-        <div class="idle-char">☕</div>
+        <div class="idle-cradle">
+          <div class="idle-ball first"></div>
+          <div class="idle-ball"></div>
+          <div class="idle-ball"></div>
+          <div class="idle-ball"></div>
+          <div class="idle-ball last"></div>
+        </div>
         <div class="idle-title">Czekam na testy...</div>
         <div class="idle-sub">Kliknij <span>Uruchom</span> albo uzyj <span>AI Chat</span></div>
       </div>`;
