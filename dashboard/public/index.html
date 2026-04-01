@@ -2339,19 +2339,22 @@
       }
     }
 
-    // Audio context — must be created/resumed after user interaction
+    // Audio — use Notification API sound as primary, Web Audio as fallback
     let audioCtx = null;
-    function ensureAudioCtx() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
-    }
-    // Unlock audio on first click anywhere
-    document.addEventListener('click', () => ensureAudioCtx(), { once: true });
 
     function playAlertSound() {
+      // Method 1: Generate and play a WAV beep via Audio element (works without prior interaction)
       try {
-        const ctx = ensureAudioCtx();
+        const audio = generateBeepAudio();
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      } catch {}
+
+      // Method 2: Web Audio API (needs prior interaction but higher quality)
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const ctx = audioCtx;
         const playTone = (freq, start, dur) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -2367,8 +2370,55 @@
         playTone(880, 0, 0.15);
         playTone(660, 0.2, 0.15);
         playTone(880, 0.4, 0.25);
-      } catch (e) { console.warn('Audio alert failed:', e); }
+      } catch {}
+
+      // Method 3: Browser Notification (shows system notification + default sound)
+      try {
+        if (Notification.permission === 'granted') {
+          new Notification('Sklep offline!', { body: 'Jeden ze sklepow nie odpowiada', icon: '🚨', silent: false });
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission();
+        }
+      } catch {}
     }
+
+    // Generate a short WAV beep as data URI
+    function generateBeepAudio() {
+      const sampleRate = 8000;
+      const duration = 0.3;
+      const freq = 800;
+      const samples = sampleRate * duration;
+      const buffer = new ArrayBuffer(44 + samples * 2);
+      const view = new DataView(buffer);
+      // WAV header
+      const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + samples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, samples * 2, true);
+      // Generate sine wave
+      for (let i = 0; i < samples; i++) {
+        const t = i / sampleRate;
+        const envelope = Math.min(1, (duration - t) * 10) * Math.min(1, t * 50);
+        const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.5;
+        view.setInt16(44 + i * 2, sample * 32767, true);
+      }
+      const blob = new Blob([buffer], { type: 'audio/wav' });
+      const audio = new Audio(URL.createObjectURL(blob));
+      return audio;
+    }
+
+    // Request notification permission early
+    try { if (Notification.permission === 'default') Notification.requestPermission(); } catch {}
 
     function showUptimeAlert(storeName, storeUrl) {
       // Toast
