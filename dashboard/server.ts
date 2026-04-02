@@ -950,11 +950,13 @@ function generateSkeletonSpec(projectName: string, areaName: string): string | n
   // Visual regression has its own generator
   if (areaName === 'visual') return generateVisualRegressionSpec(projectName);
 
-  // Find an existing project that has this area — use it as template
+  // Find an existing project that has this area — prefer getprice (most polished selectors)
   const projectsDir = path.join(ROOT, 'src', 'projects');
-  const templateProjects = fs.readdirSync(projectsDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name !== projectName)
+  const allProjects = fs.readdirSync(projectsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory() && d.name !== projectName && d.name !== 'test' && d.name !== 'testowy')
     .map(d => d.name);
+  // Getprice first (Hyva, codegen-verified), then others excluding configurator area
+  const templateProjects = ['getprice', ...allProjects.filter(p => p !== 'getprice')];
 
   for (const tmplProject of templateProjects) {
     const specDir = areaName === 'api'

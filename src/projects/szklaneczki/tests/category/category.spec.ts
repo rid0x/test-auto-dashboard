@@ -11,23 +11,27 @@ test.describe('Szklaneczki - Category @category @e2e', () => {
     await categoryPage.expectMinProducts(config.category.expectedMinProducts);
   });
 
-  // @desc: Panel filtrow (skip — Szklaneczki /twarz nie ma filtrow)
-  test.skip('should display filter panel', async ({ categoryPage }) => {
-    // Skipped: Szklaneczki category /twarz does not have filter panel
+  // @desc: Panel filtrow jest widoczny na stronie kategorii
+  test('should display filter panel', async ({ categoryPage }) => {
     await categoryPage.expectFiltersVisible();
   });
 
-  // @desc: Filtry posiadaja opcje do wyboru (skip — brak filtrow)
-  test.skip('should have filter options', async ({ categoryPage }) => {
+  // @desc: Filtry posiadaja opcje do wyboru
+  test('should have filter options', async ({ categoryPage }) => {
     const filterNames = await categoryPage.getFilterNames();
     expect(filterNames.length).toBeGreaterThan(0);
   });
 
-  // @desc: Zastosowanie filtra odswieza liste produktow (skip — brak filtrow)
-  test.skip('should apply filter and update results', async ({ categoryPage }) => {
+  // @desc: Zastosowanie filtra odswieza liste produktow
+  test('should apply filter and update results', async ({ categoryPage }) => {
     const countBefore = await categoryPage.getProductCount();
     await categoryPage.clickFirstFilterOption();
+
+    // After filter, product list should be updated (may be same, less, or more)
     await categoryPage.expectProductsVisible();
+    const countAfter = await categoryPage.getProductCount();
+    // Just verify the page still shows products (count may change)
+    expect(countAfter).toBeGreaterThan(0);
   });
 
   // @desc: Produkty na liscie maja widoczna nazwe i cene
@@ -35,6 +39,7 @@ test.describe('Szklaneczki - Category @category @e2e', () => {
     const firstProduct = page.locator('.product-item, li.product-item').first();
     await expect(firstProduct).toBeVisible();
 
+    // Product should have a name
     const productName = firstProduct.locator('.product-item-name, .product-item-link, .product-name, a[href*=".html"]').first();
     await expect(productName).toBeVisible();
   });
@@ -42,6 +47,7 @@ test.describe('Szklaneczki - Category @category @e2e', () => {
   // @desc: Klikniecie produktu przenosi na strone produktu
   test('should navigate to product from category', async ({ categoryPage, page }) => {
     const productUrl = await categoryPage.clickFirstProduct();
+    // Should be on a product page now (URL changed)
     expect(page.url()).not.toContain(categoryPage['config'].category.url);
   });
 
@@ -57,12 +63,9 @@ test.describe('Szklaneczki - Category @category @e2e', () => {
   });
 
   // @desc: Liczba produktow jest widoczna w toolbarze kategorii
-  test('should display product count', async ({ page }) => {
+  test.skip('should display product count', async ({ page }) => {
+    // Skipped: Szklaneczki category pages do not show a product count toolbar
     const toolbar = page.locator('.toolbar-amount, .toolbar-number, .search-result-count');
-    const count = await toolbar.count();
-    if (count === 0) {
-      test.skip(true, 'Brak toolbara z liczba produktow na tej kategorii');
-    }
-    expect(count).toBeGreaterThan(0);
+    await expect(toolbar.first()).toBeVisible();
   });
 });

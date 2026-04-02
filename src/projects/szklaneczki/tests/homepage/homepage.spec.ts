@@ -7,7 +7,7 @@ test.describe('Szklaneczki - Homepage @homepage @e2e', () => {
 
   // @desc: Strona glowna laduje poprawnie i URL jest prawidlowy
   test('should load homepage successfully', async ({ page }) => {
-    await expect(page).toHaveURL(/Szklaneczki\.pl/);
+    await expect(page).toHaveURL(/getprice\.pl/);
   });
 
   // @desc: Logo sklepu jest widoczne na stronie glownej
@@ -52,8 +52,9 @@ test.describe('Szklaneczki - Homepage @homepage @e2e', () => {
       }
     });
 
-    await page.goto(`${config.baseUrl}`, { waitUntil: 'load' });
+    await page.goto(config.baseUrl, { waitUntil: 'load' });
 
+    // Filter out known/acceptable errors
     const criticalErrors = errors.filter(
       e => !e.includes('favicon') && !e.includes('analytics') && !e.includes('gtm')
     );
@@ -63,10 +64,11 @@ test.describe('Szklaneczki - Homepage @homepage @e2e', () => {
   // @desc: Strona jest responsywna — kluczowe elementy widoczne na 375x812
   test('should be responsive - mobile viewport', async ({ page, config }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto(`${config.baseUrl}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(config.baseUrl, { waitUntil: 'domcontentloaded' });
 
+    // On mobile, page should still have key elements (search, cart, menu items)
     const hasSearch = await page.locator('#search, input[name="q"]').first().isVisible().catch(() => false);
-    const hasCart = await page.locator('.minicart-wrapper, a.showcart').first().isVisible().catch(() => false);
+    const hasCart = await page.locator('#menu-cart-icon, button[title="Koszyk"]').first().isVisible().catch(() => false);
     const hasMenu = await page.locator('.menu-item-link, nav.navigation, .nav-toggle').first().isVisible().catch(() => false);
     expect(hasSearch || hasCart || hasMenu).toBeTruthy();
   });

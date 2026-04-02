@@ -24,13 +24,14 @@ test.describe('Szklaneczki - Login @login @e2e', () => {
       await expect(page.locator('button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
     });
 
+    // Attach screenshot as proof
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });
 
   // @desc: Logowanie poprawnymi danymi konczy sie sukcesem (przekierowanie na konto)
   test('should login with valid credentials', async ({ loginPage, page, config }) => {
-    test.skip(!config.credentials.valid.email, 'BRAK DANYCH: Ustaw SZPAKI_USER_EMAIL i SZPAKI_USER_PASSWORD w .env');
+    test.skip(!config.credentials.valid.email, 'BRAK DANYCH: Ustaw SZKLANECZKI_USER_EMAIL i SZKLANECZKI_USER_PASSWORD w .env');
     await skipIfRecaptcha(page, test.info());
 
     await test.step('Fill login form', async () => {
@@ -85,7 +86,7 @@ test.describe('Szklaneczki - Login @login @e2e', () => {
     await skipIfRecaptcha(page, test.info());
 
     await test.step('Submit with empty password', async () => {
-      await loginPage.login('test@Szklaneczki.pl', '');
+      await loginPage.login('test@getprice.pl', '');
     });
 
     await test.step('Verify stayed on login page', async () => {

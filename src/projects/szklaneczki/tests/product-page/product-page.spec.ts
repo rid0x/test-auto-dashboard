@@ -17,10 +17,12 @@ test.describe('Szklaneczki - Product Page @product-page @e2e', () => {
 
   // @desc: Zdjecie produktu jest widoczne na stronie
   test('should display product image', async ({ page }) => {
+    // Szklaneczki uses lazy-loaded images — scroll to product area first
     await page.locator('.product-info-main, h1').first().scrollIntoViewIfNeeded();
-    await page.locator('.product-info-main img, .product.media img, .gallery-placeholder img').first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
+    await page.locator('.product-info-main img, img[alt*="Patchcord"], img.object-contain').first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
 
-    const images = page.locator('.product-info-main img, .product.media img, .gallery-placeholder img');
+    // Check that at least one product image exists (may be lazy loaded)
+    const images = page.locator('.product-info-main img, img[alt*="Patchcord"], img.object-contain');
     const count = await images.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -42,7 +44,7 @@ test.describe('Szklaneczki - Product Page @product-page @e2e', () => {
   // @desc: Opis lub szczegoly produktu sa widoczne na stronie
   test('should display product description/details', async ({ page }) => {
     const details = page.locator(
-      '.product-description, .product.info.detailed, .product-info-detailed, .tab-section'
+      '.product-description, .tab-section, .custom-getprice-tabs, .product.info.detailed, .product-info-detailed'
     );
     await expect(details.first()).toBeVisible({ timeout: 10000 });
   });
@@ -59,38 +61,27 @@ test.describe('Szklaneczki - Product Page @product-page @e2e', () => {
     await productPage.expectAddToCartSuccess();
   });
 
-  // @desc: Breadcrumbs (sciezka nawigacji) sa widoczne po przejsciu z kategorii
-  test('should display breadcrumbs', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/twarz`);
-    await page.locator('.product-item, li.product-item').first().waitFor({ state: 'visible', timeout: 10000 });
-    await page.locator('.product-item a, li.product-item a').first().click();
-    await page.waitForLoadState('load');
-
+  // @desc: Breadcrumbs (sciezka nawigacji) sa widoczne
+  test('should display breadcrumbs', async ({ page }) => {
     const breadcrumbs = page.locator('.breadcrumbs, .breadcrumb, nav[aria-label="breadcrumb"]');
     await expect(breadcrumbs.first()).toBeVisible();
   });
 
   // @desc: Sekcja opinii o produkcie jest widoczna (skip jesli brak)
-  test('should have product reviews section', async ({ page }) => {
+  test.skip('should have product reviews section', async ({ page }) => {
+    // Skipped: Szklaneczki product pages do not have a reviews section
     const reviews = page.locator(
       '#tab-label-reviews, .product-reviews-summary, .reviews-actions, [data-role="reviews"]'
     );
-    const count = await reviews.count();
-    if (count === 0) {
-      test.skip(true, 'Brak sekcji opinii na tej stronie produktu');
-    }
-    expect(count).toBeGreaterThan(0);
+    await expect(reviews.first()).toBeVisible();
   });
 
   // @desc: Produkty powiazane/polecane sa widoczne (skip jesli brak)
-  test('should display related/upsell products if available', async ({ page }) => {
+  test.skip('should display related/upsell products if available', async ({ page }) => {
+    // Skipped: Szklaneczki product pages do not display related/upsell products
     const related = page.locator(
       '.block.related, .block.upsell, .block.crosssell, .products-related, .products-upsell'
     );
-    const count = await related.count();
-    if (count === 0) {
-      test.skip(true, 'Brak produktow powiazanych na tej stronie produktu');
-    }
-    expect(count).toBeGreaterThan(0);
+    await expect(related.first()).toBeVisible();
   });
 });

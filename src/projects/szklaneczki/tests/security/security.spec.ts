@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { szklaneczkiConfig } from '../../../../../config/Szklaneczki.config';
+import { szklaneczkiConfig } from '../../../../../config/szklaneczki.config';
 
 const BASE = szklaneczkiConfig.baseUrl;
 
@@ -16,7 +16,7 @@ test.describe('Szklaneczki - Security Tests @security', () => {
       await page.goto(`${BASE}/catalogsearch/result/?q=${encodeURIComponent(payload)}`, { waitUntil: 'load' });
 
       // Should not crash (500) or show DB error
-      const status = page.url().includes('catalogsearch') || page.url().includes('Szklaneczki');
+      const status = page.url().includes('catalogsearch') || page.url().includes('4szpaki');
       expect(status).toBeTruthy();
       const bodyText = await page.locator('body').textContent() || '';
       expect(bodyText).not.toContain('SQL');
@@ -34,7 +34,7 @@ test.describe('Szklaneczki - Security Tests @security', () => {
     test('login form rejects SQL injection in email', async ({ page }) => {
       await page.goto(`${BASE}/customer/account/login/`, { waitUntil: 'load' });
       // Dismiss cookie consent if present
-      const cookie = page.getByText('Zaakceptuj wszystkie');
+      const cookie = page.locator('.consent-cookie-directive button').first();
       if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) {
         await cookie.click();
         await page.waitForTimeout(500);
@@ -366,7 +366,7 @@ test.describe('Szklaneczki - Security Tests @security', () => {
       expect(cookies.length).toBeGreaterThan(0);
 
       // Check that cookies on the main domain use Secure flag (HTTPS site)
-      const siteCookies = cookies.filter(c => c.domain.includes('Szklaneczki'));
+      const siteCookies = cookies.filter(c => c.domain.includes('szklaneczki'));
       for (const cookie of siteCookies) {
         if (cookie.name.includes('PHPSESSID') || cookie.name.includes('private_content') || cookie.name.includes('mage-')) {
           expect(cookie.secure).toBeTruthy();

@@ -14,6 +14,7 @@ import { hulajnogimicroConfig } from './hulajnogimicro.config';
 import { bladevilleConfig } from './bladeville.config';
 import { testConfig } from './test.config';
 import { testowyConfig } from './testowy.config';
+import { szklaneczkiConfig } from './szklaneczki.config';
 
 const projectConfigs: Record<ProjectName, ProjectConfig> = {
   getprice: getpriceConfig,
@@ -29,7 +30,7 @@ const projectConfigs: Record<ProjectName, ProjectConfig> = {
   elakiernik: elakiernikConfig,
   hulajnogimicro: hulajnogimicroConfig,
   bladeville: bladevilleConfig,
-  'test': testConfig,   'testowy': testowyConfig,
+  'test': testConfig,   'testowy': testowyConfig,   'szklaneczki': szklaneczkiConfig,
 };
 
 export function getProjectConfig(name: ProjectName): ProjectConfig {

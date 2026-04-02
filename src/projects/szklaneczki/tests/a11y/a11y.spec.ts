@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { szklaneczkiConfig } from '../../../../../config/Szklaneczki.config';
+import { szklaneczkiConfig } from '../../../../../config/szklaneczki.config';
 
 const BASE = szklaneczkiConfig.baseUrl;
 

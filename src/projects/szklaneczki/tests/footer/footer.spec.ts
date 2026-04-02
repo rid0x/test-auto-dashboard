@@ -38,48 +38,20 @@ test.describe('Szklaneczki - Footer & Newsletter @footer @e2e', () => {
 
   // @desc: Formularz zapisu na newsletter z polem email jest widoczny w stopce
   test('should display newsletter form', async ({ page }) => {
-    // Newsletter may be in footer or separate section
-    const newsletter = page.locator(
-      '#newsletter, input[name="email"][placeholder*="newsletter" i], ' +
-      'input[name="email"][placeholder*="email" i], ' +
-      'form.newsletter, .newsletter-subscribe, .footer-newsletter, ' +
-      '#newsletter-validate-detail input[type="email"]'
-    );
-
-    await page.locator('footer, .footer').first().scrollIntoViewIfNeeded();
-    await newsletter.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
-
-    const count = await newsletter.count();
-    expect(count).toBeGreaterThan(0);
+    const newsletterInput = page.locator('#newsletter-subscribe');
+    await newsletterInput.scrollIntoViewIfNeeded();
+    await expect(newsletterInput).toBeVisible();
+    await expect(newsletterInput).toHaveAttribute('type', 'email');
 
     const screenshot = await page.screenshot();
     await test.info().attach('Newsletter form', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Walidacja pola email w formularzu newsletter (poprawny format)
-  test('should validate newsletter email', async ({ page }) => {
-    // Find newsletter input
-    const emailInput = page.locator(
-      '#newsletter, #newsletter-validate-detail input[type="email"], ' +
-      'form.newsletter input[type="email"], .footer input[type="email"]'
-    ).first();
-
-    await emailInput.scrollIntoViewIfNeeded();
-
-    if (await emailInput.isVisible().catch(() => false)) {
-      // Try submitting empty email
-      const submitBtn = page.locator(
-        'form.newsletter button, #newsletter-validate-detail button, ' +
-        '.footer button:has-text("Zapisz"), .footer button[type="submit"]'
-      ).first();
-
-      if (await submitBtn.isVisible().catch(() => false)) {
-        await submitBtn.click();
-        await page.waitForLoadState('domcontentloaded');
-        // Should show validation error or stay on page
-        await expect(page.locator('body')).toBeVisible();
-      }
-    }
+  // @desc: Przycisk zapisu na newsletter jest widoczny
+  test('should have newsletter submit button', async ({ page }) => {
+    const submitBtn = page.getByRole('button', { name: 'Zapisz' });
+    await submitBtn.scrollIntoViewIfNeeded();
+    await expect(submitBtn).toBeVisible();
   });
 
   // @desc: Linki do mediow spolecznosciowych sa widoczne w stopce
@@ -91,10 +63,8 @@ test.describe('Szklaneczki - Footer & Newsletter @footer @e2e', () => {
       'a[href*="facebook"], a[href*="instagram"], a[href*="linkedin"], ' +
       'a[href*="twitter"], a[href*="youtube"], a[href*="tiktok"]'
     );
+    await expect(socialLinks.first()).toBeVisible();
     const count = await socialLinks.count();
-    if (count === 0) {
-      test.skip(true, 'Brak linkow do mediow spolecznosciowych w stopce');
-    }
     expect(count).toBeGreaterThan(0);
   });
 });

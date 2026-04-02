@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { MagentoApiClient, attachApiResponse } from '../../../core/helpers/api-client';
-import { szklaneczkiConfig } from '../../../../config/Szklaneczki.config';
+import { szklaneczkiConfig } from '../../../../config/szklaneczki.config';
 
 let api: MagentoApiClient;
 

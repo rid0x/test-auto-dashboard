@@ -7,11 +7,9 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie poprawnej frazy zwraca liste produktow (count > 0)
   test('should find results for valid query', async ({ page, config }) => {
-    await test.step('Submit search form', async () => {
-      await page.locator('#search').fill(config.search.validQuery);
-      await page.locator('#search').press('Enter');
-      await page.waitForLoadState('load');
-    });
+    // Go directly to search results (reliable, avoids Amasty JS intercepts)
+    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
 
     await test.step('Verify results page', async () => {
       expect(page.url()).toContain('catalogsearch/result');
@@ -26,7 +24,8 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie bzdury nie zwraca zadnych produktow (count = 0)
   test('should show no results for invalid query', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
+    // Go directly to search results URL for reliability
+    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
 
     const products = page.locator('.product-item');
     const count = await products.count();
@@ -37,27 +36,31 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
   test('should show search suggestions (autocomplete)', async ({ page, config }) => {
     const searchInput = page.locator('#search');
     await searchInput.click();
-    await searchInput.pressSequentially(config.search.validQuery.substring(0, 3), { delay: 100 });
+    await searchInput.pressSequentially(config.search.validQuery.substring(0, 5), { delay: 100 });
 
-    const suggestions = page.locator('#search_autocomplete:visible, .amsearch-highlight, .amsearch-products, .amsearch-results, [class*="amsearch"]:visible');
+    const suggestions = page.locator('.amsearch-highlight, .amsearch-products, .amsearch-results, [class*="amsearch"]:visible');
     await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Autocomplete suggestions', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Wyszukiwanie przez formularz (submit) przenosi na strone wynikow
-  test('should search via form submit', async ({ page, config }) => {
+  // @desc: Klikniecie linku przenosi na pelna strone wynikow wyszukiwania
+  test('should navigate to full results via "Zobacz wszystkie"', async ({ page, config }) => {
     await page.locator('#search').fill(config.search.validQuery);
-    await page.locator('#search').press('Enter');
-    await page.waitForLoadState('load');
+
+    // Amasty search opens overlay with products — click "Zobacz wszystkie" to go to full results
+    const viewAllLink = page.locator('a:has-text("Zobacz wszystkie")');
+    await expect(viewAllLink).toBeVisible({ timeout: 10000 });
+    await viewAllLink.click();
+    await page.waitForURL(/catalogsearch\/result/, { timeout: 10000 });
 
     expect(page.url()).toContain('catalogsearch/result');
   });
 
   // @desc: Wyniki wyszukiwania wyswietlaja nazwy produktow
   test('should display product info in results', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
+    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
 
     const firstProduct = page.locator('.product-item').first();
     await expect(firstProduct).toBeVisible();

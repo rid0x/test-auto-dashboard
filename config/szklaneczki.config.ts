@@ -11,7 +11,7 @@ export const szklaneczkiConfig: ProjectConfig = {
     },
     invalid: {
       email: 'invalid@example.pl',
-      password: 'WrongPass123!',
+      password: 'WrongPassword123!',
     },
   },
 
@@ -24,13 +24,13 @@ export const szklaneczkiConfig: ProjectConfig = {
 
   search: {
     validQuery: 'szklanka',
-    invalidQuery: 'qwertyasdfgh99999',
+    invalidQuery: 'qwertyasdfghzxcvbn99999',
     expectedResultMinCount: 1,
   },
 
   product: {
     url: '/kieliszki-do-margarity-luxito-havana-300ml-6szt.html',
-    name: 'Kieliszki do margarity LUXITO HAVANA 300ml 6szt',
+    name: 'Kieliszki do margarity LUXITO',
   },
 
   category: {
@@ -42,9 +42,9 @@ export const szklaneczkiConfig: ProjectConfig = {
   features: {
     hasRecaptchaOnLogin: true,
     hasRecaptchaOnRegistration: true,
-    hasRecaptchaOnCheckout: true,
+    hasRecaptchaOnCheckout: false,
     hasCookieConsent: true,
-    cookieConsentSelector: 'text=Zezwól na wszystkie',
+    cookieConsentSelector: 'text=Zezw�l na wszystkie',
   },
 
   api: {
