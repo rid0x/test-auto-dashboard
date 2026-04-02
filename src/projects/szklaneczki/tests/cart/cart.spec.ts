@@ -187,17 +187,15 @@ test.describe('Szklaneczki - Cart @cart @e2e', () => {
     await productPage.expectAddToCartSuccess();
     await cartPage.goto();
 
-    // Szklaneczki Hyva theme — przycisk Usun to button z aria-label
-    const deleteBtn = page.locator('button.action-delete, button.action.action-delete, button[aria-label*="Usuń"], button:has-text("Usuń")').first();
+    // Szklaneczki — przycisk Usuń (link lub button)
+    const deleteBtn = page.getByRole('link', { name: 'Usuń' }).or(page.locator('a.action-delete, button.action-delete, button[aria-label*="Usuń"]')).first();
     await expect(deleteBtn).toBeVisible({ timeout: 10000 });
     await deleteBtn.click();
-
-    // Hyva uzywa postForm — poczekaj na przeladowanie
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
 
-    const emptyMsg = page.locator('.cart-empty, :has-text("Nie masz produktów w koszyku")');
-    await expect(emptyMsg.first()).toBeVisible({ timeout: 15000 });
+    // Sprawdz pusty koszyk — div.cart-empty
+    await expect(page.locator('.cart-empty')).toBeVisible({ timeout: 15000 });
   });
 
   // @desc: Przycisk "Do kasy" prowadzi do checkout

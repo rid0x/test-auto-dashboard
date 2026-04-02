@@ -20,8 +20,10 @@ test.describe('Szklaneczki - Smoke Tests @smoke', () => {
   // @desc: Strona logowania wyswietla formularz
   test('smoke: login page displays', async ({ page, config }) => {
     await page.goto(`${config.baseUrl}/customer/account/login/`);
-    await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) await cookie.click();
+    await expect(page.getByRole('textbox', { name: 'E-mail*' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('textbox', { name: 'Hasło' })).toBeVisible({ timeout: 10000 });
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });

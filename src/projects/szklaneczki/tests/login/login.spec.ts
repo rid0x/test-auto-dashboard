@@ -13,15 +13,15 @@ test.describe('Szklaneczki - Login @login @e2e', () => {
     });
 
     await test.step('Verify email field visible', async () => {
-      await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
+      await expect(page.getByRole('textbox', { name: 'E-mail*' })).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Verify password field visible', async () => {
-      await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
+      await expect(page.getByRole('textbox', { name: 'Hasło' })).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Verify login button visible', async () => {
-      await expect(page.locator('button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Zaloguj się' })).toBeVisible();
     });
 
     // Attach screenshot as proof
