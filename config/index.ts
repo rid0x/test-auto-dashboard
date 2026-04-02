@@ -51,4 +51,3 @@ export function getActiveProject(): ProjectName {
   return project;
 }
 
-export { getpriceConfig, willsoorConfig, pieceofcaseConfig, szpakiConfig, moncredoConfig, pierrereneConfig, abazurConfig, cornetteConfig, enteloConfig, distriparkConfig, elakiernikConfig, hulajnogimicroConfig, bladevilleConfig, testConfig, testowyConfig };

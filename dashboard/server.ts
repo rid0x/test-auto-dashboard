@@ -1526,15 +1526,19 @@ app.post('/api/projects', (req, res) => {
       const testsDir = path.join(projectDir, 'tests');
       fs.mkdirSync(testsDir, { recursive: true });
 
+      const useSkeletons = generateMode === 'ai' || generateMode === 'skeleton';
+
       for (const area of selectedAreas) {
         if (area === 'api') {
           const apiDir = path.join(projectDir, 'api');
           fs.mkdirSync(apiDir, { recursive: true });
-          fs.writeFileSync(path.join(apiDir, 'api.spec.ts'), generateEmptySpecTemplate(name, 'api'));
+          const specContent = useSkeletons ? (generateSkeletonSpec(name, 'api') || generateEmptySpecTemplate(name, 'api')) : generateEmptySpecTemplate(name, 'api');
+          fs.writeFileSync(path.join(apiDir, 'api.spec.ts'), specContent);
         } else {
           const areaDir = path.join(testsDir, area);
           fs.mkdirSync(areaDir, { recursive: true });
-          fs.writeFileSync(path.join(areaDir, `${area}.spec.ts`), generateEmptySpecTemplate(name, area));
+          const specContent = useSkeletons ? (generateSkeletonSpec(name, area) || generateEmptySpecTemplate(name, area)) : generateEmptySpecTemplate(name, area);
+          fs.writeFileSync(path.join(areaDir, `${area}.spec.ts`), specContent);
         }
       }
 
