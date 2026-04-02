@@ -4241,7 +4241,7 @@
           const codeId = 'chat-code-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
           html += `<div class="chat-code-block">
             <div class="chat-code-header"><span>typescript</span></div>
-            <div class="chat-code-body" id="${codeId}">${highlightTS(code)}</div>
+            <div class="chat-code-body" id="${codeId}">${escapeHtml(code)}</div>
             <div class="chat-code-actions">
               <button class="btn btn-sm" onclick="saveChatTest('${codeId}')" style="color:var(--green); border-color:rgba(16,185,129,0.3);">Zapisz</button>
               <button class="btn btn-sm" onclick="copyChatCode('${codeId}')">Kopiuj</button>
