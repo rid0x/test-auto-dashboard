@@ -1507,6 +1507,13 @@
         }
 
         if (msg.type === 'run:complete') {
+          // Force progress bar to 100%
+          const p = msg.passed || 0;
+          const f = msg.failed || 0;
+          const s = msg.skipped || 0;
+          const total = p + f + s;
+          if (total > 0) updateProgress(total, total, p, f, s);
+
           const status = msg.exitCode === 0 ? 'passed' : 'failed';
           appendTerminal(
             `\n${status === 'passed' ? '✅' : '❌'} Run finished with exit code ${msg.exitCode}\n`,
