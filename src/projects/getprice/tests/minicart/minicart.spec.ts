@@ -82,32 +82,40 @@ test.describe('Getprice - Minicart @minicart @e2e', () => {
     }
   });
 
-  // @desc: Kliknięcie ikony koszyka rozwija minicart lub przenosi do koszyka
-  test('should open minicart or navigate to cart on click', async ({ productPage, page }) => {
+  // @desc: Klikniecie ikony koszyka otwiera minicart z linkiem do koszyka
+  test('should open minicart or navigate to cart on click', async ({ productPage, page, config }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
-    // Navigate to homepage where minicart is in header
-    await page.goto(page.url().split('/').slice(0, 3).join('/'), { waitUntil: 'networkidle' });
-    await page.waitForTimeout(1000);
-
-    const toggle = page.locator('.action.showcart, .minicart-wrapper a, a[href*="checkout/cart"]').first();
-    if (await toggle.isVisible().catch(() => false)) {
-      await toggle.click({ force: true });
-      await page.waitForTimeout(1000);
-
-      // Either minicart dropdown appears OR we navigated to cart page
-      const dropdown = page.locator('.block-minicart, #minicart-content-wrapper, .minicart-items');
-      const isDropdown = await dropdown.first().isVisible().catch(() => false);
-      const isCartPage = page.url().includes('checkout/cart');
-      expect(isDropdown || isCartPage).toBeTruthy();
-
-      const screenshot = await page.screenshot();
-      await test.info().attach('Minicart expanded or cart page', { body: screenshot, contentType: 'image/png' });
-    } else {
-      test.skip(true, 'Brak toggle minicart w headerze');
+    // Zamknij cookie popup jesli blokuje
+    const cookie = page.getByText('Zaakceptuj wszystkie');
+    if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await cookie.click();
+      await page.waitForTimeout(500);
     }
+
+    // Kliknij przycisk Koszyk w headerze (Hyva)
+    const cartBtn = page.getByRole('button', { name: 'Koszyk', exact: true });
+    await expect(cartBtn).toBeVisible({ timeout: 10000 });
+    await cartBtn.click();
+    await page.waitForTimeout(1000);
+
+    // Sprawdz czy minicart dropdown lub link "Zobacz koszyk" jest widoczny
+    const viewCart = page.getByRole('link', { name: 'Zobacz koszyk' });
+    const isDropdown = await viewCart.isVisible({ timeout: 5000 }).catch(() => false);
+    const isCartPage = page.url().includes('checkout/cart');
+
+    expect(isDropdown || isCartPage).toBeTruthy();
+
+    if (isDropdown) {
+      await viewCart.click();
+      await page.waitForLoadState('domcontentloaded');
+    }
+
+    expect(page.url()).toContain('cart');
+    const screenshot = await page.screenshot();
+    await test.info().attach('Cart page via minicart', { body: screenshot, contentType: 'image/png' });
   });
 
   // @desc: Nazwa produktu widoczna w koszyku po dodaniu
