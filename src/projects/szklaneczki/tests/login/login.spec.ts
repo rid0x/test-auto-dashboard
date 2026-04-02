@@ -99,8 +99,9 @@ test.describe('Szklaneczki - Login @login @e2e', () => {
 
   // @desc: Link "Nie pamietasz hasla" jest widoczny na stronie logowania
   test('should have forgot password link', async ({ page }) => {
-    const forgotLink = page.locator('a[href*="forgotpassword"], a:has-text("Nie pamiętasz"), a:has-text("Forgot")');
-    await expect(forgotLink.first()).toBeVisible();
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) await cookie.click();
+    await expect(page.getByRole('link', { name: 'Nie pamiętasz hasła?' })).toBeVisible({ timeout: 10000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Forgot password link visible', { body: screenshot, contentType: 'image/png' });
@@ -108,8 +109,10 @@ test.describe('Szklaneczki - Login @login @e2e', () => {
 
   // @desc: Link "Zaloz konto" / "Zarejestruj sie" jest widoczny
   test('should have create account link', async ({ page }) => {
-    const createLink = page.locator('a[href*="account/create"], a:has-text("Zarejestruj"), a:has-text("Create an Account")');
-    await expect(createLink.first()).toBeVisible();
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) await cookie.click();
+    // Codegen: getByRole('button', { name: 'Utwórz konto' }) — na screenie widoczne jako przycisk
+    await expect(page.getByRole('link', { name: 'Utwórz konto' }).or(page.locator('a[href*="account/create"]')).first()).toBeVisible({ timeout: 10000 });
 
     const screenshot = await page.screenshot();
     await test.info().attach('Create account link visible', { body: screenshot, contentType: 'image/png' });

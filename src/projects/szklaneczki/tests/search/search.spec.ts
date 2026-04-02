@@ -7,13 +7,14 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie poprawnej frazy zwraca liste produktow (count > 0)
   test('should find results for valid query', async ({ page, config }) => {
-    // Go directly to search results (reliable, avoids Amasty JS intercepts)
-    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
 
     await test.step('Verify results page', async () => {
       expect(page.url()).toContain('catalogsearch/result');
-      const products = page.locator('.product-item');
+      // Codegen: products grid uses .product-item, .product-item-info, .products-grid .item
+      const products = page.locator('.product-item, .product-item-info, .products-grid .item');
+      await expect(products.first()).toBeVisible({ timeout: 15000 });
       const count = await products.count();
       expect(count).toBeGreaterThan(0);
     });
@@ -24,21 +25,22 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
 
   // @desc: Wyszukiwanie bzdury nie zwraca zadnych produktow (count = 0)
   test('should show no results for invalid query', async ({ page, config }) => {
-    // Go directly to search results URL for reliability
-    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
+    await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.invalidQuery}`, { waitUntil: 'load' });
 
-    const products = page.locator('.product-item');
+    const products = page.locator('.product-item, .product-item-info, .products-grid .item');
     const count = await products.count();
     expect(count).toBe(0);
   });
 
-  // @desc: Wpisywanie frazy wyświetla podpowiedzi autouzupełniania (Amasty)
+  // @desc: Wpisywanie frazy wyświetla podpowiedzi autouzupełniania
   test('should show search suggestions (autocomplete)', async ({ page, config }) => {
-    const searchInput = page.locator('#search');
+    // Codegen: getByPlaceholder('Szukaj w najlepszym sklepie')
+    const searchInput = page.getByPlaceholder('Szukaj w najlepszym sklepie');
     await searchInput.click();
     await searchInput.pressSequentially(config.search.validQuery.substring(0, 5), { delay: 100 });
 
-    const suggestions = page.locator('.amsearch-highlight, .amsearch-products, .amsearch-results, [class*="amsearch"]:visible');
+    // Codegen: getByText('Wyszukiwane hasła Szklanka')
+    const suggestions = page.locator('#search_autocomplete, [class*="search-autocomplete"]').or(page.getByText('Wyszukiwane hasła'));
     await expect(suggestions.first()).toBeVisible({ timeout: 15000 });
 
     const screenshot = await page.screenshot();
@@ -60,10 +62,10 @@ test.describe('Szklaneczki - Search @search @e2e', () => {
 
   // @desc: Wyniki wyszukiwania wyswietlaja nazwy produktow
   test('should display product info in results', async ({ page, config }) => {
-    await page.goto(`${config.baseUrl}/pl/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
+    await page.goto(`${config.baseUrl}/catalogsearch/result/?q=${config.search.validQuery}`, { waitUntil: 'load' });
 
-    const firstProduct = page.locator('.product-item').first();
-    await expect(firstProduct).toBeVisible();
+    const firstProduct = page.locator('.product-item, .product-item-info, .products-grid .item').first();
+    await expect(firstProduct).toBeVisible({ timeout: 15000 });
 
     const name = firstProduct.locator('.product-item-name, .product-item-link, a[href*=".html"]').first();
     await expect(name).toBeVisible();

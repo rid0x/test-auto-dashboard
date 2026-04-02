@@ -7,7 +7,7 @@ test.describe('Szklaneczki - Homepage @homepage @e2e', () => {
 
   // @desc: Strona glowna laduje poprawnie i URL jest prawidlowy
   test('should load homepage successfully', async ({ page }) => {
-    await expect(page).toHaveURL(/getprice\.pl/);
+    await expect(page).toHaveURL(/szklaneczki\.pl/);
   });
 
   // @desc: Logo sklepu jest widoczne na stronie glownej
