@@ -186,11 +186,18 @@ test.describe('Getprice - Cart @cart @e2e', () => {
     await productPage.addToCartWithOptions(1);
     await productPage.expectAddToCartSuccess();
     await cartPage.goto();
-    await cartPage.removeFirstItem();
+
+    // Getprice Hyva theme — przycisk Usun to button z aria-label
+    const deleteBtn = page.locator('button.action-delete, button.action.action-delete, button[aria-label*="Usuń"], button:has-text("Usuń")').first();
+    await expect(deleteBtn).toBeVisible({ timeout: 10000 });
+    await deleteBtn.click();
+
+    // Hyva uzywa postForm — poczekaj na przeladowanie
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
-    await cartPage.goto();
-    const emptyMsg = page.locator('.cart-empty, .subtitle.empty, :has-text("Nie masz produktów"), :has-text("Nie posiadasz produktów"), :has-text("no items"), :has-text("Twój koszyk jest pusty")');
-    await expect(emptyMsg.first()).toBeVisible({ timeout: 10000 });
+
+    const emptyMsg = page.locator('.cart-empty, :has-text("Nie masz produktów w koszyku")');
+    await expect(emptyMsg.first()).toBeVisible({ timeout: 15000 });
   });
 
   // @desc: Przycisk "Do kasy" prowadzi do checkout

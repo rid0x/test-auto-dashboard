@@ -45,19 +45,24 @@ test.describe('Getprice - Minicart @minicart @e2e', () => {
   });
 
   // @desc: Po dodaniu 2x tego samego produktu - ilosc w koszyku >= 2
-  test('should accumulate quantity for same product', async ({ productPage, cartPage, page }) => {
+  test('should accumulate quantity for same product', async ({ productPage, page, config }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
     await page.waitForTimeout(1000);
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
+    await page.waitForTimeout(1000);
 
-    await cartPage.goto();
-    await cartPage.expectCartNotEmpty();
+    await page.goto(`${config.baseUrl}/checkout/cart/`);
+    await page.waitForLoadState('domcontentloaded');
 
-    // Check qty input value
+    // Sprawdz czy koszyk nie jest pusty
+    const cartItem = page.locator('.cart.item, .cart-item, .product-item-name, .item-info, td.col.item').first();
+    await expect(cartItem).toBeVisible({ timeout: 15000 });
+
+    // Sprawdz ilosc
     const qtyInput = page.locator('input.qty, input[name*="qty"]').first();
-    if (await qtyInput.isVisible().catch(() => false)) {
+    if (await qtyInput.isVisible({ timeout: 5000 }).catch(() => false)) {
       const qty = await qtyInput.inputValue().catch(() => '0');
       expect(Number(qty)).toBeGreaterThanOrEqual(2);
     }
@@ -81,16 +86,16 @@ test.describe('Getprice - Minicart @minicart @e2e', () => {
   test('should open minicart or navigate to cart on click', async ({ productPage, page }) => {
     await productPage.gotoDefaultProduct();
     await productPage.addToCartWithOptions(1);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Navigate to homepage where minicart is in header
     await page.goto(page.url().split('/').slice(0, 3).join('/'), { waitUntil: 'networkidle' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     const toggle = page.locator('.action.showcart, .minicart-wrapper a, a[href*="checkout/cart"]').first();
     if (await toggle.isVisible().catch(() => false)) {
       await toggle.click({ force: true });
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(1000);
 
       // Either minicart dropdown appears OR we navigated to cart page
       const dropdown = page.locator('.block-minicart, #minicart-content-wrapper, .minicart-items');
