@@ -91,25 +91,23 @@ test.describe('Szklaneczki - Smoke Tests @smoke', () => {
     const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
     if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) await cookie.click();
     await page.waitForTimeout(1000);
-    await page.getByText('Dodaj do koszyka Do koszyka').or(page.locator('#product-addtocart-button')).first().click();
-    await page.waitForTimeout(3000);
+    // Codegen: getByText('Dodaj do koszyka Do koszyka')
+    await page.getByText('Dodaj do koszyka Do koszyka').click();
     await page.getByRole('button', { name: 'Zobacz koszyk' }).click();
     await page.waitForLoadState('domcontentloaded');
-    // Przelicz koszyk jesli trzeba
-    const przelicz = page.getByRole('button', { name: 'Przelicz koszyk' });
-    if (await przelicz.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await przelicz.click();
-      await page.waitForTimeout(2000);
-    }
+    await page.waitForTimeout(2000);
+    // Codegen: getByRole('button', { name: 'Przejdź do kasy' })
     await page.getByRole('button', { name: 'Przejdź do kasy' }).click();
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(3000);
+    // Codegen: getByRole('button', { name: 'Zakupy bez logowania' })
     const guestBtn = page.getByRole('button', { name: 'Zakupy bez logowania' });
     if (await guestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await guestBtn.click();
       await page.waitForTimeout(1000);
     }
-    await expect(page.getByRole('textbox', { name: 'E-mail' }).first()).toBeVisible({ timeout: 15000 });
+    // Codegen: getByRole('textbox', { name: 'E-mail *' }) — ze spacja przed *
+    await expect(page.getByRole('textbox', { name: 'E-mail *' })).toBeVisible({ timeout: 15000 });
     const screenshot = await page.screenshot({ fullPage: true });
     await test.info().attach('Checkout', { body: screenshot, contentType: 'image/png' });
   });
