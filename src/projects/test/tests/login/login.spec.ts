@@ -4,18 +4,6 @@ test.describe('Test - Login @login @e2e', () => {
   // Add tests here
 
 
-// @desc: Sprawdza czy strona logowania zwraca status HTTP 200
-test('should return 200 status for login page', async ({ page, config }) => {
-  await test.step('Navigate to login page and check response status', async () => {
-    const response = await page.goto(`${config.baseUrl}/customer/account/login/`);
-    expect(response?.status()).toBe(200);
-  });
-
-  await test.step('Take screenshot', async () => {
-    await page.screenshot({ path: 'login-page-200-status.png', fullPage: true });
-  });
-});
-
 
 // @desc: Sprawdza czy na stronie logowania wyświetla się nagłówek "Logowanie"
 test('should display login header on login page', async ({ page, config }) => {
@@ -50,6 +38,19 @@ test('basic test', async ({ page }) => {
 
   await test.step('Take screenshot', async () => {
     await page.screenshot({ path: 'basic-test.png', fullPage: true });
+  });
+});
+
+
+"sh-cmt">// @desc: Sprawdza czy strona logowania zwraca status 200
+test("sh-str">'should return 200 status for login page', async ({ page, config }) => {
+  await test.step("sh-str">'Navigate to login page and check status', async () => {
+    const response = await page.goto(`${config.baseUrl}/customer/account/login/`);
+    expect(response?.status()).toBe(200);
+  });
+
+  await test.step("sh-str">'Take screenshot', async () => {
+    await page.screenshot({ path: "sh-str">'login-page-status-200.png', fullPage: true });
   });
 });
 
