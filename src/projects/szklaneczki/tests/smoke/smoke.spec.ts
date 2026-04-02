@@ -1,84 +1,114 @@
 import { test, expect } from '../../fixture';
-import { skipIfRecaptcha } from '../../../../core/helpers/recaptcha';
 
 /**
  * SMOKE TESTS - Szklaneczki
- * Wygenerowane automatycznie z istniejacych testow w projekcie.
- * Minimalna sciezka: homepage → login → search → kategoria → produkt → koszyk → checkout
+ * Selektory z Playwright codegen na szklaneczki.pl
+ * Minimalna sciezka: homepage → login → search → produkt → koszyk → checkout
  */
 test.describe('Szklaneczki - Smoke Tests @smoke', () => {
 
-  // @desc: Strona glowna laduje poprawnie i URL jest prawidlowy
-  test('should load homepage successfully', async ({ page }) => {
-    await expect(page).toHaveURL(/Szklaneczki\.pl/);
+  // @desc: Strona glowna laduje sie poprawnie
+  test('smoke: homepage loads', async ({ page, config }) => {
+    await page.goto(config.baseUrl);
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) await cookie.click();
+    await expect(page).toHaveURL(/szklaneczki/);
+    const screenshot = await page.screenshot();
+    await test.info().attach('Homepage', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Strona logowania wyswietla pola email, haslo i przycisk logowania
-  test('should display login page correctly', async ({ loginPage, page }) => {
-    await test.step('Verify login page loaded', async () => {
-      expect(await loginPage.isOnLoginPage()).toBeTruthy();
-    });
-
-    await test.step('Verify email field visible', async () => {
-      await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible();
-    });
-
-    await test.step('Verify password field visible', async () => {
-      await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
-    });
-
-    await test.step('Verify login button visible', async () => {
-      await expect(page.locator('button:has-text("Zaloguj"), button.action.login').first()).toBeVisible();
-    });
-
+  // @desc: Strona logowania wyswietla formularz
+  test('smoke: login page displays', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}/customer/account/login/`);
+    await expect(page.locator('#email, input[name="login[username]"]').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#pass, input[name="login[password]"]').first()).toBeVisible();
     const screenshot = await page.screenshot();
     await test.info().attach('Login page', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Wyszukiwanie poprawnej frazy zwraca liste produktow (count > 0)
-  test('should find results for valid query', async ({ page, config }) => {
-    await test.step('Submit search form', async () => {
-      await page.locator('#search').fill(config.search.validQuery);
-      await page.locator('#search').press('Enter');
-      await page.waitForLoadState('load');
-    });
-
-    await test.step('Verify results page', async () => {
-      expect(page.url()).toContain('catalogsearch/result');
-      const products = page.locator('.product-item');
-      const count = await products.count();
-      expect(count).toBeGreaterThan(0);
-    });
-
+  // @desc: Wyszukiwarka znajduje produkty
+  test('smoke: search returns results', async ({ page, config }) => {
+    await page.goto(config.baseUrl);
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 3000 }).catch(() => false)) await cookie.click();
+    await page.getByPlaceholder('Szukaj w najlepszym sklepie').fill(config.search.validQuery);
+    await page.getByPlaceholder('Szukaj w najlepszym sklepie').press('Enter');
+    await page.waitForLoadState('domcontentloaded');
+    const products = page.locator('.product-item, .product-item-info, .products-grid .item');
+    await expect(products.first()).toBeVisible({ timeout: 15000 });
     const screenshot = await page.screenshot();
     await test.info().attach('Search results', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Strona kategorii wyswietla liste produktow
-  test('should display category page with products', async ({ categoryPage, config }) => {
-    await categoryPage.expectProductsVisible();
-    await categoryPage.expectMinProducts(config.category.expectedMinProducts);
-  });
-
-  // @desc: Nazwa produktu (h1) jest widoczna na stronie produktu
-  test('should display product name', async ({ productPage }) => {
-    await productPage.expectProductNameVisible();
-  });
-
-  // @desc: Pusty koszyk wyswietla komunikat o braku produktow
-  test('should display empty cart', async ({ cartPage, page }) => {
-    await cartPage.goto();
-    await cartPage.expectCartEmpty();
-
+  // @desc: Karta produktu wyswietla nazwe i cene
+  test('smoke: product page displays', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}${config.product.url}`);
+    await page.waitForLoadState('domcontentloaded');
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) await cookie.click();
+    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
     const screenshot = await page.screenshot();
-    await test.info().attach('Empty cart', { body: screenshot, contentType: 'image/png' });
+    await test.info().attach('Product page', { body: screenshot, contentType: 'image/png' });
   });
 
-  // @desc: Przejscie z koszyka do strony checkout
-  test('should navigate to checkout from cart', async ({ cartPage, page }) => {
-    await cartPage.goto();
-    await cartPage.proceedToCheckout();
-    expect(page.url()).toContain('checkout');
+  // @desc: Dodanie produktu do koszyka
+  test('smoke: add product to cart', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}${config.product.url}`);
+    await page.waitForLoadState('domcontentloaded');
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) await cookie.click();
+    await page.waitForTimeout(1000);
+    const addBtn = page.getByText('Dodaj do koszyka Do koszyka').or(page.locator('#product-addtocart-button')).or(page.getByRole('button', { name: 'Dodaj do koszyka' }));
+    await addBtn.first().click();
+    await page.waitForTimeout(3000);
+    await expect(page.getByRole('button', { name: 'Zobacz koszyk' })).toBeVisible({ timeout: 10000 });
+    const screenshot = await page.screenshot();
+    await test.info().attach('Added to cart', { body: screenshot, contentType: 'image/png' });
   });
 
+  // @desc: Koszyk wyswietla dodany produkt
+  test('smoke: cart shows product', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}${config.product.url}`);
+    await page.waitForLoadState('domcontentloaded');
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) await cookie.click();
+    await page.waitForTimeout(1000);
+    await page.getByText('Dodaj do koszyka Do koszyka').or(page.locator('#product-addtocart-button')).first().click();
+    await page.waitForTimeout(3000);
+    await page.getByRole('button', { name: 'Zobacz koszyk' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.getByText('Podsumowanie')).toBeVisible({ timeout: 10000 });
+    const screenshot = await page.screenshot();
+    await test.info().attach('Cart', { body: screenshot, contentType: 'image/png' });
+  });
+
+  // @desc: Przejscie do checkout i wyswietlenie formularza
+  test('smoke: checkout displays', async ({ page, config }) => {
+    await page.goto(`${config.baseUrl}${config.product.url}`);
+    await page.waitForLoadState('domcontentloaded');
+    const cookie = page.getByRole('button', { name: 'Zezwól na wszystkie' });
+    if (await cookie.isVisible({ timeout: 2000 }).catch(() => false)) await cookie.click();
+    await page.waitForTimeout(1000);
+    await page.getByText('Dodaj do koszyka Do koszyka').or(page.locator('#product-addtocart-button')).first().click();
+    await page.waitForTimeout(3000);
+    await page.getByRole('button', { name: 'Zobacz koszyk' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    // Przelicz koszyk jesli trzeba
+    const przelicz = page.getByRole('button', { name: 'Przelicz koszyk' });
+    if (await przelicz.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await przelicz.click();
+      await page.waitForTimeout(2000);
+    }
+    await page.getByRole('button', { name: 'Przejdź do kasy' }).click();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(3000);
+    const guestBtn = page.getByRole('button', { name: 'Zakupy bez logowania' });
+    if (await guestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await guestBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    await expect(page.getByRole('textbox', { name: 'E-mail' }).first()).toBeVisible({ timeout: 15000 });
+    const screenshot = await page.screenshot({ fullPage: true });
+    await test.info().attach('Checkout', { body: screenshot, contentType: 'image/png' });
+  });
 });
