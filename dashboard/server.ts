@@ -883,7 +883,70 @@ function generateVisualRegressionSpec(projectName: string): string {
 
 // --- Skeleton Generation (from existing project templates) ---
 
+function generateSmokeFromOwnAreas(projectName: string): string | null {
+  const projectDir = path.join(ROOT, 'src', 'projects', projectName);
+  const testsDir = path.join(projectDir, 'tests');
+  if (!fs.existsSync(testsDir)) return null;
+
+  const displayName = toPascalCase(projectName);
+  const areas = ['homepage', 'login', 'search', 'category', 'product-page', 'cart', 'checkout'];
+  const collectedTests: string[] = [];
+
+  for (const area of areas) {
+    const specFile = path.join(testsDir, area, `${area}.spec.ts`);
+    if (!fs.existsSync(specFile)) continue;
+
+    const content = fs.readFileSync(specFile, 'utf-8');
+    const lines = content.split('\n');
+
+    // Extract first test block from this area
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(/^\s*test\s*\(\s*['"`](.+?)['"`]/);
+      if (match && !lines[i].includes('test.describe') && !lines[i].includes('test.skip')) {
+        // Extract full test block
+        let braceCount = 0;
+        let started = false;
+        const testLines: string[] = [];
+        for (let j = i; j < Math.min(i + 100, lines.length); j++) {
+          for (const ch of lines[j]) {
+            if (ch === '{') { braceCount++; started = true; }
+            if (ch === '}') braceCount--;
+          }
+          testLines.push(lines[j]);
+          if (started && braceCount <= 0) break;
+        }
+        // Also grab @desc comment above if present
+        if (i > 0 && lines[i - 1].trim().startsWith('// @desc:')) {
+          testLines.unshift(lines[i - 1]);
+        }
+        collectedTests.push(testLines.join('\n'));
+        break; // Only first test per area
+      }
+    }
+  }
+
+  if (collectedTests.length === 0) return null;
+
+  return `import { test, expect } from '../../fixture';
+import { skipIfRecaptcha } from '../../../../core/helpers/recaptcha';
+
+/**
+ * SMOKE TESTS - ${displayName}
+ * Wygenerowane automatycznie z istniejacych testow w projekcie.
+ * Minimalna sciezka: homepage → login → search → kategoria → produkt → koszyk → checkout
+ */
+test.describe('${displayName} - Smoke Tests @smoke', () => {
+
+${collectedTests.join('\n\n')}
+
+});
+`;
+}
+
 function generateSkeletonSpec(projectName: string, areaName: string): string | null {
+  // Smoke: build from own project areas (not from other projects)
+  if (areaName === 'smoke') return generateSmokeFromOwnAreas(projectName);
+
   // Visual regression has its own generator
   if (areaName === 'visual') return generateVisualRegressionSpec(projectName);
 
