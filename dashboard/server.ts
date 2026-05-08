@@ -30,6 +30,26 @@ const app = express();
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
+// --- CORS (for QA Dashboard cross-origin access) ---
+const ALLOWED_ORIGINS = [
+  'http://localhost:8888',
+  'http://localhost:3000',
+  'http://127.0.0.1:8888',
+  'https://astounding-seahorse-3b5601.netlify.app',
+];
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'false');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 // --- Static files ---
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/reports', express.static(path.join(ROOT, 'reports')));

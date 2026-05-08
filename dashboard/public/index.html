@@ -1323,9 +1323,555 @@
 
     /* Animated number counter utility */
     .counter-animate { display: inline-block; }
+
+    /* Embedded mode (iframe in QA Dashboard) */
+    body.embedded .header h1 { padding-left: 142px; }
+    /* Strip Newton's cradle + orbiting stars from terminal idle screen */
+    body.embedded .terminal-idle .idle-cradle,
+    body.embedded .terminal-idle .idle-star { display: none !important; }
+    body.embedded .terminal-idle { padding-top: 80px; }
+    /* Disable card hover lift/shadow on overview (stat-card + hero-card) */
+    body.embedded .stat-card,
+    body.embedded .hero-card { transition: none !important; }
+    body.embedded .stat-card:hover,
+    body.embedded .hero-card:hover {
+      transform: none !important;
+      box-shadow: none !important;
+      border-color: var(--border) !important;
+    }
+    /* Drop decorative emoji icons in hero stat cards */
+    body.embedded .hero-card .hero-icon { display: none !important; }
+    /* Hide violet "runs per day" bars in the daily pass-rate chart — keep the green pass-rate line clean */
+    body.embedded svg rect[fill="var(--violet)"] { display: none !important; }
+
+    /* Comparison cards — drop hover lift */
+    body.embedded .comparison-card { transition: none !important; }
+    body.embedded .comparison-card:hover {
+      transform: none !important;
+      box-shadow: none !important;
+      border-color: var(--border) !important;
+    }
+
+    /* Ranking table — tone down rainbow colors. Reds stay (failures/alerts), other colors become muted */
+    body.embedded .rank-badge {
+      background: rgba(255,255,255,0.05) !important;
+      color: var(--text-muted) !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+    }
+    body.embedded .status-badge {
+      background: rgba(255,255,255,0.05) !important;
+      color: var(--text-muted) !important;
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+    body.embedded .status-badge.needs-fix {
+      background: rgba(239,68,68,0.08) !important;
+      color: var(--red) !important;
+      border-color: rgba(239,68,68,0.2) !important;
+    }
+    body.embedded .trend-up { color: var(--text-muted) !important; }
+    body.embedded .trend-down { color: var(--red) !important; }
+    /* Inline-colored spans inside table rows: collapse green/yellow/violet/blue → muted, keep red */
+    body.embedded table td span[style*="var(--green)"],
+    body.embedded table td span[style*="var(--yellow)"],
+    body.embedded table td span[style*="var(--violet)"],
+    body.embedded table td span[style*="var(--blue)"] {
+      color: var(--text-muted) !important;
+    }
+    body.embedded table td span[style*="var(--accent)"] {
+      color: rgba(255,255,255,0.85) !important;
+    }
+    /* Pass-rate bars — keep just one color so the bar stays informative without being loud */
+    body.embedded table td span.bar-animate {
+      background: rgba(255,255,255,0.35) !important;
+    }
+
+    /* Hero stat cards (overview top row) — Jarvis HUD aesthetic:
+       uniform height, single accent color, scanning beam, corner reticles, glowing readouts */
+    body.embedded .hero-card {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(249,115,22,0.045) 100%) !important;
+      border: 1px solid rgba(249,115,22,0.16) !important;
+      border-top-color: rgba(249,115,22,0.55) !important;
+      border-radius: 4px;
+      min-height: 104px;
+      display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+      padding: 16px 20px !important;
+      position: relative;
+      overflow: hidden;
+      font-family: var(--font);
+      transition: none !important;
+      box-shadow: inset 0 0 18px rgba(249,115,22,0.04);
+    }
+    body.embedded .hero-card:hover {
+      transform: none !important;
+      box-shadow: inset 0 0 18px rgba(249,115,22,0.08), 0 0 0 1px rgba(249,115,22,0.25) !important;
+      border-color: rgba(249,115,22,0.35) !important;
+    }
+    /* Slow diagonal scanning beam, staggered per card */
+    body.embedded .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 35%, rgba(249,115,22,0.07) 50%, transparent 65%);
+      background-size: 240% 100%;
+      background-position: -120% 0;
+      animation: heroScan 9s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes heroScan {
+      0%   { background-position: -120% 0; }
+      100% { background-position: 220% 0; }
+    }
+    body.embedded .hero-card:nth-child(2)::before { animation-delay: -1.2s; }
+    body.embedded .hero-card:nth-child(3)::before { animation-delay: -2.6s; }
+    body.embedded .hero-card:nth-child(4)::before { animation-delay: -4.0s; }
+    body.embedded .hero-card:nth-child(5)::before { animation-delay: -5.4s; }
+    body.embedded .hero-card:nth-child(6)::before { animation-delay: -6.8s; }
+
+    /* Bottom-right corner reticle (targeting bracket) */
+    body.embedded .hero-card::after {
+      content: "";
+      position: absolute;
+      bottom: 7px;
+      right: 7px;
+      width: 12px;
+      height: 12px;
+      border-bottom: 1px solid rgba(249,115,22,0.55);
+      border-right: 1px solid rgba(249,115,22,0.55);
+      pointer-events: none;
+    }
+
+    /* Value — accent orange, tech glow, monospace tightening */
+    body.embedded .hero-card .hero-value,
+    body.embedded .hero-card .hero-value[style] {
+      color: var(--accent) !important;
+      font-family: var(--font);
+      letter-spacing: 0.02em;
+      font-weight: 700;
+      text-shadow: 0 0 14px rgba(249,115,22,0.4), 0 0 4px rgba(249,115,22,0.6);
+      position: relative;
+      z-index: 1;
+      line-height: 1;
+    }
+    /* Subtle pulse under the value (a thin animated underline) */
+    body.embedded .hero-card .hero-value::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      height: 1px;
+      width: 28px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      box-shadow: 0 0 6px rgba(249,115,22,0.6);
+      animation: heroPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes heroPulse {
+      0%, 100% { opacity: 0.4; width: 24px; }
+      50%      { opacity: 1;   width: 44px; }
+    }
+
+    /* Label — chevron prefix + dim uppercase */
+    body.embedded .hero-card .hero-label {
+      color: rgba(184,180,216,0.55) !important;
+      padding-left: 13px;
+      position: relative;
+      z-index: 1;
+      margin-top: 14px !important;
+    }
+    body.embedded .hero-card .hero-label::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      color: var(--accent);
+      opacity: 0.7;
+      font-size: 11px;
+    }
+
+    /* Sub — dim, behind glass */
+    body.embedded .hero-card .hero-sub {
+      color: var(--text-dim) !important;
+      z-index: 1;
+      position: relative;
+      font-size: 9px !important;
+      letter-spacing: 0.04em;
+      margin-top: 6px !important;
+    }
+    body.embedded .hero-card .hero-sub span[style*="var("] {
+      color: var(--text-dim) !important;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       JARVIS INTERACTIVE HUD — Overview page
+       Subtle persistent decorations + strong hover/interaction states.
+       Activated by body.embedded only.
+       ───────────────────────────────────────────────────────────────── */
+
+    /* Ambient: very subtle dot-grid backdrop */
+    body.embedded .layout::before {
+      content: "";
+      position: fixed;
+      inset: 52px 0 0 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(249,115,22,0.045) 1px, transparent 1.5px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* Vignette — slight dimming at edges for "screen" feel */
+    body.embedded .layout::after {
+      content: "";
+      position: fixed;
+      inset: 52px 0 0 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body.embedded #main-content { position: relative; z-index: 1; }
+    body.embedded #sidebar { position: relative; z-index: 1; }
+
+    /* Page title block ("Przeglad wszystkich projektow") — chevron + live pulse */
+    body.embedded .main-header h2 {
+      color: var(--accent) !important;
+      font-family: var(--font);
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 10px rgba(249,115,22,0.3);
+      padding-left: 22px;
+      position: relative;
+    }
+    body.embedded .main-header h2::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      opacity: 0.85;
+    }
+    body.embedded .main-header h2::after {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      margin-left: 12px;
+      vertical-align: middle;
+      animation: jarvisLivePulse 1.6s ease-in-out infinite;
+    }
+    @keyframes jarvisLivePulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.85); box-shadow: 0 0 4px var(--accent); }
+      50%      { opacity: 1;   transform: scale(1.1);  box-shadow: 0 0 12px var(--accent), 0 0 20px rgba(249,115,22,0.4); }
+    }
+    body.embedded .main-header .subtitle {
+      color: rgba(184,180,216,0.55) !important;
+      letter-spacing: 0.06em;
+      font-family: var(--font);
+    }
+
+    /* ── CARDS — corner brackets + scan beam + interactive hover ─────── */
+    body.embedded .card {
+      background:
+        linear-gradient(115deg, transparent 38%, rgba(249,115,22,0.04) 50%, transparent 62%) 0 0 / 280% 100% no-repeat,
+        linear-gradient(180deg, var(--bg-card) 0%, rgba(249,115,22,0.02) 100%) !important;
+      background-position: -150% 0, 0 0;
+      border: 1px solid rgba(249,115,22,0.12) !important;
+      border-top-color: rgba(249,115,22,0.4) !important;
+      border-radius: 4px !important;
+      position: relative;
+      overflow: visible !important;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+      animation: jarvisCardScan 16s linear infinite;
+    }
+    @keyframes jarvisCardScan {
+      0%   { background-position: -150% 0, 0 0; }
+      100% { background-position: 250% 0, 0 0; }
+    }
+    body.embedded .main #main-content > .card:nth-of-type(2) { animation-delay: -4s; }
+    body.embedded .main #main-content > .card:nth-of-type(3) { animation-delay: -8s; }
+    body.embedded .main #main-content > .card:nth-of-type(4) { animation-delay: -12s; }
+
+    /* Diagonal corner brackets: top-left + bottom-right.
+       NOTE: test-auto already has a .card::before (top accent line, hidden until hover).
+       We have to FULLY override its background/opacity/right/etc. or it bleeds through. */
+    body.embedded .card::before,
+    body.embedded .card::after {
+      content: "" !important;
+      position: absolute !important;
+      width: 14px !important;
+      height: 14px !important;
+      background: none !important;
+      opacity: 1 !important;
+      pointer-events: none !important;
+      transition: none !important;
+      z-index: 2 !important;
+    }
+    body.embedded .card::before {
+      top: -1px !important;
+      left: -1px !important;
+      right: auto !important;
+      bottom: auto !important;
+      border-top: 1px solid rgba(249,115,22,0.55) !important;
+      border-left: 1px solid rgba(249,115,22,0.55) !important;
+      border-right: none !important;
+      border-bottom: none !important;
+    }
+    body.embedded .card::after {
+      bottom: -1px !important;
+      right: -1px !important;
+      top: auto !important;
+      left: auto !important;
+      border-bottom: 1px solid rgba(249,115,22,0.55) !important;
+      border-right: 1px solid rgba(249,115,22,0.55) !important;
+      border-top: none !important;
+      border-left: none !important;
+    }
+    /* Block test-auto's native .card:hover::before from re-asserting opacity */
+    body.embedded .card:hover::before { opacity: 1 !important; }
+    /* No hover effect on the outer .card containers — too noisy when moving around the page.
+       Hover stays on individual tiles (comparison-card, table rows) inside the cards. */
+
+    /* Section title — chevron + soft glow. Header keeps the bottom accent only,
+       no left-side gradient (it was conflicting with the TL corner bracket). */
+    body.embedded .card-header {
+      background: transparent !important;
+      border-bottom-color: rgba(249,115,22,0.22) !important;
+      position: relative;
+    }
+    /* Thin accent line above the bottom-border, glowing — feels like a HUD divider */
+    body.embedded .card-header::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      height: 1px;
+      width: 38%;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      box-shadow: 0 0 6px rgba(249,115,22,0.35);
+    }
+    body.embedded .card-header h3 {
+      color: var(--accent) !important;
+      font-family: var(--font);
+      letter-spacing: 0.04em !important;
+      text-shadow: 0 0 8px rgba(249,115,22,0.3);
+      padding-left: 14px;
+      position: relative;
+    }
+    body.embedded .card-header h3::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+
+    /* ── CHARTS — orange line, animated draw-in, glow ──────────────── */
+    body.embedded svg path[stroke="var(--green)"] {
+      stroke: var(--accent) !important;
+      filter: drop-shadow(0 0 5px rgba(249,115,22,0.55));
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      animation: jarvisChartDraw 2.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    }
+    @keyframes jarvisChartDraw {
+      to { stroke-dashoffset: 0; }
+    }
+    body.embedded svg circle[fill="var(--green)"] {
+      fill: var(--accent) !important;
+      filter: drop-shadow(0 0 3px rgba(249,115,22,0.5));
+      opacity: 0;
+      animation: jarvisDotIn 0.4s ease-out forwards;
+      animation-delay: 2.4s;
+    }
+    @keyframes jarvisDotIn {
+      from { opacity: 0; transform: scale(0); transform-origin: center; }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    body.embedded svg path[stroke="var(--blue)"] {
+      stroke: rgba(249,115,22,0.78) !important;
+    }
+    body.embedded svg circle[fill="var(--blue)"] {
+      fill: rgba(249,115,22,0.78) !important;
+    }
+
+    /* ── RANKING TABLE — interactive HUD readout ──────────────────── */
+    body.embedded .card-body table thead {
+      border-bottom: 1px solid rgba(249,115,22,0.3) !important;
+    }
+    body.embedded .card-body table thead th {
+      color: var(--accent) !important;
+      letter-spacing: 0.06em !important;
+      font-family: var(--font);
+      text-shadow: 0 0 5px rgba(249,115,22,0.25);
+    }
+    body.embedded .card-body table tbody tr {
+      position: relative;
+      transition: background 0.2s ease;
+    }
+    /* Left-border slide-in on row hover */
+    body.embedded .card-body table tbody tr td:first-child {
+      position: relative;
+    }
+    body.embedded .card-body table tbody tr:hover {
+      background: linear-gradient(90deg, rgba(249,115,22,0.08) 0%, rgba(249,115,22,0.02) 50%, transparent 100%) !important;
+    }
+    body.embedded .card-body table tbody tr:hover td:first-child::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: jarvisRowSlide 0.2s ease-out;
+    }
+    @keyframes jarvisRowSlide {
+      from { transform: scaleY(0); transform-origin: center; }
+      to   { transform: scaleY(1); }
+    }
+
+    /* ── COMPARISON CARDS — donut HUD with rotating outer ring ──────── */
+    body.embedded .comparison-card {
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(249,115,22,0.025) 100%) !important;
+      border: 1px solid rgba(249,115,22,0.15) !important;
+      border-top-color: rgba(249,115,22,0.4) !important;
+      position: relative;
+      overflow: hidden !important;
+      transition: border-color 0.25s, box-shadow 0.25s !important;
+    }
+    body.embedded .comparison-card::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: 12px;
+      height: 12px;
+      border-top: 1px solid rgba(249,115,22,0.7);
+      border-left: 1px solid rgba(249,115,22,0.7);
+      transition: width 0.25s, height 0.25s;
+    }
+    body.embedded .comparison-card::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 12px;
+      height: 12px;
+      border-bottom: 1px solid rgba(249,115,22,0.7);
+      border-right: 1px solid rgba(249,115,22,0.7);
+      transition: width 0.25s, height 0.25s;
+    }
+    body.embedded .comparison-card:hover {
+      border-color: rgba(249,115,22,0.35) !important;
+      box-shadow: 0 0 20px rgba(249,115,22,0.12) !important;
+    }
+    body.embedded .comparison-card:hover::before,
+    body.embedded .comparison-card:hover::after {
+      width: 22px;
+      height: 22px;
+      border-color: rgba(249,115,22,0.95);
+    }
+    body.embedded .comparison-card .comp-name {
+      color: var(--accent) !important;
+      font-family: var(--font);
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 6px rgba(249,115,22,0.3);
+    }
+    /* Donut active ring — rotate slowly, glow */
+    body.embedded .comparison-card svg circle[stroke-dasharray] {
+      filter: drop-shadow(0 0 5px rgba(249,115,22,0.45));
+    }
+    body.embedded .comparison-card svg circle[stroke="var(--bg-elevated)"] {
+      stroke: rgba(249,115,22,0.08) !important;
+    }
+    body.embedded .comparison-card .comp-meter {
+      background: rgba(249,115,22,0.05) !important;
+      border: 1px solid rgba(249,115,22,0.1);
+    }
+    body.embedded .comparison-card .comp-meter-fill {
+      box-shadow: 0 0 5px rgba(249,115,22,0.3);
+    }
+
+    /* Export buttons (CSV / PDF) — recolor blue → orange HUD */
+    body.embedded .btn-export {
+      background: transparent !important;
+      border-color: rgba(249,115,22,0.35) !important;
+      color: rgba(249,115,22,0.85) !important;
+      font-family: var(--font);
+      letter-spacing: 0.04em;
+      transition: all 0.2s ease !important;
+    }
+    body.embedded .btn-export:hover {
+      background: rgba(249,115,22,0.08) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      box-shadow: 0 0 12px rgba(249,115,22,0.25), 0 3px 10px rgba(249,115,22,0.15) !important;
+    }
+
+    /* Live pulse next to section title (tick-mark decoration removed — it overlapped existing right-side labels) */
+    body.embedded .card-header h3::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-left: 10px;
+      vertical-align: middle;
+      box-shadow: 0 0 4px var(--accent);
+      animation: jarvisLivePulse 2s ease-in-out infinite;
+    }
+
+    /* Donut active rings — soft pulsing glow */
+    body.embedded .comparison-card svg circle[stroke-dasharray] {
+      animation: jarvisDonutPulse 3.6s ease-in-out infinite;
+    }
+    @keyframes jarvisDonutPulse {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(249,115,22,0.3)); }
+      50%      { filter: drop-shadow(0 0 10px rgba(249,115,22,0.6)); }
+    }
+
+    /* Pass rate column bars in ranking — orange tint instead of neutral white */
+    body.embedded table td span.bar-animate {
+      background: linear-gradient(90deg, var(--accent) 0%, rgba(249,115,22,0.6) 100%) !important;
+      box-shadow: 0 0 4px rgba(249,115,22,0.4);
+    }
+
+    /* Header buttons: Uptime + Odśwież → transparent, low-key */
+    body.embedded button[onclick="showUptime()"] {
+      background: transparent !important;
+      border-color: rgba(16,185,129,0.35) !important;
+      color: rgba(16,185,129,0.85) !important;
+    }
+    body.embedded button[onclick="showUptime()"]:hover {
+      background: rgba(16,185,129,0.08) !important;
+      border-color: var(--green) !important;
+      color: var(--green) !important;
+    }
+    body.embedded button#btn-refresh {
+      background: transparent !important;
+      border-color: rgba(249,115,22,0.35) !important;
+      color: rgba(249,115,22,0.9) !important;
+    }
+    body.embedded button#btn-refresh:hover {
+      background: rgba(249,115,22,0.08) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+    }
   </style>
 </head>
 <body>
+  <script>
+    // Detect iframe-embedded mode (QA Dashboard wraps this UI) — applies Jarvis palette + makes room for back button
+    (function(){
+      try {
+        var isEmbedded = window.parent !== window || /[?&]embedded=1\b/.test(location.search);
+        if (isEmbedded) document.body.classList.add('embedded');
+      } catch(e) { document.body.classList.add('embedded'); }
+    })();
+  </script>
 
   <div class="header">
     <h1>
@@ -1351,7 +1897,7 @@
       <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="showUptime()" title="Monitoring dostepnosci sklepow — czy strony sa online">Uptime</button>
       <button class="btn" onclick="toggleChat()" id="chat-toggle-btn" style="border-color:var(--violet); color:var(--violet);"><span class="ai-badge" style="margin-right:4px;">AI</span> Chat</button>
       <button class="btn" onclick="openSettings()" title="Ustawienia" style="font-size:14px;">&#9881;</button>
-      <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">Odswiez</button>
+      <button class="btn btn-primary" id="btn-refresh" onclick="loadProjects()">Odśwież</button>
     </div>
   </div>
 
